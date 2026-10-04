@@ -1,7 +1,7 @@
 name: negosmint_wallet
 description: NegosMint Wallet — a premium non-custodial crypto wallet.
 publish_to: "none"
-version: 0.1.0+1
+version: 0.2.0+2
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_secure_storage: ^11.2.0
+  wallet: ^0.0.18
 
 dev_dependencies:
   flutter_test:
