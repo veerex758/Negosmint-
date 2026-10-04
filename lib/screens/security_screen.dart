@@ -12,6 +12,8 @@ class SecurityScreen extends StatelessWidget {
       const _Item(icon: Icons.lock_outline_rounded, title: 'Local key protection', body: 'Wallet secrets are stored using the device secure storage layer.'),
       const _Item(icon: Icons.cloud_off_rounded, title: 'No server backup', body: 'Your recovery phrase is not uploaded to NegosMint servers.'),
       const _Item(icon: Icons.warning_amber_rounded, title: 'Stay protected', body: 'Never share your recovery phrase or private key, even with someone claiming to be support.'),
+      const SizedBox(height: 4),
+      Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: const [Icon(Icons.phonelink_lock_outlined, color: AppColors.forest), SizedBox(width: 12), Expanded(child: Text('Use a screen lock on your phone. Anyone who can access your unlocked device may be able to access wallet functions.', style: TextStyle(height: 1.45)))]))),
       const SizedBox(height: 12),
       Card(clipBehavior: Clip.antiAlias, child: Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: const [
         Icon(Icons.science_outlined, color: AppColors.forest), SizedBox(width: 12),
