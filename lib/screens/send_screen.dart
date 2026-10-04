@@ -29,6 +29,10 @@ class _SendScreenState extends State<SendScreen> {
   Future<void> _review() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
+    if (widget.address.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet address is unavailable.')));
+      return;
+    }
     if (_asset != 'ETH') {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('USDC sending is not enabled yet.')));
       return;
@@ -46,6 +50,9 @@ class _SendScreenState extends State<SendScreen> {
         to: _recipient.text.trim(),
         valueWei: amountWei,
       );
+      if (await rpc.getChainId() != EvmRpcService.chainId) {
+        throw const WalletException('Wrong network detected. Sepolia is required.');
+      }
       final gasPrice = await rpc.getGasPriceWei();
       final feeWei = gas * gasPrice;
 
@@ -117,8 +124,10 @@ class _SendScreenState extends State<SendScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).pop();
+      if (_recipient.text.isNotEmpty) _recipient.clear();
+      _amount.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sent on Sepolia: ' + hash.substring(0, 10) + '...')),
+        SnackBar(content: Text('Sent on Sepolia: ' + (hash.length > 10 ? hash.substring(0, 10) : hash) + '...')),
       );
     } catch (error) {
       if (!mounted) return;
