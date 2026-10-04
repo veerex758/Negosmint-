@@ -113,7 +113,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _notice('Testnet-first', 'This build is for wallet development and testing.'),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.18)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: Colors.redAccent),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600, height: 1.35),
+                  )),
+                ],
+              ),
+            ),
           ],
           const Spacer(),
           SizedBox(
