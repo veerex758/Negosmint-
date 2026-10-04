@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'receive_screen.dart';
+import 'send_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? address;
@@ -14,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      _HomeTab(address: widget.address),
+      _HomeTab(address: widget.address, onSend: _openSend, onReceive: _openReceive),
       const _ActivityTab(),
       const _SettingsTab(),
     ];
@@ -43,11 +45,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  void _openReceive() {
+    final address = widget.address;
+    if (address == null || address.isEmpty) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ReceiveScreen(address: address),
+    ));
+  }
+
+  void _openSend() {
+    final address = widget.address;
+    if (address == null || address.isEmpty) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => SendScreen(address: address),
+    ));
+  }
 }
 
 class _HomeTab extends StatelessWidget {
   final String? address;
-  const _HomeTab({this.address});
+  final VoidCallback onSend;
+  final VoidCallback onReceive;
+  const _HomeTab({this.address, required this.onSend, required this.onReceive});
 
   @override
   Widget build(BuildContext context) => CustomScrollView(
@@ -85,9 +105,9 @@ class _HomeTab extends StatelessWidget {
             const Text(r'$0.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
             const SizedBox(height: 22),
             Row(children: [
-              Expanded(child: _Action(label: 'Send', icon: Icons.arrow_upward_rounded, onTap: () {})),
+              Expanded(child: _Action(label: 'Send', icon: Icons.arrow_upward_rounded, onTap: onSend)),
               const SizedBox(width: 10),
-              Expanded(child: _Action(label: 'Receive', icon: Icons.arrow_downward_rounded, onTap: () {})),
+              Expanded(child: _Action(label: 'Receive', icon: Icons.arrow_downward_rounded, onTap: onReceive)),
             ]),
           ]),
         )),
