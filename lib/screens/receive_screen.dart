@@ -19,7 +19,7 @@ class ReceiveScreen extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
       children: [
-        const Text('Receive crypto', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+        const Row(children: [Icon(Icons.south_west_rounded, color: AppColors.forest), SizedBox(width: 10), Text('Receive crypto', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800))]),
         const SizedBox(height: 8),
         const Text('Share your EVM address to receive supported testnet assets.',
           style: TextStyle(color: Colors.black54, height: 1.4)),
@@ -34,7 +34,9 @@ class ReceiveScreen extends StatelessWidget {
             dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: AppColors.charcoal),
           ),
         )),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+        Container(padding: const EdgeInsets.all(13), decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(16)), child: const Row(children: [Icon(Icons.qr_code_2_rounded, color: AppColors.forest), SizedBox(width: 10), Expanded(child: Text('Scan or copy this address to receive Sepolia testnet assets.', style: TextStyle(fontWeight: FontWeight.w600)))])),
+        const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
