@@ -7,13 +7,26 @@ class NetworkScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Network')),
     body: ListView(padding: const EdgeInsets.all(22), children: [
-      Card(color: AppColors.mist, child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
-        Icon(Icons.science_outlined, color: AppColors.forest, size: 34),
-        SizedBox(height: 14), Text('Ethereum Sepolia', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-        SizedBox(height: 7), Text('Testnet', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.forest)),
-        SizedBox(height: 18), Text('Chain ID', style: TextStyle(color: Colors.black54)), SizedBox(height: 3), Text('11155111', style: TextStyle(fontWeight: FontWeight.w700)),
-        SizedBox(height: 14), Text('Mainnet', style: TextStyle(color: Colors.black54)), SizedBox(height: 3), Text('Disabled in this build', style: TextStyle(fontWeight: FontWeight.w700)),
-      ])),
+      Card(
+        color: AppColors.mist,
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+            Row(children: [
+              Icon(Icons.science_outlined, color: AppColors.forest, size: 32),
+              SizedBox(width: 12),
+              Expanded(child: Text('Ethereum Sepolia', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800))),
+            ]),
+            SizedBox(height: 10),
+            _NetworkBadge(),
+            SizedBox(height: 22),
+            _NetworkRow(label: 'Chain ID', value: '11155111'),
+            SizedBox(height: 14),
+            _NetworkRow(label: 'Mainnet', value: 'Disabled in this build'),
+          ]),
+        ),
+      ),
     ]),
   );
 }
