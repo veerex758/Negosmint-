@@ -37,10 +37,12 @@ class AppTheme {
         foregroundColor: AppColors.charcoal,
         elevation: 0,
         centerTitle: false,
+        scrolledUnderElevation: 0,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
         indicatorColor: AppColors.mist,
+        elevation: 0,
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontWeight: FontWeight.w600),
         ),
