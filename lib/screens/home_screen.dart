@@ -5,6 +5,7 @@ import '../core/network/evm_rpc_service.dart';
 import 'receive_screen.dart';
 import 'send_screen.dart';
 import 'activity_screen.dart';
+import 'receive_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? address;
@@ -154,13 +155,19 @@ class _AssetTile extends StatelessWidget {
 class _SettingsTab extends StatelessWidget {
   const _SettingsTab();
   @override
-  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(22), children: const [
-    Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)), SizedBox(height: 20),
+  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(22), children: [
+    const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+    const SizedBox(height: 20),
     Card(child: Column(children: [
-      ListTile(leading: Icon(Icons.security_outlined), title: Text('Security'), trailing: Icon(Icons.chevron_right)),
-      ListTile(leading: Icon(Icons.key_outlined), title: Text('Recovery phrase'), trailing: Icon(Icons.chevron_right)),
-      ListTile(leading: Icon(Icons.network_check_outlined), title: Text('Network'), trailing: Icon(Icons.chevron_right)),
-      ListTile(leading: Icon(Icons.info_outline), title: Text('About NegosMint Wallet'), trailing: Icon(Icons.chevron_right)),
+      ListTile(leading: const Icon(Icons.security_outlined), title: const Text('Security'), subtitle: const Text('Protect your wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _security(context)),
+      ListTile(leading: const Icon(Icons.key_outlined), title: const Text('Recovery phrase'), subtitle: const Text('Keep your backup safe'), trailing: const Icon(Icons.chevron_right), onTap: () => _recovery(context)),
+      ListTile(leading: const Icon(Icons.network_check_outlined), title: const Text('Network'), subtitle: const Text('Sepolia testnet only'), trailing: const Icon(Icons.chevron_right), onTap: () => _network(context)),
+      ListTile(leading: const Icon(Icons.info_outline), title: const Text('About NegosMint Wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _about(context)),
     ])),
   ]);
+  void _security(BuildContext c)=>_show(c,'Security','Your recovery phrase and private keys stay on this device. Never share your recovery phrase with anyone.');
+  void _recovery(BuildContext c)=>_show(c,'Recovery phrase','Your recovery phrase is the master backup for this wallet. It is stored securely on this device and is never sent to the NegosMint server.');
+  void _network(BuildContext c)=>_show(c,'Network','NegosMint Wallet is currently locked to Ethereum Sepolia testnet. Mainnet support is disabled in this build.');
+  void _about(BuildContext c)=>_show(c,'About NegosMint Wallet','Non-custodial wallet for the NegosMint ecosystem. Current build: Sepolia testnet.');
+  void _show(BuildContext c,String title,String body)=>showModalBottomSheet(context:c,showDragHandle:true,builder:(_)=>Padding(padding:const EdgeInsets.fromLTRB(24,8,24,30),child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w800)),const SizedBox(height:12),Text(body,style:const TextStyle(height:1.5)),const SizedBox(height:18)])));
 }
