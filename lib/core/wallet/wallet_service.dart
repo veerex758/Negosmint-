@@ -79,8 +79,7 @@ class WalletService {
     try {
       final credentials = EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
-      if (sender.hexEip55.toLowerCase() ==
-          recipient.hexEip55.toLowerCase()) {
+      if (sender.hexEip55.toLowerCase() == recipient.hexEip55.toLowerCase()) {
         throw const WalletException(
           'Recipient cannot be the same as your wallet.',
         );
