@@ -40,6 +40,13 @@ class EvmRpcService {
     return BigInt.from(_parseHexInt(result, 'Invalid gas estimate returned by RPC.'));
   }
 
+  Future<Map<String, dynamic>?> getTransactionReceipt(String hash) async {
+    final result = await _call('eth_getTransactionReceipt', [hash]);
+    if (result == null) return null;
+    if (result is! Map<String, dynamic>) throw const EvmRpcException('Invalid transaction receipt.');
+    return result;
+  }
+
   Future<BigInt> getGasPriceWei() async {
     final result = await _call('eth_gasPrice', const []);
     if (result is! String || !result.startsWith('0x')) throw const EvmRpcException('Invalid gas price returned by RPC.');
