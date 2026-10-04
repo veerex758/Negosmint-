@@ -189,8 +189,7 @@ class _SendScreenState extends State<SendScreen> {
       return null;
     }
     final fraction = decimals.padRight(18, '0');
-    return whole * BigInt.from(1000000000000000000) +
-        BigInt.parse(fraction);
+    return whole * BigInt.from(1000000000000000000) + BigInt.parse(fraction);
   }
 
   String _formatWei(BigInt wei) {

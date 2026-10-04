@@ -7,7 +7,8 @@ import 'transaction_detail_screen.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
-  @override State<ActivityScreen> createState() => _ActivityScreenState();
+  @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
@@ -22,7 +23,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _loadingDetails = false;
   String? _error;
 
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
     _load();
     _timer = Timer.periodic(const Duration(seconds: 8), (_) => _loadDetails());
@@ -70,10 +72,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
           }
           if (mounted) {
             setState(() => _details[hash] = {
-              'tx': tx,
-              'receipt': receipt,
-              'timestamp': timestamp,
-            });
+                  'tx': tx,
+                  'receipt': receipt,
+                  'timestamp': timestamp,
+                });
           }
         } catch (_) {}
       }
@@ -88,9 +90,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final wei = BigInt.parse(value.substring(2), radix: 16);
       final base = BigInt.from(1000000000000000000);
       final whole = wei ~/ base;
-      final fraction = (wei % base).toString().padLeft(18, '0').replaceFirst(RegExp(r'0+$'), '');
-      return whole.toString() + '.' +
-          (fraction.isEmpty ? '0' : fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)) +
+      final fraction = (wei % base)
+          .toString()
+          .padLeft(18, '0')
+          .replaceFirst(RegExp(r'0+$'), '');
+      return whole.toString() +
+          '.' +
+          (fraction.isEmpty
+              ? '0'
+              : fraction.substring(
+                  0, fraction.length > 6 ? 6 : fraction.length)) +
           ' ETH';
     } catch (_) {
       return '-';
@@ -105,60 +114,113 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return '${d.day}/${d.month}/${d.year}  ' + h + ':' + m;
   }
 
-  @override void dispose() {
+  @override
+  void dispose() {
     _timer?.cancel();
     super.dispose();
   }
 
-  @override Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Activity')),
-    body: RefreshIndicator(
-      onRefresh: _load,
-      child: _loading
-          ? const ListView(children: [SizedBox(height: 220), Center(child: CircularProgressIndicator())])
-          : _error != null
-              ? ListView(children: [const SizedBox(height: 170), const Center(child: Icon(Icons.cloud_off_rounded, size: 58, color: AppColors.forest)), const SizedBox(height: 14), const Center(child: Text('Activity unavailable', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800))), const SizedBox(height: 6), Center(child: Text(_error!)), const SizedBox(height: 18), Center(child: OutlinedButton(onPressed: _load, child: const Text('Retry')))])
-              : _hashes.isEmpty
-                  ? ListView(children: const [SizedBox(height: 180), _EmptyActivity()])
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(18),
-                      itemCount: _hashes.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (_, i) {
-                        final hash = _hashes[i];
-                        final d = _details[hash];
-                        final tx = d?['tx'] as Map<String, dynamic>?;
-                        final receipt = d?['receipt'] as Map<String, dynamic>?;
-                        final confirmed = receipt?['status'] == '0x1';
-                        final failed = receipt != null && !confirmed;
-                        final mine = tx?['from']?.toString().toLowerCase() == _address?.toLowerCase();
-                        return _TransactionTile(
-                          hash: hash,
-                          direction: mine ? 'Send' : 'Receive',
-                          amount: _amount(tx?['value']?.toString()),
-                          time: _time(d?['timestamp']),
-                          status: receipt == null ? 'Pending' : failed ? 'Failed' : 'Confirmed',
-                          onTap: () => Navigator.of(context).push(PageRouteBuilder(
-                            transitionDuration: const Duration(milliseconds: 380),
-                            reverseTransitionDuration: const Duration(milliseconds: 260),
-                            pageBuilder: (_, animation, __) => TransactionDetailScreen(hash: hash),
-                            transitionsBuilder: (_, animation, __, child) {
-                              final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-                              return FadeTransition(opacity: curve, child: SlideTransition(position: Tween<Offset>(begin: const Offset(.035, 0), end: Offset.zero).animate(curve), child: child));
-                            },
-                          )),
-                        );
-                      },
-                    ),
-    ),
-  );
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('Activity')),
+        body: RefreshIndicator(
+          onRefresh: _load,
+          child: _loading
+              ? const ListView(children: [
+                  SizedBox(height: 220),
+                  Center(child: CircularProgressIndicator())
+                ])
+              : _error != null
+                  ? ListView(children: [
+                      const SizedBox(height: 170),
+                      const Center(
+                          child: Icon(Icons.cloud_off_rounded,
+                              size: 58, color: AppColors.forest)),
+                      const SizedBox(height: 14),
+                      const Center(
+                          child: Text('Activity unavailable',
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w800))),
+                      const SizedBox(height: 6),
+                      Center(child: Text(_error!)),
+                      const SizedBox(height: 18),
+                      Center(
+                          child: OutlinedButton(
+                              onPressed: _load, child: const Text('Retry')))
+                    ])
+                  : _hashes.isEmpty
+                      ? ListView(children: const [
+                          SizedBox(height: 180),
+                          _EmptyActivity()
+                        ])
+                      : ListView.separated(
+                          padding: const EdgeInsets.all(18),
+                          itemCount: _hashes.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (_, i) {
+                            final hash = _hashes[i];
+                            final d = _details[hash];
+                            final tx = d?['tx'] as Map<String, dynamic>?;
+                            final receipt =
+                                d?['receipt'] as Map<String, dynamic>?;
+                            final confirmed = receipt?['status'] == '0x1';
+                            final failed = receipt != null && !confirmed;
+                            final mine =
+                                tx?['from']?.toString().toLowerCase() ==
+                                    _address?.toLowerCase();
+                            return _TransactionTile(
+                              hash: hash,
+                              direction: mine ? 'Send' : 'Receive',
+                              amount: _amount(tx?['value']?.toString()),
+                              time: _time(d?['timestamp']),
+                              status: receipt == null
+                                  ? 'Pending'
+                                  : failed
+                                      ? 'Failed'
+                                      : 'Confirmed',
+                              onTap: () =>
+                                  Navigator.of(context).push(PageRouteBuilder(
+                                transitionDuration:
+                                    const Duration(milliseconds: 380),
+                                reverseTransitionDuration:
+                                    const Duration(milliseconds: 260),
+                                pageBuilder: (_, animation, __) =>
+                                    TransactionDetailScreen(hash: hash),
+                                transitionsBuilder: (_, animation, __, child) {
+                                  final curve = CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutCubic,
+                                      reverseCurve: Curves.easeInCubic);
+                                  return FadeTransition(
+                                      opacity: curve,
+                                      child: SlideTransition(
+                                          position: Tween<Offset>(
+                                                  begin: const Offset(.035, 0),
+                                                  end: Offset.zero)
+                                              .animate(curve),
+                                          child: child));
+                                },
+                              )),
+                            );
+                          },
+                        ),
+        ),
+      );
 }
 
 class _TransactionTile extends StatelessWidget {
   final String hash, direction, amount, time, status;
   final VoidCallback onTap;
-  const _TransactionTile({required this.hash, required this.direction, required this.amount, required this.time, required this.status, required this.onTap});
-  @override Widget build(BuildContext context) {
+  const _TransactionTile(
+      {required this.hash,
+      required this.direction,
+      required this.amount,
+      required this.time,
+      required this.status,
+      required this.onTap});
+  @override
+  Widget build(BuildContext context) {
     final failed = status == 'Failed';
     final send = direction == 'Send';
     return Card(
@@ -167,10 +229,19 @@ class _TransactionTile extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundColor: AppColors.mist,
-          child: Icon(failed ? Icons.error_outline : send ? Icons.north_east_rounded : Icons.south_west_rounded, color: failed ? Colors.redAccent : AppColors.forest),
+          child: Icon(
+              failed
+                  ? Icons.error_outline
+                  : send
+                      ? Icons.north_east_rounded
+                      : Icons.south_west_rounded,
+              color: failed ? Colors.redAccent : AppColors.forest),
         ),
-        title: Text(direction + '  •  ' + amount, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Padding(padding: const EdgeInsets.only(top: 5), child: Text(status + '  •  ' + time)),
+        title: Text(direction + '  •  ' + amount,
+            style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text(status + '  •  ' + time)),
         trailing: const Icon(Icons.chevron_right_rounded, size: 20),
         onTap: onTap,
       ),
@@ -180,13 +251,16 @@ class _TransactionTile extends StatelessWidget {
 
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
-  @override Widget build(BuildContext context) => Center(
-    child: Column(children: const [
-      Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest),
-      SizedBox(height: 16),
-      Text('No activity yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-      SizedBox(height: 6),
-      Text('Your Sepolia transactions will appear here.', style: TextStyle(color: Colors.black54)),
-    ]),
-  );
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Column(children: const [
+          Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest),
+          SizedBox(height: 16),
+          Text('No activity yet',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          SizedBox(height: 6),
+          Text('Your Sepolia transactions will appear here.',
+              style: TextStyle(color: Colors.black54)),
+        ]),
+      );
 }

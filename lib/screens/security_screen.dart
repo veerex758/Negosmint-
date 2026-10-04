@@ -43,7 +43,8 @@ class SecurityScreen extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Icon(Icons.phonelink_lock_outlined, color: AppColors.forest),
+                    Icon(Icons.phonelink_lock_outlined,
+                        color: AppColors.forest),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -84,7 +85,6 @@ class SecurityScreen extends StatelessWidget {
           ],
         ),
       );
-
 }
 
 class _Header extends StatelessWidget {

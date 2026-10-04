@@ -104,8 +104,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   String _date() {
     if (_timestamp == null) return 'Pending confirmation';
-    final d =
-        DateTime.fromMillisecondsSinceEpoch(_timestamp! * 1000).toLocal();
+    final d = DateTime.fromMillisecondsSinceEpoch(_timestamp! * 1000).toLocal();
     return '${d.day}/${d.month}/${d.year}  ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   }
 

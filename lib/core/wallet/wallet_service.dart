@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 class WalletException implements Exception {
   final String message;
   const WalletException(this.message);
-  @override String toString() => 'WalletException: $message';
+  @override
+  String toString() => 'WalletException: $message';
 }
 
 class WalletSnapshot {
@@ -70,15 +71,18 @@ class WalletService {
 
     final seed = wallet.mnemonicToSeed(mnemonic);
     final master = wallet.ExtendedPrivateKey.master(seed, wallet.xprv);
-    final child = master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
-    final privateKeyHex = child.key.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    final child =
+        master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
+    final privateKeyHex =
+        child.key.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 
     final client = Web3Client(EvmRpcService.rpcUrl, http.Client());
     try {
       final credentials = EthPrivateKey.fromHex(privateKeyHex);
       final sender = await credentials.extractAddress();
       if (sender.hexEip55.toLowerCase() == recipient.hexEip55.toLowerCase()) {
-        throw const WalletException('Recipient cannot be the same as your wallet.');
+        throw const WalletException(
+            'Recipient cannot be the same as your wallet.');
       }
 
       final balance = await client.getBalance(sender);
@@ -134,7 +138,8 @@ class WalletService {
   Future<String> _deriveAddress(List<String> mnemonic) async {
     final seed = wallet.mnemonicToSeed(mnemonic);
     final master = wallet.ExtendedPrivateKey.master(seed, wallet.xprv);
-    final child = master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
+    final child =
+        master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
     final privateKey = wallet.PrivateKey(child.key);
     final publicKey = wallet.ethereum.createPublicKey(privateKey);
     return wallet.EthereumAddress.fromPublicKey(publicKey).eip55With0x;
