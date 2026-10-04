@@ -23,9 +23,8 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Recovery phrase')),
     body: ListView(padding: const EdgeInsets.all(22), children: [
-      const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orange),
+      Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(20)), child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(Icons.shield_outlined, color: AppColors.forest, size: 30), SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Keep this secret', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)), SizedBox(height: 6), Text('Anyone with this phrase can control the wallet.', style: TextStyle(height: 1.4))]))])),
       const SizedBox(height: 14),
-      const Text('Keep this secret', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
       const SizedBox(height: 8),
       const Text('Anyone with this phrase can control the wallet. Never screenshot it, send it to anyone, or enter it into a website.'),
       const SizedBox(height: 22),
@@ -47,10 +46,7 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
                 const Expanded(child: Text('Stored locally on this device', style: TextStyle(fontWeight: FontWeight.w700))),
               ]),
               const SizedBox(height: 14),
-              Text(
-                _phrase ?? '',
-                style: const TextStyle(fontSize: 18, height: 1.7, fontWeight: FontWeight.w700),
-              ),
+              Wrap(spacing: 8, runSpacing: 8, children: (_phrase ?? '').split(' ').asMap().entries.map((entry) => Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Theme.of(context).colorScheme.outlineVariant)), child: Text('${entry.key + 1}. ${entry.value}', style: const TextStyle(fontWeight: FontWeight.w700)))).toList()),
             ],
           ),
         ),
