@@ -79,8 +79,8 @@ class WalletService {
     try {
       final credentials = EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
-      if (sender.eip55With0x.toLowerCase() ==
-          recipient.eip55With0x.toLowerCase()) {
+      if (sender.hexEip55.toLowerCase() ==
+          recipient.hexEip55.toLowerCase()) {
         throw const WalletException(
           'Recipient cannot be the same as your wallet.',
         );
@@ -143,6 +143,6 @@ class WalletService {
         master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
     final privateKey = wallet.PrivateKey(child.key);
     final publicKey = wallet.ethereum.createPublicKey(privateKey);
-    return wallet.EthereumAddress.fromPublicKey(publicKey).eip55With0x;
+    return wallet.EthereumAddress.fromPublicKey(publicKey).hexEip55;
   }
 }
