@@ -200,15 +200,40 @@ class _SettingsTab extends StatelessWidget {
     );
   }
 
+  Widget _settingTile(BuildContext context, IconData icon, String title, String subtitle, Widget screen) {
+    return InkWell(
+      onTap: () => _open(context, screen),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(children: [
+          Icon(icon),
+          const SizedBox(width: 16),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(subtitle, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+          ])),
+          const Icon(Icons.chevron_right, size: 20),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(22), children: [
     const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
     const SizedBox(height: 20),
-    Card(child: Column(children: [
-      ListTile(leading: const Icon(Icons.security_outlined), title: const Text('Security'), subtitle: const Text('Protect your wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const SecurityScreen())),
-      ListTile(leading: const Icon(Icons.key_outlined), title: const Text('Recovery phrase'), subtitle: const Text('Keep your backup safe'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const RecoveryPhraseScreen())),
-      ListTile(leading: const Icon(Icons.network_check_outlined), title: const Text('Network'), subtitle: const Text('Sepolia testnet only'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const NetworkScreen())),
-      ListTile(leading: const Icon(Icons.info_outline), title: const Text('About NegosMint Wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const AboutScreen())),
-    ])),
+    Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: [
+        _settingTile(context, Icons.security_outlined, 'Security', 'Protect your wallet', const SecurityScreen()),
+        const Divider(height: 1, indent: 72),
+        _settingTile(context, Icons.key_outlined, 'Recovery phrase', 'Keep your backup safe', const RecoveryPhraseScreen()),
+        const Divider(height: 1, indent: 72),
+        _settingTile(context, Icons.network_check_outlined, 'Network', 'Sepolia testnet only', const NetworkScreen()),
+        const Divider(height: 1, indent: 72),
+        _settingTile(context, Icons.info_outline, 'About NegosMint Wallet', 'Version and wallet information', const AboutScreen()),
+      ]),
+    ),
   ]);
 }
