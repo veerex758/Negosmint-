@@ -62,7 +62,7 @@ class WalletService {
       throw const WalletException('Stored recovery phrase is invalid.');
     }
 
-    final recipient = EthereumAddress.fromHex(to);
+    final recipient = wallet.EthereumAddress.fromHex(to);
     final rpc = EvmRpcService();
     final connectedChainId = await rpc.getChainId();
     if (connectedChainId != EvmRpcService.chainId) {
@@ -95,7 +95,7 @@ class WalletService {
         credentials,
         Transaction(
           to: recipient,
-          value: EtherAmount.inWei(valueWei),
+          value: wallet.EtherAmount.inWei(valueWei),
           maxGas: 21000,
         ),
         chainId: EvmRpcService.chainId,
