@@ -55,40 +55,47 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HomeTab extends StatelessWidget {
+class _HomeTab extends StatefulWidget {
   final String? address;
   final VoidCallback onSend;
   final VoidCallback onReceive;
   const _HomeTab({this.address, required this.onSend, required this.onReceive});
+  @override State<_HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<_HomeTab> {
+  bool _hideBalance = false;
   @override
   Widget build(BuildContext context) => CustomScrollView(physics: const BouncingScrollPhysics(), slivers: [
     SliverPadding(padding: const EdgeInsets.fromLTRB(22, 18, 22, 8), sliver: SliverToBoxAdapter(child: Row(children: [
       Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.forest, borderRadius: BorderRadius.circular(16)), child: const Center(child: Text('NM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)))),
       const SizedBox(width: 14),
       const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Good day', style: TextStyle(color: Colors.black54, fontSize: 13)), Text('Your Wallet', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.charcoal))])),
-      IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded)),
+      IconButton(onPressed: () => _showTestnetNotice(context), icon: const Icon(Icons.notifications_none_rounded)),
     ]))),
     SliverPadding(padding: const EdgeInsets.fromLTRB(22, 12, 22, 0), sliver: SliverToBoxAdapter(child: Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.forest, Color(0xFF31563F)]), borderRadius: BorderRadius.circular(30), boxShadow: const [BoxShadow(color: Color(0x241E3A2B), blurRadius: 24, offset: Offset(0, 12))]),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [const Text('Total balance', style: TextStyle(color: Color(0xBFFFFFFF), fontSize: 13)), const Spacer(), IconButton(onPressed: () {}, color: Colors.white, icon: const Icon(Icons.visibility_outlined))]),
+        Row(children: [const Text('Total balance', style: TextStyle(color: Color(0xBFFFFFFF), fontSize: 13)), const Spacer(), IconButton(onPressed: () => setState(() => _hideBalance = !_hideBalance), color: Colors.white, icon: Icon(_hideBalance ? Icons.visibility_off_outlined : Icons.visibility_outlined))]),
         const SizedBox(height: 4),
-        _LiveEthBalance(address: address),
+        _hideBalance ? const Text('••••••', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: 2)) : _LiveEthBalance(address: widget.address),
         const SizedBox(height: 22),
         Row(children: [Expanded(child: _Action(label: 'Send', icon: Icons.arrow_upward_rounded, onTap: onSend)), const SizedBox(width: 10), Expanded(child: _Action(label: 'Receive', icon: Icons.arrow_downward_rounded, onTap: onReceive))]),
       ]),
     ))),
-    SliverPadding(padding: const EdgeInsets.fromLTRB(22, 26, 22, 8), sliver: SliverToBoxAdapter(child: Row(children: [const Expanded(child: Text('Assets', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800))), TextButton(onPressed: () {}, child: const Text('Manage'))]))),
+    SliverPadding(padding: const EdgeInsets.fromLTRB(22, 26, 22, 8), sliver: SliverToBoxAdapter(child: Row(children: [const Expanded(child: Text('Assets', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800))), TextButton(onPressed: () => _showAssets(context), child: const Text('Manage'))]))),
     SliverPadding(padding: const EdgeInsets.symmetric(horizontal: 22), sliver: SliverList.list(children: [
       const _AssetTile(icon: Icons.currency_bitcoin_rounded, name: 'Bitcoin', symbol: 'BTC', balance: '0.000000', value: r'$0.00'),
       const SizedBox(height: 10),
-      _LiveEthAsset(address: address),
+      _LiveEthAsset(address: widget.address),
       const SizedBox(height: 10),
       const _AssetTile(icon: Icons.token_outlined, name: 'USD Coin', symbol: 'USDC', balance: '0.00', value: r'$0.00'),
     ])),
-    if (address != null) SliverPadding(padding: const EdgeInsets.fromLTRB(22, 20, 22, 24), sliver: SliverToBoxAdapter(child: _AddressCard(address!))),
+    if (widget.address != null) SliverPadding(padding: const EdgeInsets.fromLTRB(22, 20, 22, 24), sliver: SliverToBoxAdapter(child: _AddressCard(widget.address!))),
   ]);
+  void _showTestnetNotice(BuildContext context) => showModalBottomSheet(context: context, showDragHandle: true, builder: (_) => const Padding(padding: EdgeInsets.fromLTRB(24, 8, 24, 30), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Testnet status', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)), SizedBox(height: 10), Text('NegosMint Wallet is connected to Ethereum Sepolia. Notifications and mainnet features are not enabled in this build.', style: TextStyle(height: 1.5))])));
+  void _showAssets(BuildContext context) => showModalBottomSheet(context: context, showDragHandle: true, builder: (_) => const Padding(padding: EdgeInsets.fromLTRB(24, 8, 24, 30), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Assets', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)), SizedBox(height: 10), Text('Bitcoin and USDC are placeholders for future asset support. Sepolia ETH is the only live asset in this testnet build.', style: TextStyle(height: 1.5)), SizedBox(height: 8), Text('Mainnet assets are disabled.', style: TextStyle(fontWeight: FontWeight.w700))])));
 }
 
 class _AddressCard extends StatelessWidget {
