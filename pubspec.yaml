@@ -12,6 +12,7 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   wallet: ^0.0.18
   qr_flutter: ^4.1.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
