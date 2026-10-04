@@ -12,7 +12,9 @@ class AboutScreen extends StatelessWidget {
       const Center(child: Text('NegosMint Wallet', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800))),
       const SizedBox(height: 8),
       const Center(child: Text('Non-custodial • Sepolia testnet', style: TextStyle(color: Colors.black54))),
-      const SizedBox(height: 26),
+      const SizedBox(height: 22),
+      Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(14)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.science_outlined, size: 18, color: AppColors.forest), SizedBox(width: 7), Text('TESTNET BUILD', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: .6))])),
+      const SizedBox(height: 18),
       Card(
         clipBehavior: Clip.antiAlias,
         child: Padding(
