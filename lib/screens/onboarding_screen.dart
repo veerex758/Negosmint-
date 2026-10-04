@@ -67,9 +67,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     };
     return Scaffold(
       body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 350),
-          child: KeyedSubtree(key: ValueKey(_step), child: content),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 14, 22, 0),
+              child: Row(
+                children: List.generate(3, (index) => Expanded(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 280),
+                    margin: EdgeInsets.only(right: index == 2 ? 0 : 6),
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: index <= _step ? AppColors.forest : AppColors.mist,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                )),
+              ),
+            ),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                child: KeyedSubtree(key: ValueKey(_step), child: content),
+              ),
+            ),
+          ],
         ),
       ),
     );
