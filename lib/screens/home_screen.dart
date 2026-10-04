@@ -43,15 +43,31 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  PageRoute<T> _premiumRoute<T>(Widget page) => PageRouteBuilder<T>(
+    transitionDuration: const Duration(milliseconds: 420),
+    reverseTransitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (_, animation, __) => page,
+    transitionsBuilder: (_, animation, __, child) {
+      final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+      return FadeTransition(
+        opacity: curve,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0.035, 0), end: Offset.zero).animate(curve),
+          child: child,
+        ),
+      );
+    },
+  );
+
   void _openReceive() {
     final address = widget.address;
     if (address == null || address.isEmpty) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReceiveScreen(address: address)));
+    Navigator.of(context).push(_premiumRoute(ReceiveScreen(address: address)));
   }
   void _openSend() {
     final address = widget.address;
     if (address == null || address.isEmpty) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => SendScreen(address: address)));
+    Navigator.of(context).push(_premiumRoute(SendScreen(address: address)));
   }
 }
 
