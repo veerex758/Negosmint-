@@ -10,39 +10,39 @@ class SecurityScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Security')),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
-          children: [
+          children: const [
             _Header(
               icon: Icons.shield_outlined,
               title: 'Wallet security',
               body:
                   'NegosMint Wallet is non-custodial. Your recovery phrase and private keys stay on your device.',
             ),
-            const SizedBox(height: 18),
-            const _Item(
+            SizedBox(height: 18),
+            _Item(
               icon: Icons.lock_outline_rounded,
               title: 'Local key protection',
               body:
                   'Wallet secrets are stored using the device secure storage layer.',
             ),
-            const _Item(
+            _Item(
               icon: Icons.cloud_off_rounded,
               title: 'No server backup',
               body:
                   'Your recovery phrase is not uploaded to NegosMint servers.',
             ),
-            const _Item(
+            _Item(
               icon: Icons.warning_amber_rounded,
               title: 'Stay protected',
               body:
                   'Never share your recovery phrase or private key, even with someone claiming to be support.',
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Icon(Icons.phonelink_lock_outlined,
                         color: AppColors.forest),
                     SizedBox(width: 12),
@@ -59,14 +59,14 @@ class SecurityScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Card(
               clipBehavior: Clip.antiAlias,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Icon(Icons.science_outlined, color: AppColors.forest),
                     SizedBox(width: 12),
                     Expanded(

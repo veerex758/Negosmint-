@@ -6,7 +6,7 @@ class EvmRpcException implements Exception {
   final String message;
   const EvmRpcException(this.message);
   @override
-  String toString() => 'EvmRpcException: ' + message;
+  String toString() => 'EvmRpcException: $message';
 }
 
 class EvmRpcService {
@@ -14,8 +14,9 @@ class EvmRpcService {
   static const chainId = 11155111;
   Future<String> getNativeBalanceWei(String address) async {
     final r = await _call('eth_getBalance', [address, 'latest']);
-    if (r is! String || !r.startsWith('0x'))
+    if (r is! String || !r.startsWith('0x')) {
       throw const EvmRpcException('Invalid balance returned by RPC.');
+    }
     return r;
   }
 
@@ -29,7 +30,7 @@ class EvmRpcService {
       required String to,
       required BigInt valueWei}) async {
     final r = await _call('eth_estimateGas', [
-      {'from': from, 'to': to, 'value': '0x' + valueWei.toRadixString(16)},
+      {'from': from, 'to': to, 'value': '0x${valueWei.toRadixString(16)}'},
       'latest'
     ]);
     return BigInt.from(
@@ -39,24 +40,27 @@ class EvmRpcService {
   Future<Map<String, dynamic>?> getTransactionReceipt(String h) async {
     final r = await _call('eth_getTransactionReceipt', [h]);
     if (r == null) return null;
-    if (r is! Map<String, dynamic>)
+    if (r is! Map<String, dynamic>) {
       throw const EvmRpcException('Invalid transaction receipt.');
+    }
     return r;
   }
 
   Future<Map<String, dynamic>?> getTransactionByHash(String h) async {
     final r = await _call('eth_getTransactionByHash', [h]);
     if (r == null) return null;
-    if (r is! Map<String, dynamic>)
+    if (r is! Map<String, dynamic>) {
       throw const EvmRpcException('Invalid transaction returned by RPC.');
+    }
     return r;
   }
 
   Future<int?> getBlockTimestamp(String blockNumber) async {
     final r = await _call('eth_getBlockByNumber', [blockNumber, false]);
     if (r == null) return null;
-    if (r is! Map<String, dynamic>)
+    if (r is! Map<String, dynamic>) {
       throw const EvmRpcException('Invalid block returned by RPC.');
+    }
     final t = r['timestamp'];
     return t is String && t.startsWith('0x')
         ? int.parse(t.substring(2), radix: 16)
@@ -65,8 +69,9 @@ class EvmRpcService {
 
   Future<BigInt> getGasPriceWei() async {
     final r = await _call('eth_gasPrice', const []);
-    if (r is! String || !r.startsWith('0x'))
+    if (r is! String || !r.startsWith('0x')) {
       throw const EvmRpcException('Invalid gas price returned by RPC.');
+    }
     return BigInt.parse(r.substring(2), radix: 16);
   }
 
@@ -77,8 +82,9 @@ class EvmRpcService {
 
   Future<int> getChainId() async {
     final r = await _call('eth_chainId', const []);
-    if (r is! String || !r.startsWith('0x'))
+    if (r is! String || !r.startsWith('0x')) {
       throw const EvmRpcException('Invalid chain ID returned by RPC.');
+    }
     return int.parse(r.substring(2), radix: 16);
   }
 
@@ -95,19 +101,21 @@ class EvmRpcService {
       }));
       final res = await q.close().timeout(const Duration(seconds: 12));
       final body = await res.transform(utf8.decoder).join();
-      if (res.statusCode != HttpStatus.ok)
-        throw EvmRpcException(
-            'RPC returned HTTP ' + res.statusCode.toString() + '.');
+      if (res.statusCode != HttpStatus.ok) {
+        throw EvmRpcException('RPC returned HTTP ${res.statusCode}.');
+      }
       final d = jsonDecode(body);
-      if (d is! Map<String, dynamic>)
+      if (d is! Map<String, dynamic>) {
         throw const EvmRpcException('Malformed RPC response.');
+      }
       if (d['error'] != null) {
         final e = d['error'];
         final m = e is Map ? e['message']?.toString() : null;
         throw EvmRpcException(m ?? 'RPC request failed.');
       }
-      if (!d.containsKey('result'))
+      if (!d.containsKey('result')) {
         throw const EvmRpcException('RPC response has no result.');
+      }
       return d['result'];
     } on SocketException {
       throw const EvmRpcException('Unable to reach the Sepolia network.');

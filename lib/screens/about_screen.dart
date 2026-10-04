@@ -42,13 +42,13 @@ class AboutScreen extends StatelessWidget {
                         fontWeight: FontWeight.w800, letterSpacing: .6))
               ])),
           const SizedBox(height: 18),
-          Card(
+          const Card(
             clipBehavior: Clip.antiAlias,
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: EdgeInsets.all(18),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Row(children: [
                       Icon(Icons.verified_user_outlined,
                           color: AppColors.forest),
@@ -65,8 +65,8 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Card(
-            child: Column(children: const [
+          const Card(
+            child: Column(children: [
               ListTile(
                 leading: Icon(Icons.account_balance_wallet_outlined),
                 title: Text('Non-custodial'),

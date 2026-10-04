@@ -100,11 +100,11 @@ class _SendScreenState extends State<SendScreen> {
               ),
               const SizedBox(height: 18),
               _Row('Asset', _asset),
-              _Row('Amount', _amount.text.trim() + ' ETH'),
+              _Row('Amount', '${_amount.text.trim()} ETH'),
               _Row('To', _recipient.text.trim()),
               _Row('Nonce', nonce.toString()),
               _Row('Gas limit', gas.toString()),
-              _Row('Est. fee', _formatWei(feeWei) + ' ETH'),
+              _Row('Est. fee', '${_formatWei(feeWei)} ETH'),
               const SizedBox(height: 18),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -162,9 +162,7 @@ class _SendScreenState extends State<SendScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Sent on Sepolia: ' +
-                (hash.length > 10 ? hash.substring(0, 10) : hash) +
-                '...',
+            'Sent on Sepolia: ${hash.length > 10 ? hash.substring(0, 10) : hash}...',
           ),
         ),
       );
@@ -201,9 +199,7 @@ class _SendScreenState extends State<SendScreen> {
         .replaceFirst(RegExp(r'0+$'), '');
     return fraction.isEmpty
         ? whole.toString()
-        : whole.toString() +
-            '.' +
-            fraction.substring(0, fraction.length > 6 ? 6 : fraction.length);
+        : '$whole.${fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)}';
   }
 
   @override
@@ -258,7 +254,7 @@ class _SendScreenState extends State<SendScreen> {
               ),
               const SizedBox(height: 18),
               DropdownButtonFormField<String>(
-                value: _asset,
+                initialValue: _asset,
                 decoration: const InputDecoration(
                   labelText: 'Asset',
                   prefixIcon: Icon(Icons.token_outlined),
@@ -321,12 +317,12 @@ class _SendScreenState extends State<SendScreen> {
                 },
               ),
               const SizedBox(height: 26),
-              Card(
+              const Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.verified_user_outlined,
                         color: AppColors.forest,

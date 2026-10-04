@@ -10,15 +10,15 @@ class NetworkScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Network')),
         body: ListView(
           padding: const EdgeInsets.all(22),
-          children: [
+          children: const [
             Card(
               color: AppColors.mist,
               clipBehavior: Clip.antiAlias,
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Row(
                       children: [
                         Icon(

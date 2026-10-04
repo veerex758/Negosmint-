@@ -259,11 +259,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: TextStyle(fontSize: 31, fontWeight: FontWeight.w900)),
         const SizedBox(height: 8),
         Text(
-            'Select the correct words for positions ' +
-                (first + 1).toString() +
-                ' and ' +
-                (second + 1).toString() +
-                '.',
+            'Select the correct words for positions ${first + 1} and ${second + 1}.',
             style: const TextStyle(color: Colors.black54, height: 1.45)),
         const Spacer(),
         _wordPicker(first, words[first]),
@@ -287,7 +283,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _snapshot!.mnemonic[(index + 3) % _snapshot!.mnemonic.length],
     }.toList();
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Word ' + (index + 1).toString(),
+      Text('Word ${index + 1}',
           style: const TextStyle(fontWeight: FontWeight.w800)),
       const SizedBox(height: 8),
       Wrap(

@@ -89,10 +89,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           .toString()
           .padLeft(18, '0')
           .replaceFirst(RegExp(r'0+$'), '');
-      return whole.toString() +
-          '.' +
-          (f.isEmpty ? '0' : f.substring(0, f.length > 6 ? 6 : f.length)) +
-          ' ETH';
+      return '$whole.${f.isEmpty ? '0' : f.substring(0, f.length > 6 ? 6 : f.length)} ETH';
     } catch (_) {
       return '-';
     }

@@ -94,13 +94,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           .toString()
           .padLeft(18, '0')
           .replaceFirst(RegExp(r'0+$'), '');
-      return whole.toString() +
-          '.' +
-          (fraction.isEmpty
-              ? '0'
-              : fraction.substring(
-                  0, fraction.length > 6 ? 6 : fraction.length)) +
-          ' ETH';
+      return '$whole.${fraction.isEmpty ? '0' : fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)} ETH';
     } catch (_) {
       return '-';
     }
@@ -111,7 +105,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
     final h = d.hour.toString().padLeft(2, '0');
     final m = d.minute.toString().padLeft(2, '0');
-    return '${d.day}/${d.month}/${d.year}  ' + h + ':' + m;
+    return '${d.day}/${d.month}/${d.year}  $h:$m';
   }
 
   @override
@@ -237,11 +231,11 @@ class _TransactionTile extends StatelessWidget {
                       : Icons.south_west_rounded,
               color: failed ? Colors.redAccent : AppColors.forest),
         ),
-        title: Text(direction + '  •  ' + amount,
+        title: Text('$direction  •  $amount',
             style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Padding(
             padding: const EdgeInsets.only(top: 5),
-            child: Text(status + '  •  ' + time)),
+            child: Text('$status  •  $time')),
         trailing: const Icon(Icons.chevron_right_rounded, size: 20),
         onTap: onTap,
       ),
@@ -252,8 +246,8 @@ class _TransactionTile extends StatelessWidget {
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
   @override
-  Widget build(BuildContext context) => Center(
-        child: Column(children: const [
+  Widget build(BuildContext context) => const Center(
+        child: Column(children: [
           Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest),
           SizedBox(height: 16),
           Text('No activity yet',

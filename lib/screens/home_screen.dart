@@ -300,9 +300,10 @@ class _AddressCard extends StatelessWidget {
             IconButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: address));
-                  if (context.mounted)
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Address copied')));
+                  }
                 },
                 icon: const Icon(Icons.copy_rounded)),
           ])));
@@ -331,17 +332,18 @@ class _LiveEthBalance extends StatelessWidget {
   const _LiveEthBalance({this.address});
   @override
   Widget build(BuildContext context) {
-    if (address == null || address!.isEmpty)
+    if (address == null || address!.isEmpty) {
       return const Text(r'$0.00',
           style: TextStyle(
               color: Colors.white,
               fontSize: 36,
               fontWeight: FontWeight.w800,
               letterSpacing: -1));
+    }
     return FutureBuilder<BigInt>(
         future: EvmRpcService().getNativeBalanceInWei(address!),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(
                 height: 43,
                 child: Align(
@@ -351,12 +353,14 @@ class _LiveEthBalance extends StatelessWidget {
                         height: 26,
                         child: CircularProgressIndicator(
                             strokeWidth: 2.5, color: Colors.white))));
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return const Text('Network unavailable',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w700));
+          }
           return Text(_formatEth(snapshot.data!),
               style: const TextStyle(
                   color: Colors.white,
@@ -372,30 +376,33 @@ class _LiveEthAsset extends StatelessWidget {
   const _LiveEthAsset({this.address});
   @override
   Widget build(BuildContext context) {
-    if (address == null || address!.isEmpty)
+    if (address == null || address!.isEmpty) {
       return const _AssetTile(
           icon: Icons.diamond_outlined,
           name: 'Ethereum',
           symbol: 'ETH',
           balance: '0.000000',
           value: r'$0.00');
+    }
     return FutureBuilder<BigInt>(
         future: EvmRpcService().getNativeBalanceInWei(address!),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const _AssetTile(
                 icon: Icons.diamond_outlined,
                 name: 'Ethereum',
                 symbol: 'Sepolia ETH',
                 balance: 'Loading...',
                 value: 'Testnet');
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return const _AssetTile(
                 icon: Icons.diamond_outlined,
                 name: 'Ethereum',
                 symbol: 'Sepolia ETH',
                 balance: 'Unavailable',
                 value: 'Testnet');
+          }
           return _AssetTile(
               icon: Icons.diamond_outlined,
               name: 'Ethereum',

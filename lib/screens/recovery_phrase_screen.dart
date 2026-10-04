@@ -79,10 +79,10 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: [
-                    const Icon(Icons.lock_outline_rounded, size: 19),
-                    const SizedBox(width: 8),
-                    const Expanded(
+                  const Row(children: [
+                    Icon(Icons.lock_outline_rounded, size: 19),
+                    SizedBox(width: 8),
+                    Expanded(
                         child: Text('Stored locally on this device',
                             style: TextStyle(fontWeight: FontWeight.w700))),
                   ]),
@@ -115,11 +115,12 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
             OutlinedButton.icon(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: _phrase ?? ''));
-                if (mounted)
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text('Phrase copied — protect it carefully')),
                   );
+                }
               },
               icon: const Icon(Icons.copy_rounded),
               label: const Text('Copy phrase'),
