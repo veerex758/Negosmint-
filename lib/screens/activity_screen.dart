@@ -19,6 +19,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   String? _address;
   bool _loading = true;
   bool _refreshing = false;
+  bool _loadingDetails = false;
   String? _error;
 
   @override void initState() {
@@ -41,28 +42,43 @@ class _ActivityScreenState extends State<ActivityScreen> {
         _error = null;
       });
       await _loadDetails();
-    } catch (error) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = 'Could not load activity. Pull to retry.'; });
+      setState(() {
+        _loading = false;
+        _error = 'Could not load activity. Pull to retry.';
+      });
     } finally {
       _refreshing = false;
     }
   }
 
   Future<void> _loadDetails() async {
-    if (_refreshing && !_loading) return;
-    if (_hashes.isEmpty) return;
-    for (final hash in List<String>.from(_hashes)) {
-      if (!mounted) return;
-      try {
-        final tx = await _rpc.getTransactionByHash(hash);
-        if (tx == null) continue;
-        final receipt = await _rpc.getTransactionReceipt(hash);
-        int? timestamp;
-        final block = receipt?['blockNumber'];
-        if (block is String && block != '0x') timestamp = await _rpc.getBlockTimestamp(block);
-        if (mounted) setState(() => _details[hash] = {'tx': tx, 'receipt': receipt, 'timestamp': timestamp});
-      } catch (_) {}
+    if (_loadingDetails || _hashes.isEmpty) return;
+    _loadingDetails = true;
+    try {
+      for (final hash in List<String>.from(_hashes)) {
+        if (!mounted) return;
+        try {
+          final tx = await _rpc.getTransactionByHash(hash);
+          if (tx == null) continue;
+          final receipt = await _rpc.getTransactionReceipt(hash);
+          int? timestamp;
+          final block = receipt?['blockNumber'];
+          if (block is String && block != '0x') {
+            timestamp = await _rpc.getBlockTimestamp(block);
+          }
+          if (mounted) {
+            setState(() => _details[hash] = {
+              'tx': tx,
+              'receipt': receipt,
+              'timestamp': timestamp,
+            });
+          }
+        } catch (_) {}
+      }
+    } finally {
+      _loadingDetails = false;
     }
   }
 
@@ -73,8 +89,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final base = BigInt.from(1000000000000000000);
       final whole = wei ~/ base;
       final fraction = (wei % base).toString().padLeft(18, '0').replaceFirst(RegExp(r'0+$'), '');
-      return whole.toString() + '.' + (fraction.isEmpty ? '0' : fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)) + ' ETH';
-    } catch (_) { return '-'; }
+      return whole.toString() + '.' +
+          (fraction.isEmpty ? '0' : fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)) +
+          ' ETH';
+    } catch (_) {
+      return '-';
+    }
   }
 
   String _time(dynamic timestamp) {
@@ -85,7 +105,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return '${d.day}/${d.month}/${d.year}  ' + h + ':' + m;
   }
 
-  @override void dispose() { _timer?.cancel(); super.dispose(); }
+  @override void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Activity')),
@@ -94,7 +117,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: _loading
           ? const ListView(children: [SizedBox(height: 220), Center(child: CircularProgressIndicator())])
           : _error != null
-              ? ListView(children: [const SizedBox(height: 170), Center(child: Icon(Icons.cloud_off_rounded, size: 58, color: AppColors.forest)), const SizedBox(height: 14), Center(child: Text('Activity unavailable', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800))), const SizedBox(height: 6), Center(child: Text(_error!)), const SizedBox(height: 18), Center(child: OutlinedButton(onPressed: _load, child: const Text('Retry')))])
+              ? ListView(children: [const SizedBox(height: 170), const Center(child: Icon(Icons.cloud_off_rounded, size: 58, color: AppColors.forest)), const SizedBox(height: 14), const Center(child: Text('Activity unavailable', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800))), const SizedBox(height: 6), Center(child: Text(_error!)), const SizedBox(height: 18), Center(child: OutlinedButton(onPressed: _load, child: const Text('Retry')))])
               : _hashes.isEmpty
                   ? ListView(children: const [SizedBox(height: 180), _EmptyActivity()])
                   : ListView.separated(
@@ -132,15 +155,38 @@ class _ActivityScreenState extends State<ActivityScreen> {
 }
 
 class _TransactionTile extends StatelessWidget {
-  final String hash, direction, amount, time, status; final VoidCallback onTap;
+  final String hash, direction, amount, time, status;
+  final VoidCallback onTap;
   const _TransactionTile({required this.hash, required this.direction, required this.amount, required this.time, required this.status, required this.onTap});
   @override Widget build(BuildContext context) {
-    final failed = status == 'Failed'; final send = direction == 'Send';
-    return Card(clipBehavior: Clip.antiAlias, child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), leading: CircleAvatar(backgroundColor: AppColors.mist, child: Icon(failed ? Icons.error_outline : send ? Icons.north_east_rounded : Icons.south_west_rounded, color: failed ? Colors.redAccent : AppColors.forest)), title: Text(direction + '  •  ' + amount, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Padding(padding: const EdgeInsets.only(top: 5), child: Text(status + '  •  ' + time)), trailing: const Icon(Icons.chevron_right_rounded, size: 20), onTap: onTap));
+    final failed = status == 'Failed';
+    final send = direction == 'Send';
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: AppColors.mist,
+          child: Icon(failed ? Icons.error_outline : send ? Icons.north_east_rounded : Icons.south_west_rounded, color: failed ? Colors.redAccent : AppColors.forest),
+        ),
+        title: Text(direction + '  •  ' + amount, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Padding(padding: const EdgeInsets.only(top: 5), child: Text(status + '  •  ' + time)),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+        onTap: onTap,
+      ),
+    );
   }
 }
 
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
-  @override Widget build(BuildContext context) => Center(child: Column(children: const [Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest), SizedBox(height: 16), Text('No activity yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)), SizedBox(height: 6), Text('Your Sepolia transactions will appear here.', style: TextStyle(color: Colors.black54))]));
+  @override Widget build(BuildContext context) => Center(
+    child: Column(children: const [
+      Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest),
+      SizedBox(height: 16),
+      Text('No activity yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+      SizedBox(height: 6),
+      Text('Your Sepolia transactions will appear here.', style: TextStyle(color: Colors.black54)),
+    ]),
+  );
 }
