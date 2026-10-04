@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import 'receive_screen.dart';
 import 'send_screen.dart';
 import 'package:flutter/services.dart';
+import '../core/network/evm_rpc_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? address;
@@ -103,7 +104,7 @@ class _HomeTab extends StatelessWidget {
               IconButton(onPressed: () {}, color: Colors.white, icon: const Icon(Icons.visibility_outlined)),
             ]),
             const SizedBox(height: 4),
-            const Text(r'$0.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
+            _LiveEthBalance(address: address),
             const SizedBox(height: 22),
             Row(children: [
               Expanded(child: _Action(label: 'Send', icon: Icons.arrow_upward_rounded, onTap: onSend)),
@@ -125,7 +126,7 @@ class _HomeTab extends StatelessWidget {
         sliver: SliverList.list(children: const [
           _AssetTile(icon: Icons.currency_bitcoin_rounded, name: 'Bitcoin', symbol: 'BTC', balance: '0.000000', value: r'$0.00'),
           SizedBox(height: 10),
-          _AssetTile(icon: Icons.diamond_outlined, name: 'Ethereum', symbol: 'ETH', balance: '0.000000', value: r'$0.00'),
+          _LiveEthAsset(address: address),
           SizedBox(height: 10),
           _AssetTile(icon: Icons.token_outlined, name: 'USD Coin', symbol: 'USDC', balance: '0.00', value: r'$0.00'),
         ]),
@@ -169,6 +170,108 @@ class _Action extends StatelessWidget {
     style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.forest,
       padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
   );
+}
+
+class _LiveEthBalance extends StatelessWidget {
+  final String? address;
+  const _LiveEthBalance({this.address});
+
+  @override
+  Widget build(BuildContext context) {
+    if (address == null || address!.isEmpty) {
+      return const Text(r'$0.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1));
+    }
+    return FutureBuilder<BigInt>(
+      future: EvmRpcService().getNativeBalanceInWei(address!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(height: 43, child: Align(alignment: Alignment.centerLeft, child: SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))));
+        }
+        if (snapshot.hasError) {
+          return const Text('Network unavailable', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700));
+        }
+        return Text(_formatEth(snapshot.data!), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1));
+      },
+    );
+  }
+}
+
+class _LiveEthAsset extends StatelessWidget {
+  final String? address;
+  const _LiveEthAsset({this.address});
+
+  @override
+  Widget build(BuildContext context) {
+    if (address == null || address!.isEmpty) {
+      return const _AssetTile(icon: Icons.diamond_outlined, name: 'Ethereum', symbol: 'ETH', balance: '0.000000', value: r'$0.00');
+    }
+    return FutureBuilder<BigInt>(
+      future: EvmRpcService().getNativeBalanceInWei(address!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _AssetTile(icon: Icons.diamond_outlined, name: 'Ethereum', symbol: 'Sepolia ETH', balance: 'Loading...', value: 'Testnet');
+        }
+        if (snapshot.hasError) {
+          return const _AssetTile(icon: Icons.diamond_outlined, name: 'Ethereum', symbol: 'Sepolia ETH', balance: 'Unavailable', value: 'Testnet');
+        }
+        return _AssetTile(icon: Icons.diamond_outlined, name: 'Ethereum', symbol: 'Sepolia ETH', balance: _formatEth(snapshot.data!), value: 'Testnet');
+      },
+    );
+  }
+}
+
+String _formatEth(BigInt wei) {
+  const unit = 1000000000000000000;
+  final whole = wei ~/ BigInt.from(unit);
+  final fraction = (wei % BigInt.from(unit)).toString().padLeft(18, '0');
+  final trimmed = fraction.replaceFirst(RegExp(r'0+
+  final IconData icon; final String name, symbol, balance, value;
+  const _AssetTile({required this.icon, required this.name, required this.symbol, required this.balance, required this.value});
+  @override
+  Widget build(BuildContext context) => Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(children: [
+    Container(width: 44, height: 44, decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: AppColors.forest)),
+    const SizedBox(width: 13),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
+      Text(symbol, style: const TextStyle(color: Colors.black45, fontSize: 12)),
+    ])),
+    Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+      Text(balance, style: const TextStyle(fontWeight: FontWeight.w700)),
+      Text(value, style: const TextStyle(color: Colors.black45, fontSize: 12)),
+    ]),
+  ]));
+}
+
+class _ActivityTab extends StatelessWidget {
+  const _ActivityTab();
+  @override
+  Widget build(BuildContext context) => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+    Container(width: 72, height: 72, decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(24)),
+      child: const Icon(Icons.receipt_long_rounded, color: AppColors.forest, size: 34)),
+    const SizedBox(height: 18),
+    const Text('No activity yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+    const SizedBox(height: 6),
+    const Text('Your wallet transactions will appear here.', style: TextStyle(color: Colors.black54)),
+  ]));
+}
+
+class _SettingsTab extends StatelessWidget {
+  const _SettingsTab();
+  @override
+  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(22), children: [
+    const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+    const SizedBox(height: 20),
+    Card(child: Column(children: const [
+      ListTile(leading: Icon(Icons.security_outlined), title: Text('Security'), trailing: Icon(Icons.chevron_right)),
+      ListTile(leading: Icon(Icons.key_outlined), title: Text('Recovery phrase'), trailing: Icon(Icons.chevron_right)),
+      ListTile(leading: Icon(Icons.network_check_outlined), title: Text('Network'), trailing: Icon(Icons.chevron_right)),
+      ListTile(leading: Icon(Icons.info_outline), title: Text('About NegosMint Wallet'), trailing: Icon(Icons.chevron_right)),
+    ])),
+  ]);
+}
+), '');
+  final shown = trimmed.isEmpty ? '0' : trimmed.substring(0, trimmed.length > 6 ? 6 : trimmed.length);
+  return whole.toString() + '.' + shown + ' ETH';
 }
 
 class _AssetTile extends StatelessWidget {
