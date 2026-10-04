@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'receive_screen.dart';
 import 'send_screen.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? address;
@@ -153,7 +154,7 @@ class _AddressCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(address, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
         ])),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.copy_rounded)),
+        IconButton(onPressed: () async { await Clipboard.setData(ClipboardData(text: address)); if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address copied'))); }, icon: const Icon(Icons.copy_rounded)),
       ]),
     ),
   );
