@@ -115,7 +115,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           amount: _amount(tx?['value']?.toString()),
                           time: _time(d?['timestamp']),
                           status: receipt == null ? 'Pending' : failed ? 'Failed' : 'Confirmed',
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TransactionDetailScreen(hash: hash))),
+                          onTap: () => Navigator.of(context).push(PageRouteBuilder(
+                            transitionDuration: const Duration(milliseconds: 380),
+                            reverseTransitionDuration: const Duration(milliseconds: 260),
+                            pageBuilder: (_, animation, __) => TransactionDetailScreen(hash: hash),
+                            transitionsBuilder: (_, animation, __, child) {
+                              final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+                              return FadeTransition(opacity: curve, child: SlideTransition(position: Tween<Offset>(begin: const Offset(.035, 0), end: Offset.zero).animate(curve), child: child));
+                            },
+                          )),
                         );
                       },
                     ),
