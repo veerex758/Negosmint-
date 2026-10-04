@@ -180,15 +180,35 @@ class _AssetTile extends StatelessWidget {
 
 class _SettingsTab extends StatelessWidget {
   const _SettingsTab();
+
+  void _open(BuildContext context, Widget screen) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, animation, __) => screen,
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 260),
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0.035, 0), end: Offset.zero)
+                .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(22), children: [
     const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
     const SizedBox(height: 20),
     Card(child: Column(children: [
-      ListTile(leading: const Icon(Icons.security_outlined), title: const Text('Security'), subtitle: const Text('Protect your wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SecurityScreen()))),
-      ListTile(leading: const Icon(Icons.key_outlined), title: const Text('Recovery phrase'), subtitle: const Text('Keep your backup safe'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecoveryPhraseScreen()))),
-      ListTile(leading: const Icon(Icons.network_check_outlined), title: const Text('Network'), subtitle: const Text('Sepolia testnet only'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NetworkScreen()))),
-      ListTile(leading: const Icon(Icons.info_outline), title: const Text('About NegosMint Wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
+      ListTile(leading: const Icon(Icons.security_outlined), title: const Text('Security'), subtitle: const Text('Protect your wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const SecurityScreen())),
+      ListTile(leading: const Icon(Icons.key_outlined), title: const Text('Recovery phrase'), subtitle: const Text('Keep your backup safe'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const RecoveryPhraseScreen())),
+      ListTile(leading: const Icon(Icons.network_check_outlined), title: const Text('Network'), subtitle: const Text('Sepolia testnet only'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const NetworkScreen())),
+      ListTile(leading: const Icon(Icons.info_outline), title: const Text('About NegosMint Wallet'), trailing: const Icon(Icons.chevron_right), onTap: () => _open(context, const AboutScreen())),
     ])),
   ]);
 }
