@@ -16,6 +16,7 @@ class _SendScreenState extends State<SendScreen> {
   final _amount = TextEditingController();
   final WalletService _walletService = WalletService();
   String _asset = 'ETH';
+  bool _sending = false;
 
   @override
   void dispose() {
@@ -27,6 +28,7 @@ class _SendScreenState extends State<SendScreen> {
   bool _validAddress(String value) => RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value.trim());
 
   Future<void> _review() async {
+    if (_sending) return;
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     if (widget.address.isEmpty) {
@@ -111,6 +113,8 @@ class _SendScreenState extends State<SendScreen> {
   }
 
   Future<void> _confirmAndSend(BuildContext sheetContext, BigInt amountWei) async {
+    if (_sending) return;
+    setState(() => _sending = true);
     Navigator.of(sheetContext).pop();
     showDialog<void>(
       context: context,
@@ -124,6 +128,7 @@ class _SendScreenState extends State<SendScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).pop();
+      if (mounted) setState(() => _sending = false);
       if (_recipient.text.isNotEmpty) _recipient.clear();
       _amount.clear();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,6 +137,7 @@ class _SendScreenState extends State<SendScreen> {
     } catch (error) {
       if (!mounted) return;
       Navigator.of(context).pop();
+      if (mounted) setState(() => _sending = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Transaction failed: $error')),
       );
@@ -209,9 +215,9 @@ class _SendScreenState extends State<SendScreen> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _review,
+              onPressed: _sending ? null : _review,
               icon: const Icon(Icons.visibility_outlined),
-              label: const Text('Review transaction'),
+              label: Text(_sending ? 'Sending...' : 'Review transaction'),
               style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
             ),
           ),
