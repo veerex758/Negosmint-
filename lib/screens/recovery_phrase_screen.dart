@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/wallet/wallet_service.dart';
+import '../theme/app_theme.dart';
 
 class RecoveryPhraseScreen extends StatefulWidget {
   const RecoveryPhraseScreen({super.key});
