@@ -204,6 +204,8 @@ class _SendScreenState extends State<SendScreen> {
             },
           ),
           const SizedBox(height: 26),
+          Card(child: Padding(padding: const EdgeInsets.all(14), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: const [Icon(Icons.verified_user_outlined, color: AppColors.forest), SizedBox(width: 10), Expanded(child: Text('Review the address and amount before confirming. Blockchain transactions cannot be easily reversed.', style: TextStyle(color: Colors.black54, height: 1.4)))]))),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
