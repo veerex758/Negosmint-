@@ -73,13 +73,12 @@ class WalletService {
     final master = wallet.ExtendedPrivateKey.master(seed, wallet.xprv);
     final child =
         master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
-    final privateKeyHex =
-        child.key.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    final privateKeyHex = child.key.toRadixString(16).padLeft(64, '0');
 
     final client = Web3Client(EvmRpcService.rpcUrl, http.Client());
     try {
       final credentials = EthPrivateKey.fromHex(privateKeyHex);
-      final sender = await credentials.extractAddress();
+      final sender = credentials.address;
       if (sender.hexEip55.toLowerCase() == recipient.hexEip55.toLowerCase()) {
         throw const WalletException(
             'Recipient cannot be the same as your wallet.');
