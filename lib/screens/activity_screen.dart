@@ -126,7 +126,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         body: RefreshIndicator(
           onRefresh: _load,
           child: _loading
-              ? const ListView(children: [
+              ? ListView(children: const [
                   SizedBox(height: 220),
                   Center(child: CircularProgressIndicator())
                 ])
