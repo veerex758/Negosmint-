@@ -164,10 +164,12 @@ class _SendScreenState extends State<SendScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
         children: [
-          const Text('Send crypto', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+          const Row(children: [Icon(Icons.north_east_rounded, color: AppColors.forest), SizedBox(width: 10), Text('Send crypto', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800))]),
           const SizedBox(height: 8),
           const Text('Testnet transaction flow. No real funds are used.', style: TextStyle(color: Colors.black54)),
-          const SizedBox(height: 26),
+          const SizedBox(height: 22),
+          Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(16)), child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(Icons.science_outlined, color: AppColors.forest), SizedBox(width: 10), Expanded(child: Text('Sepolia testnet only. Double-check the recipient address before sending.', style: TextStyle(height: 1.4, fontWeight: FontWeight.w600)))])),
+          const SizedBox(height: 18),
           DropdownButtonFormField<String>(
             value: _asset,
             decoration: const InputDecoration(labelText: 'Asset', prefixIcon: Icon(Icons.token_outlined)),
