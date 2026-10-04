@@ -20,6 +20,7 @@ class WalletSnapshot {
 class WalletService {
   static const _mnemonicKey = 'wallet.mnemonic';
   static const _addressKey = 'wallet.address';
+  static const _activityKey = 'wallet.activity';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<WalletSnapshot> createWallet() async {
@@ -74,15 +75,29 @@ class WalletService {
         ),
         chainId: EvmRpcService.chainId,
       );
+      await _saveActivity(hash);
       return hash;
     } finally {
       await client.dispose();
     }
   }
 
+  Future<List<String>> getActivity() async {
+    final raw = await _storage.read(key: _activityKey);
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split('|').where((value) => value.isNotEmpty).toList();
+  }
+
+  Future<void> _saveActivity(String hash) async {
+    final current = await getActivity();
+    final updated = <String>[hash, ...current.where((value) => value != hash)];
+    await _storage.write(key: _activityKey, value: updated.take(20).join('|'));
+  }
+
   Future<void> clearWallet() async {
     await _storage.delete(key: _mnemonicKey);
     await _storage.delete(key: _addressKey);
+    await _storage.delete(key: _activityKey);
   }
 
   Future<WalletSnapshot> _persistWallet(List<String> mnemonic) async {
