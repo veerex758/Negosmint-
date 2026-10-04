@@ -160,8 +160,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 26),
         const Text('Recovery phrase', style: TextStyle(fontSize: 31, fontWeight: FontWeight.w900)),
         const SizedBox(height: 8),
-        const Text('Write these 12 words down offline. Never screenshot, message, or share them.',
-            style: TextStyle(color: Colors.black54, height: 1.45)),
+        Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.mist, borderRadius: BorderRadius.circular(16)), child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(Icons.lock_outline_rounded, color: AppColors.forest), SizedBox(width: 10), Expanded(child: Text('Write these 12 words down offline. Never screenshot, message, or share them.', style: TextStyle(color: Colors.black54, height: 1.45)))])),
         const SizedBox(height: 20),
         Expanded(
           child: GridView.builder(
