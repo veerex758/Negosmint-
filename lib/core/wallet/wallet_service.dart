@@ -79,9 +79,11 @@ class WalletService {
     try {
       final credentials = web3.EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
-      if (sender.eip55With0x.toLowerCase() == recipient.eip55With0x.toLowerCase()) {
+      if (sender.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
         throw const WalletException(
-            'Recipient cannot be the same as your wallet.');
+          'Recipient cannot be the same as your wallet.',
+        );
       }
 
       final balance = await client.getBalance(sender);
