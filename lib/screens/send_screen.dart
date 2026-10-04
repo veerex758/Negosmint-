@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../core/network/evm_rpc_service.dart';
+import '../core/wallet/wallet_service.dart';
 
 class SendScreen extends StatefulWidget {
   final String address;
@@ -15,6 +16,7 @@ class _SendScreenState extends State<SendScreen> {
   final _recipient = TextEditingController();
   final _amount = TextEditingController();
   String _asset = 'ETH';
+  final WalletService _walletService = WalletService();
 
   @override
   void dispose() {
@@ -77,14 +79,40 @@ class _SendScreenState extends State<SendScreen> {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close review'),
+                onPressed: () => _confirmAndSend(context, amountWei),
+                child: const Text('Send on Sepolia'),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _confirmAndSend(BuildContext sheetContext, BigInt amountWei) async {
+    showDialog<void>(
+      context: sheetContext,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final hash = await _walletService.sendSepoliaEth(
+        to: _recipient.text.trim(),
+        valueWei: amountWei,
+      );
+      if (!mounted) return;
+      Navigator.of(sheetContext).pop();
+      Navigator.of(sheetContext).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sent on Sepolia: ${hash.substring(0, 10)}...')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      Navigator.of(sheetContext).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Transaction failed: $error')),
+      );
+    }
   }
 
   BigInt? _ethToWei(String value) {
