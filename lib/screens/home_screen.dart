@@ -102,11 +102,11 @@ class _HomeTabState extends State<_HomeTab> {
     ))),
     SliverPadding(padding: const EdgeInsets.fromLTRB(22, 26, 22, 8), sliver: SliverToBoxAdapter(child: Row(children: [const Expanded(child: Text('Assets', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800))), TextButton(onPressed: () => _showAssets(context), child: const Text('Manage'))]))),
     SliverPadding(padding: const EdgeInsets.symmetric(horizontal: 22), sliver: SliverList.list(children: [
-      const _AssetTile(icon: Icons.currency_bitcoin_rounded, name: 'Bitcoin', symbol: 'BTC', balance: '0.000000', value: r'$0.00'),
+      const _AssetTile(icon: Icons.currency_bitcoin_rounded, name: 'Bitcoin', symbol: 'BTC', balance: '—', value: 'Coming later'),
       const SizedBox(height: 10),
       _LiveEthAsset(address: widget.address),
       const SizedBox(height: 10),
-      const _AssetTile(icon: Icons.token_outlined, name: 'USD Coin', symbol: 'USDC', balance: '0.00', value: r'$0.00'),
+      const _AssetTile(icon: Icons.token_outlined, name: 'USD Coin', symbol: 'USDC', balance: '—', value: 'Coming later'),
     ])),
     if (widget.address != null) SliverPadding(padding: const EdgeInsets.fromLTRB(22, 20, 22, 24), sliver: SliverToBoxAdapter(child: _AddressCard(widget.address!))),
   ]);
