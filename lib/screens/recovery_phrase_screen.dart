@@ -31,9 +31,40 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
       const SizedBox(height: 22),
       if (!_revealed) FilledButton.icon(onPressed: _loading ? null : _confirm, icon: const Icon(Icons.visibility_outlined), label: Text(_loading ? 'Loading...' : 'Reveal recovery phrase')),
       if (_revealed) ...[
-        Card(child: Padding(padding: const EdgeInsets.all(18), child: Text(_phrase ?? '', style: const TextStyle(fontSize: 18, height: 1.7, fontWeight: FontWeight.w700)))),
-        const SizedBox(height: 10),
-        OutlinedButton.icon(onPressed: () async { await Clipboard.setData(ClipboardData(text: _phrase ?? '')); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Phrase copied — protect it carefully'))); }, icon: const Icon(Icons.copy), label: const Text('Copy phrase')),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                const Icon(Icons.lock_outline_rounded, size: 19),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('Stored locally on this device', style: TextStyle(fontWeight: FontWeight.w700))),
+              ]),
+              const SizedBox(height: 14),
+              Text(
+                _phrase ?? '',
+                style: const TextStyle(fontSize: 18, height: 1.7, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: _phrase ?? ''));
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Phrase copied — protect it carefully')),
+            );
+          },
+          icon: const Icon(Icons.copy_rounded),
+          label: const Text('Copy phrase'),
+        ),
       ],
     ]),
   );
