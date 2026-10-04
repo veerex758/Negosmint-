@@ -29,7 +29,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Future<void> _openNext() async {
     if (!mounted) return;
     final service = WalletService();
-    final snapshot = await service.restoreWallet();
+    WalletSnapshot? snapshot;
+    try {
+      snapshot = await service.restoreWallet();
+    } catch (_) {
+      snapshot = null;
+    }
     final hasWallet = snapshot != null;
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
