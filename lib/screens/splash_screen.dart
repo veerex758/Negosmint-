@@ -28,13 +28,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _openNext() async {
     if (!mounted) return;
-    const service = WalletService();
-    final hasWallet = await service.hasWallet();
+    final service = WalletService();
+    final snapshot = await service.restoreWallet();
+    final hasWallet = snapshot != null;
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 650),
-        pageBuilder: (_, animation, __) => hasWallet ? const HomeScreen() : const OnboardingScreen(),
+        pageBuilder: (_, animation, __) => hasWallet
+            ? HomeScreen(address: snapshot!.address)
+            : const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) => FadeTransition(
           opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
           child: SlideTransition(
