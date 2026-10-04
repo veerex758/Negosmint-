@@ -6,14 +6,14 @@ class SecurityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Security')),
-    body: ListView(padding: const EdgeInsets.all(22), children: [
+    body: ListView(padding: const EdgeInsets.fromLTRB(22, 22, 22, 28), children: [
       _Header(icon: Icons.shield_outlined, title: 'Wallet security', body: 'NegosMint Wallet is non-custodial. Your recovery phrase and private keys stay on your device.'),
       const SizedBox(height: 18),
-      const _Item(icon: Icons.lock_outline, title: 'Local key protection', body: 'Wallet secrets are stored using the device secure storage layer.'),
-      const _Item(icon: Icons.cloud_off_outlined, title: 'No server backup', body: 'Your recovery phrase is not uploaded to NegosMint servers.'),
+      const _Item(icon: Icons.lock_outline_rounded, title: 'Local key protection', body: 'Wallet secrets are stored using the device secure storage layer.'),
+      const _Item(icon: Icons.cloud_off_rounded, title: 'No server backup', body: 'Your recovery phrase is not uploaded to NegosMint servers.'),
       const _Item(icon: Icons.warning_amber_rounded, title: 'Stay protected', body: 'Never share your recovery phrase or private key, even with someone claiming to be support.'),
       const SizedBox(height: 12),
-      Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+      Card(clipBehavior: Clip.antiAlias, child: Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: const [
         Icon(Icons.science_outlined, color: AppColors.forest), SizedBox(width: 12),
         Expanded(child: Text('This build is for Ethereum Sepolia testnet use. Mainnet is disabled.', style: TextStyle(height: 1.45, fontWeight: FontWeight.w600))),
       ]))),
