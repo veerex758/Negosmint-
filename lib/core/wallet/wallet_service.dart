@@ -1,6 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:wallet/wallet.dart' as wallet;
-import 'package:web3dart/web3dart.dart';
+import 'package:web3dart/web3dart.dart' as web3;
 import '../network/evm_rpc_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -62,7 +62,7 @@ class WalletService {
       throw const WalletException('Stored recovery phrase is invalid.');
     }
 
-    final recipient = EthereumAddress.fromHex(to);
+    final recipient = web3.EthereumAddress.fromHex(to);
     final rpc = EvmRpcService();
     final connectedChainId = await rpc.getChainId();
     if (connectedChainId != EvmRpcService.chainId) {
@@ -75,9 +75,9 @@ class WalletService {
         master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
     final privateKeyHex = child.key.toRadixString(16).padLeft(64, '0');
 
-    final client = Web3Client(EvmRpcService.rpcUrl, http.Client());
+    final client = web3.Web3Client(EvmRpcService.rpcUrl, http.Client());
     try {
-      final credentials = EthPrivateKey.fromHex(privateKeyHex);
+      final credentials = web3.EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
       if (sender.hexEip55.toLowerCase() == recipient.hexEip55.toLowerCase()) {
         throw const WalletException(
@@ -91,9 +91,9 @@ class WalletService {
 
       final hash = await client.sendTransaction(
         credentials,
-        Transaction(
+        web3.Transaction(
           to: recipient,
-          value: EtherAmount.inWei(valueWei),
+          value: web3.EtherAmount.inWei(valueWei),
           maxGas: 21000,
         ),
         chainId: EvmRpcService.chainId,
