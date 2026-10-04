@@ -37,3 +37,53 @@ class NetworkScreen extends StatelessWidget {
         ]),
       );
 }
+
+
+class _NetworkBadge extends StatelessWidget {
+  const _NetworkBadge();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.forest,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: const Text(
+          'TESTNET ONLY',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.7,
+          ),
+        ),
+      );
+}
+
+class _NetworkRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _NetworkRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(color: Colors.black54),
+            ),
+          ),
+        ],
+      );
+}
