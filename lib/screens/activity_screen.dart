@@ -128,7 +128,7 @@ class _TransactionTile extends StatelessWidget {
   const _TransactionTile({required this.hash, required this.direction, required this.amount, required this.time, required this.status, required this.onTap});
   @override Widget build(BuildContext context) {
     final failed = status == 'Failed'; final send = direction == 'Send';
-    return Card(child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), leading: CircleAvatar(backgroundColor: AppColors.mist, child: Icon(failed ? Icons.error_outline : send ? Icons.north_east_rounded : Icons.south_west_rounded, color: failed ? Colors.redAccent : AppColors.forest)), title: Text(direction + '  •  ' + amount, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Padding(padding: const EdgeInsets.only(top: 5), child: Text(status + '  •  ' + time)), trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 15), onTap: onTap));
+    return Card(clipBehavior: Clip.antiAlias, child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), leading: CircleAvatar(backgroundColor: AppColors.mist, child: Icon(failed ? Icons.error_outline : send ? Icons.north_east_rounded : Icons.south_west_rounded, color: failed ? Colors.redAccent : AppColors.forest)), title: Text(direction + '  •  ' + amount, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Padding(padding: const EdgeInsets.only(top: 5), child: Text(status + '  •  ' + time)), trailing: const Icon(Icons.chevron_right_rounded, size: 20), onTap: onTap));
   }
 }
 
