@@ -18,18 +18,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _answerA;
   String? _answerB;
   bool _busy = false;
+  String? _error;
 
   Future<void> _createWallet() async {
-    setState(() => _busy = true);
-    final snapshot = await _walletService.createWallet();
-    if (!mounted) return;
-    setState(() {
-      _snapshot = snapshot;
+    setState(() { _busy = true; _error = null; });
+    try {
+      final snapshot = await _walletService.createWallet();
+      if (!mounted) return;
+      setState(() {
+        _snapshot = snapshot;
       _checkA = 4;
       _checkB = 9;
       _step = 1;
-      _busy = false;
-    });
+        _busy = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _busy = false; _error = 'Could not create wallet. Please try again.'; });
+    }
   }
 
   void _finish() {
@@ -82,6 +89,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               style: TextStyle(fontSize: 16, height: 1.5, color: Colors.black54)),
           const SizedBox(height: 18),
           _notice('Testnet-first', 'This build is for wallet development and testing.'),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Text(_error!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+          ],
           const Spacer(),
           SizedBox(
             width: double.infinity,
