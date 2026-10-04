@@ -82,6 +82,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             const Text('NegosMint', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: -.8)),
             const SizedBox(height: 4),
             const Text('WALLET', style: TextStyle(color: AppColors.sage, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 4)),
+            const SizedBox(height: 18),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: Colors.white.withValues(alpha: .10), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: .16))), child: const Text('SEPOLIA TESTNET', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2))),
           ]),
         ),
       ),
