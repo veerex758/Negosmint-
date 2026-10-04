@@ -27,6 +27,30 @@ class EvmRpcService {
     return BigInt.parse(hex.substring(2), radix: 16);
   }
 
+  Future<int> getTransactionCount(String address) async {
+    final result = await _call('eth_getTransactionCount', [address, 'pending']);
+    return _parseHexInt(result, 'Invalid nonce returned by RPC.');
+  }
+
+  Future<BigInt> estimateNativeTransferGas({required String from, required String to, required BigInt valueWei}) async {
+    final result = await _call('eth_estimateGas', [
+      {'from': from, 'to': to, 'value': '0x${valueWei.toRadixString(16)}'},
+      'latest',
+    ]);
+    return BigInt.from(_parseHexInt(result, 'Invalid gas estimate returned by RPC.'));
+  }
+
+  Future<BigInt> getGasPriceWei() async {
+    final result = await _call('eth_gasPrice', const []);
+    if (result is! String || !result.startsWith('0x')) throw const EvmRpcException('Invalid gas price returned by RPC.');
+    return BigInt.parse(result.substring(2), radix: 16);
+  }
+
+  int _parseHexInt(dynamic result, String error) {
+    if (result is! String || !result.startsWith('0x')) throw EvmRpcException(error);
+    return int.parse(result.substring(2), radix: 16);
+  }
+
   Future<int> getChainId() async {
     final result = await _call('eth_chainId', const []);
     if (result is! String || !result.startsWith('0x')) {
