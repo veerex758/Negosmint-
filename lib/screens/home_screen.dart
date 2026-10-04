@@ -189,13 +189,13 @@ class _HomeTabState extends State<_HomeTab> {
                           child: _Action(
                               label: 'Send',
                               icon: Icons.arrow_upward_rounded,
-                              onTap: onSend)),
+                              onTap: widget.onSend)),
                       const SizedBox(width: 10),
                       Expanded(
                           child: _Action(
                               label: 'Receive',
                               icon: Icons.arrow_downward_rounded,
-                              onTap: onReceive))
+                              onTap: widget.onReceive))
                     ]),
                   ]),
             ))),
