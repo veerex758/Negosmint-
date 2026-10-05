@@ -19,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _controller;
   late final Animation<double> _scale;
   late final Animation<double> _fade;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -30,7 +31,10 @@ class _SplashScreenState extends State<SplashScreen>
     _scale = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
-    Timer(const Duration(milliseconds: 1900), _openNext);
+    _navigationTimer = Timer(
+      const Duration(milliseconds: 1900),
+      _openNext,
+    );
   }
 
   Future<void> _openNext() async {
@@ -74,6 +78,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
