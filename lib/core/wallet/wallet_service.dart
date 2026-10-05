@@ -76,9 +76,9 @@ class WalletService {
       throw const WalletException('Stored recovery phrase is invalid.');
     }
 
-    late final eth.EthereumAddress recipient;
+    late final wallet.EthereumAddress recipient;
     try {
-      recipient = eth.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to);
     } on FormatException {
       throw const WalletException('Invalid recipient address.');
     }
@@ -100,7 +100,7 @@ class WalletService {
       final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
 
-      if (sender.hexEip55.toLowerCase() == recipient.hexEip55.toLowerCase()) {
+      if (sender.eip55With0x.toLowerCase() == recipient.eip55With0x.toLowerCase()) {
         throw const WalletException(
           'Recipient cannot be the same as your wallet.',
         );
@@ -108,7 +108,7 @@ class WalletService {
 
       final balance = await client.getBalance(sender);
       final gasPrice = await client.getGasPrice();
-      final amount = eth.EtherAmount.inWei(valueWei);
+      final amount = wallet.EtherAmount.inWei(valueWei);
 
       final estimatedGas = await client.estimateGas(
         sender: sender,
@@ -204,6 +204,6 @@ class WalletService {
     final privateKey = wallet.PrivateKey(child.key);
     final publicKey = wallet.ethereum.createPublicKey(privateKey);
 
-    return wallet.EthereumAddress.fromPublicKey(publicKey).hexEip55;
+    return wallet.EthereumAddress.fromPublicKey(publicKey).eip55With0x;
   }
 }
