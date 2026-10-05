@@ -13,6 +13,7 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
   bool _revealed = false;
   String? _phrase;
   bool _loading = false;
+
   Future<void> _reveal() async {
     if (_revealed) return;
     setState(() => _loading = true);
@@ -113,21 +114,26 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: _phrase ?? ''));
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Phrase copied — protect it carefully')),
-                  );
-                }
-              },
+              onPressed: _copyPhrase,
               icon: const Icon(Icons.copy_rounded),
               label: const Text('Copy phrase'),
             ),
           ],
         ]),
       );
+
+  Future<void> _copyPhrase() async {
+    await Clipboard.setData(ClipboardData(text: _phrase ?? ''));
+
+    if (!mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(
+          content: Text('Phrase copied — protect it carefully')),
+    );
+  }
+
   Future<void> _confirm() async {
     final ok = await showDialog<bool>(
         context: context,
