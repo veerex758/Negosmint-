@@ -91,8 +91,8 @@ class WalletService {
 
     final seed = wallet.mnemonicToSeed(mnemonic);
     final master = wallet.ExtendedPrivateKey.master(seed, wallet.xprv);
-    final child = master.forPath("m/44'/60'/0'/0/0")
-        as wallet.ExtendedPrivateKey;
+    final child =
+        master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
     final privateKeyHex = child.key.toRadixString(16).padLeft(64, '0');
 
     final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
@@ -200,8 +200,8 @@ class WalletService {
   Future<String> _deriveAddress(List<String> mnemonic) async {
     final seed = wallet.mnemonicToSeed(mnemonic);
     final master = wallet.ExtendedPrivateKey.master(seed, wallet.xprv);
-    final child = master.forPath("m/44'/60'/0'/0/0")
-        as wallet.ExtendedPrivateKey;
+    final child =
+        master.forPath("m/44'/60'/0'/0/0") as wallet.ExtendedPrivateKey;
     final privateKey = wallet.PrivateKey(child.key);
     final publicKey = wallet.ethereum.createPublicKey(privateKey);
 
