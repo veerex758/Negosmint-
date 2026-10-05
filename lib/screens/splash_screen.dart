@@ -116,7 +116,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   const SizedBox(height: 22),
                   const Text(
-                    'NegosMint',
+                    'NegosMint Wallet',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 30,
@@ -124,17 +124,7 @@ class _SplashScreenState extends State<SplashScreen>
                       letterSpacing: -.8,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'WALLET',
-                    style: TextStyle(
-                      color: AppColors.sage,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 4,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 22),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
