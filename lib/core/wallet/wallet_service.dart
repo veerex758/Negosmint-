@@ -58,6 +58,7 @@ class WalletService {
     );
   }
 
+  // Sepolia-only transaction path.
   Future<String> sendSepoliaEth({
     required String to,
     required BigInt valueWei,
