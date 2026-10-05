@@ -129,8 +129,7 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(
-      const SnackBar(
-          content: Text('Phrase copied — protect it carefully')),
+      const SnackBar(content: Text('Phrase copied — protect it carefully')),
     );
   }
 
