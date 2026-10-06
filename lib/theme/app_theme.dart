@@ -8,6 +8,8 @@ class AppColors {
   static const charcoal = Color(0xFF1A1D1E);
   static const gold = Color(0xFFD98A2B);
   static const mist = Color(0xFFE8ECE5);
+  static const mint = Color(0xFFB8D9B2);
+  static const terracotta = Color(0xFFB96F5A);
 }
 
 class AppTheme {
@@ -47,6 +49,12 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontWeight: FontWeight.w600),
         ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        modalElevation: 18,
+        showDragHandle: true,
       ),
       cardTheme: CardThemeData(
         color: Colors.white,
