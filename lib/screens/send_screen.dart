@@ -122,7 +122,8 @@ class _SendScreenState extends State<SendScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => _confirmAndSend(sheetContext, amountWei),
+                  onPressed: () =>
+                      _confirmAndSend(sheetContext, amountWei),
                   child: const Text('Send on Sepolia'),
                 ),
               ),
