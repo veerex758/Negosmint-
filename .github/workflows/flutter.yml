@@ -33,11 +33,8 @@ jobs:
       - run: flutter create --platforms=android --project-name negosmint_wallet .
       - run: flutter pub get
       - run: flutter build apk --release
-      - run: flutter build appbundle --release
       - uses: actions/upload-artifact@v4
         with:
           name: negosmint-wallet-android-release
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
