@@ -416,15 +416,7 @@ class _LiveEthBalance extends StatelessWidget {
         future: EvmRpcService().getNativeBalanceInWei(address!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(
-                height: 43,
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                        width: 26,
-                        height: 26,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2.5, color: Colors.white))));
+            return const _BalanceSkeleton();
           }
           if (snapshot.hasError) {
             return const Text('Network unavailable',
@@ -441,6 +433,40 @@ class _LiveEthBalance extends StatelessWidget {
                   letterSpacing: -1));
         });
   }
+}
+
+class _BalanceSkeleton extends StatefulWidget {
+  const _BalanceSkeleton();
+
+  @override
+  State<_BalanceSkeleton> createState() => _BalanceSkeletonState();
+}
+
+class _BalanceSkeletonState extends State<_BalanceSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+        opacity: Tween<double>(begin: .42, end: .8).animate(_controller),
+        child: Container(
+          width: 150,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .22),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
 }
 
 class _LiveEthAsset extends StatelessWidget {
@@ -465,7 +491,8 @@ class _LiveEthAsset extends StatelessWidget {
                 name: 'Ethereum',
                 symbol: 'Sepolia ETH',
                 balance: 'Loading...',
-                value: 'Testnet');
+                value: 'Testnet',
+                loading: true);
           }
           if (snapshot.hasError) {
             return const _AssetTile(
@@ -499,12 +526,16 @@ String _formatEth(BigInt wei) {
 class _AssetTile extends StatelessWidget {
   final IconData icon;
   final String name, symbol, balance, value;
-  const _AssetTile(
-      {required this.icon,
-      required this.name,
-      required this.symbol,
-      required this.balance,
-      required this.value});
+  final bool loading;
+
+  const _AssetTile({
+    required this.icon,
+    required this.name,
+    required this.symbol,
+    required this.balance,
+    required this.value,
+    this.loading = false,
+  });
   @override
   Widget build(BuildContext context) => Card(
       child: Padding(
@@ -529,8 +560,19 @@ class _AssetTile extends StatelessWidget {
                           const TextStyle(color: Colors.black45, fontSize: 12))
                 ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text(balance,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              if (loading)
+                Container(
+                  width: 78,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppColors.mist,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                )
+              else
+                Text(balance,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
               Text(value,
                   style: const TextStyle(color: Colors.black45, fontSize: 12))
             ]),
