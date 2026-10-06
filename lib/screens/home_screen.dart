@@ -177,66 +177,66 @@ class _HomeTabState extends State<_HomeTab> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Row(children: [
-                      const Text('Total balance',
-                          style: TextStyle(
-                              color: Color(0xBFFFFFFF), fontSize: 13)),
-                      const Spacer(),
-                      IconButton(
-                          onPressed: () =>
-                              setState(() => _hideBalance = !_hideBalance),
-                          color: Colors.white,
-                          icon: Icon(_hideBalance
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined))
-                    ]),
-                    const SizedBox(height: 4),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) => FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(
-                          scale: Tween<double>(begin: .96, end: 1).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutBack,
-                            ),
-                          ),
-                          child: child,
-                        ),
-                      ),
-                      child: _hideBalance
-                          ? const Text(
-                              '••••••',
-                              key: ValueKey('hidden'),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 36,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 2,
+                      Row(children: [
+                        const Text('Total balance',
+                            style: TextStyle(
+                                color: Color(0xBFFFFFFF), fontSize: 13)),
+                        const Spacer(),
+                        IconButton(
+                            onPressed: () =>
+                                setState(() => _hideBalance = !_hideBalance),
+                            color: Colors.white,
+                            icon: Icon(_hideBalance
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined))
+                      ]),
+                      const SizedBox(height: 4),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 280),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(
+                            scale: Tween<double>(begin: .96, end: 1).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutBack,
                               ),
-                            )
-                          : _LiveEthBalance(
-                              key: const ValueKey('visible'),
-                              address: widget.address,
                             ),
-                    ),
-                    const SizedBox(height: 22),
-                    Row(children: [
-                      Expanded(
-                          child: _Action(
-                              label: 'Send',
-                              icon: Icons.arrow_upward_rounded,
-                              onTap: widget.onSend)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _Action(
-                              label: 'Receive',
-                              icon: Icons.arrow_downward_rounded,
-                              onTap: widget.onReceive))
-                    ]),
+                            child: child,
+                          ),
+                        ),
+                        child: _hideBalance
+                            ? const Text(
+                                '••••••',
+                                key: ValueKey('hidden'),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                ),
+                              )
+                            : _LiveEthBalance(
+                                key: const ValueKey('visible'),
+                                address: widget.address,
+                              ),
+                      ),
+                      const SizedBox(height: 22),
+                      Row(children: [
+                        Expanded(
+                            child: _Action(
+                                label: 'Send',
+                                icon: Icons.arrow_upward_rounded,
+                                onTap: widget.onSend)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: _Action(
+                                label: 'Receive',
+                                icon: Icons.arrow_downward_rounded,
+                                onTap: widget.onReceive))
+                      ]),
                     ],
                   ),
                 ],
