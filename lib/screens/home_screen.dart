@@ -158,9 +158,25 @@ class _HomeTabState extends State<_HomeTab> {
                         blurRadius: 24,
                         offset: Offset(0, 12))
                   ]),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -90,
+                    right: -60,
+                    child: Container(
+                      width: 210,
+                      height: 210,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [Color(0x337FAF8B), Color(0x001E3A2B)],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Row(children: [
                       const Text('Total balance',
                           style: TextStyle(
@@ -221,7 +237,10 @@ class _HomeTabState extends State<_HomeTab> {
                               icon: Icons.arrow_downward_rounded,
                               onTap: widget.onReceive))
                     ]),
-                  ]),
+                    ],
+                  ),
+                ],
+              ),
             ))),
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(22, 26, 22, 8),
@@ -261,6 +280,8 @@ class _HomeTabState extends State<_HomeTab> {
       ]);
   void _showTestnetNotice(BuildContext context) => showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      barrierColor: const Color(0x66000000),
       showDragHandle: true,
       builder: (_) => const Padding(
           padding: EdgeInsets.fromLTRB(24, 8, 24, 30),
@@ -278,6 +299,8 @@ class _HomeTabState extends State<_HomeTab> {
               ])));
   void _showAssets(BuildContext context) => showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      barrierColor: const Color(0x66000000),
       showDragHandle: true,
       builder: (_) => const Padding(
           padding: EdgeInsets.fromLTRB(24, 8, 24, 30),
