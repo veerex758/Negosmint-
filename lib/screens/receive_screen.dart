@@ -84,10 +84,7 @@ class ReceiveScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     SizedBox(
                         width: double.infinity,
-                        child: FilledButton.icon(
-                            onPressed: () => _copy(context),
-                            icon: const Icon(Icons.copy_rounded),
-                            label: const Text('Copy address'))),
+                        child: _TactileCopyButton(onPressed: () => _copy(context))),
                   ]),
             )),
             const SizedBox(height: 16),
@@ -109,6 +106,36 @@ class ReceiveScreen extends StatelessWidget {
                   ]),
             ),
           ],
+        ),
+      );
+}
+
+
+class _TactileCopyButton extends StatefulWidget {
+  final VoidCallback onPressed;
+
+  const _TactileCopyButton({required this.onPressed});
+
+  @override
+  State<_TactileCopyButton> createState() => _TactileCopyButtonState();
+}
+
+class _TactileCopyButtonState extends State<_TactileCopyButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) => AnimatedScale(
+        scale: _pressed ? .98 : 1,
+        duration: const Duration(milliseconds: 90),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTapUp: (_) => setState(() => _pressed = false),
+          child: FilledButton.icon(
+            onPressed: widget.onPressed,
+            icon: const Icon(Icons.copy_rounded),
+            label: const Text('Copy address'),
+          ),
         ),
       );
 }
