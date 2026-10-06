@@ -70,7 +70,6 @@ class AppColors {
       ),
     );
   }
-
 }
 
 class AppTheme {

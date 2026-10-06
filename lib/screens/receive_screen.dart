@@ -84,7 +84,8 @@ class ReceiveScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     SizedBox(
                         width: double.infinity,
-                        child: _TactileCopyButton(onPressed: () => _copy(context))),
+                        child: _TactileCopyButton(
+                            onPressed: () => _copy(context))),
                   ]),
             )),
             const SizedBox(height: 16),
@@ -109,7 +110,6 @@ class ReceiveScreen extends StatelessWidget {
         ),
       );
 }
-
 
 class _TactileCopyButton extends StatefulWidget {
   final VoidCallback onPressed;

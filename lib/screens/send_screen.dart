@@ -347,9 +347,15 @@ class _SendScreenState extends State<SendScreen> {
                 scale: _reviewPressed ? .98 : 1,
                 duration: const Duration(milliseconds: 90),
                 child: GestureDetector(
-                  onTapDown: _sending ? null : (_) => setState(() => _reviewPressed = true),
-                  onTapCancel: _sending ? null : () => setState(() => _reviewPressed = false),
-                  onTapUp: _sending ? null : (_) => setState(() => _reviewPressed = false),
+                  onTapDown: _sending
+                      ? null
+                      : (_) => setState(() => _reviewPressed = true),
+                  onTapCancel: _sending
+                      ? null
+                      : () => setState(() => _reviewPressed = false),
+                  onTapUp: _sending
+                      ? null
+                      : (_) => setState(() => _reviewPressed = false),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
