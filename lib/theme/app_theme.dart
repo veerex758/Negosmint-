@@ -10,6 +10,67 @@ class AppColors {
   static const mist = Color(0xFFE8ECE5);
   static const mint = Color(0xFFB8D9B2);
   static const terracotta = Color(0xFFB96F5A);
+
+  static ThemeData get dark {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.sage,
+      brightness: Brightness.dark,
+      primary: AppColors.sage,
+      secondary: AppColors.gold,
+      surface: const Color(0xFF121212),
+    );
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      fontFamily: 'sans-serif',
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+        },
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF121212),
+        foregroundColor: AppColors.ivory,
+        elevation: 0,
+        centerTitle: false,
+        scrolledUnderElevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF181A19),
+        indicatorColor: const Color(0xFF2A3A31),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.all(
+          const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Color(0xFF1B1D1C),
+        surfaceTintColor: Colors.transparent,
+        modalElevation: 20,
+        showDragHandle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1B1D1C),
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF1B1D1C),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
 }
 
 class AppTheme {
