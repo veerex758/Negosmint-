@@ -175,14 +175,38 @@ class _HomeTabState extends State<_HomeTab> {
                               : Icons.visibility_outlined))
                     ]),
                     const SizedBox(height: 4),
-                    _hideBalance
-                        ? const Text('••••••',
-                            style: TextStyle(
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 280),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(begin: .96, end: 1).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      ),
+                      child: _hideBalance
+                          ? const Text(
+                              '••••••',
+                              key: ValueKey('hidden'),
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 36,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 2))
-                        : _LiveEthBalance(address: widget.address),
+                                letterSpacing: 2,
+                              ),
+                            )
+                          : _LiveEthBalance(
+                              key: const ValueKey('visible'),
+                              address: widget.address,
+                            ),
+                    ),
                     const SizedBox(height: 22),
                     Row(children: [
                       Expanded(
@@ -309,27 +333,52 @@ class _AddressCard extends StatelessWidget {
           ])));
 }
 
-class _Action extends StatelessWidget {
+class _Action extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  const _Action({required this.label, required this.icon, required this.onTap});
+
+  const _Action({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
   @override
-  Widget build(BuildContext context) => FilledButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: FilledButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.forest,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))));
+  State<_Action> createState() => _ActionState();
+}
+
+class _ActionState extends State<_Action> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) => AnimatedScale(
+        scale: _pressed ? .97 : 1,
+        duration: const Duration(milliseconds: 90),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTapUp: (_) => setState(() => _pressed = false),
+          child: FilledButton.icon(
+            onPressed: widget.onTap,
+            icon: Icon(widget.icon, size: 18),
+            label: Text(widget.label),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.forest,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 class _LiveEthBalance extends StatelessWidget {
   final String? address;
-  const _LiveEthBalance({this.address});
+  const _LiveEthBalance({super.key, this.address});
   @override
   Widget build(BuildContext context) {
     if (address == null || address!.isEmpty) {
