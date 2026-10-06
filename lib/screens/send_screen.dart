@@ -20,6 +20,7 @@ class _SendScreenState extends State<SendScreen> {
   final WalletService _walletService = WalletService();
   String _asset = 'ETH';
   bool _sending = false;
+  bool _reviewPressed = false;
 
   @override
   void dispose() {
@@ -342,16 +343,25 @@ class _SendScreenState extends State<SendScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _sending ? null : _review,
-                  icon: const Icon(Icons.visibility_outlined),
-                  label: Text(
-                    _sending ? 'Sending...' : 'Review transaction',
-                  ),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+              AnimatedScale(
+                scale: _reviewPressed ? .98 : 1,
+                duration: const Duration(milliseconds: 90),
+                child: GestureDetector(
+                  onTapDown: _sending ? null : (_) => setState(() => _reviewPressed = true),
+                  onTapCancel: _sending ? null : () => setState(() => _reviewPressed = false),
+                  onTapUp: _sending ? null : (_) => setState(() => _reviewPressed = false),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _sending ? null : _review,
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: Text(
+                        _sending ? 'Sending...' : 'Review transaction',
+                      ),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
                   ),
                 ),
               ),
