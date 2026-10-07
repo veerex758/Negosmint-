@@ -62,8 +62,9 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final network = const [SupportedNetworks.sepolia]
-        .firstWhere((n) => n.chainId == widget.request.chainId);
+    final networkName = widget.request.chainId == SupportedNetworks.sepolia.chainId
+        ? SupportedNetworks.sepolia.name
+        : 'Unsupported network';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sign Transaction')),
@@ -87,7 +88,7 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
                 children: [
                   _Row(label: 'Application', value: widget.session.appName),
                   const Divider(height: 26),
-                  _Row(label: 'Network', value: network.name),
+                  _Row(label: 'Network', value: networkName),
                   const Divider(height: 26),
                   _Row(label: 'Action', value: widget.request.actionDescription),
                   const Divider(height: 26),
