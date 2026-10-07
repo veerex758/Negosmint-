@@ -186,18 +186,7 @@ class WalletConnectionManager {
   }
 
   bool _isValidAddress(String value) =>
-      RegExp(r'^0x[0-9a-fA-F]{40}
-    final random = Random.secure();
-    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-  }
-
-  bool _same(List<WalletConnectionSession> a, List<WalletConnectionSession> b) =>
-      a.length == b.length &&
-      List.generate(a.length, (i) => a[i].toJson().toString() == b[i].toJson().toString())
-          .every((v) => v);
-}
-).hasMatch(value);
+      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
   String _sessionId() {
     final random = Random.secure();
@@ -205,8 +194,13 @@ class WalletConnectionManager {
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
-  bool _same(List<WalletConnectionSession> a, List<WalletConnectionSession> b) =>
+  bool _same(
+    List<WalletConnectionSession> a,
+    List<WalletConnectionSession> b,
+  ) =>
       a.length == b.length &&
-      List.generate(a.length, (i) => a[i].toJson().toString() == b[i].toJson().toString())
-          .every((v) => v);
+      List.generate(
+        a.length,
+        (i) => a[i].toJson().toString() == b[i].toJson().toString(),
+      ).every((v) => v);
 }
