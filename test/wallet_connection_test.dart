@@ -102,6 +102,19 @@ void main() {
         contains(WalletConnectionPermission.readAddress));
     expect(storage.sessions.single.toJson().toString(), isNot(contains('mnemonic')));
     expect(storage.sessions.single.toJson().toString(), isNot(contains('privateKey')));
+    expect(storage.consumed, contains('req-1'));
+  });
+
+  test('approved requests are consumed for replay protection', () async {
+    final storage = FakeConnectionStorage();
+    final manager = WalletConnectionManager(
+      wallet: FakeWalletService(),
+      storage: storage,
+      networks: const [SupportedNetworks.sepolia],
+    );
+
+    await manager.approveConnection(request());
+    expect(await storage.wasRequestConsumed('req-1'), isTrue);
   });
 
   test('duplicate request IDs are rejected', () async {
