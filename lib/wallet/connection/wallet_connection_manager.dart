@@ -8,6 +8,7 @@ import 'wallet_connection_session.dart';
 import 'wallet_connection_storage.dart';
 import 'wallet_signing_request.dart';
 import 'wallet_signing_result.dart';
+import 'wallet_signing_result.dart';
 
 class WalletConnectionManager {
   final WalletService _wallet;
@@ -185,6 +186,24 @@ class WalletConnectionManager {
       return WalletSigningResult.rejected(
         requestId: request.requestId,
         errorCode: 'WALLET_REQUEST_REJECTED',
+      );
+    }
+  }
+
+  Future<WalletSigningResult> signTransactionResult(
+    WalletSigningRequest request,
+  ) async {
+    try {
+      final signedTransaction = await signTransaction(request);
+      return WalletSigningResult.approved(
+        requestId: request.requestId,
+        sessionId: request.sessionId,
+        signedTransaction: signedTransaction,
+      );
+    } on WalletConnectionException catch (error) {
+      return WalletSigningResult.rejected(
+        requestId: request.requestId,
+        errorCode: error.message,
       );
     }
   }
