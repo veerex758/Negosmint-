@@ -185,24 +185,6 @@ class WalletConnectionManager {
     WalletSigningRequest request,
   ) async {
     try {
-      final signed = await signTransaction(request);
-      return WalletSigningResult.approved(
-        requestId: request.requestId,
-        sessionId: request.sessionId,
-        signedTransaction: signed,
-      );
-    } on WalletConnectionException {
-      return WalletSigningResult.rejected(
-        requestId: request.requestId,
-        errorCode: 'WALLET_REQUEST_REJECTED',
-      );
-    }
-  }
-
-  Future<WalletSigningResult> signTransactionResult(
-    WalletSigningRequest request,
-  ) async {
-    try {
       final signedTransaction = await signTransaction(request);
       return WalletSigningResult.approved(
         requestId: request.requestId,
