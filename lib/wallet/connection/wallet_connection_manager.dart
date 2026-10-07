@@ -176,6 +176,10 @@ class WalletConnectionManager {
       chainId: request.chainId,
     );
     request.validate(_networks);
+    if (request.to == null) {
+      throw const WalletConnectionException(
+          'Transaction recipient is required for wallet signing.');
+    }
     if (request.chainId != SupportedNetworks.sepolia.chainId) {
       throw const WalletConnectionException('Unsupported signing network.');
     }
