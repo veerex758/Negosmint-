@@ -36,15 +36,9 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
         // V1 signing is intentionally restricted to the wallet's configured network.
         SupportedNetworks.sepolia,
       ]);
-      await _manager.authorizeRequest(
-        sessionId: widget.request.sessionId,
-        permission: widget.request.isContractInteraction
-            ? WalletConnectionPermission.requestTransaction
-            : WalletConnectionPermission.requestSignature,
-        chainId: widget.request.chainId,
-      );
+      final signedTransaction = await _manager.signTransaction(widget.request);
       if (!mounted) return;
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(signedTransaction);
     } on WalletConnectionException catch (e) {
       if (!mounted) return;
       setState(() {
