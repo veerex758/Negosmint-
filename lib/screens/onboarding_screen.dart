@@ -45,9 +45,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _finish() {
+  Future<void> _finish() async {
     final snapshot = _snapshot;
-    if (snapshot == null) return;
+    if (snapshot == null || _busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await _walletService.finalizeWallet(snapshot);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = 'Wallet could not be secured. Please try the backup check again.';
+      });
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 650),
