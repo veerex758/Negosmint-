@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../wallet/connection/wallet_connection_manager.dart';
+import '../wallet/connection/wallet_connection_request.dart';
 import '../wallet/connection/wallet_connection_session.dart';
 
 class ConnectedAppsScreen extends StatefulWidget {
