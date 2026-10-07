@@ -20,6 +20,32 @@ class WalletConnectionManager {
         _storage = storage ?? const WalletConnectionStorage(),
         _networks = networks ?? const [SupportedNetworks.sepolia];
 
+  WalletConnectionRequest createConnectionRequest({
+    required String appName,
+    required String appIdentifier,
+    required List<WalletConnectionPermission> permissions,
+    required int chainId,
+    String? callback,
+    Duration lifetime = const Duration(minutes: 5),
+  }) {
+    if (permissions.isEmpty) {
+      throw const WalletConnectionException('At least one permission is required.');
+    }
+    if (lifetime <= Duration.zero || lifetime > const Duration(minutes: 15)) {
+      throw const WalletConnectionException('Invalid connection request lifetime.');
+    }
+    final now = DateTime.now().toUtc();
+    return WalletConnectionRequest(
+      requestId: _sessionId(),
+      appName: appName,
+      appIdentifier: appIdentifier,
+      permissions: List.unmodifiable(permissions),
+      chainId: chainId,
+      callback: callback,
+      expiresAt: now.add(lifetime),
+    );
+  }
+
   Future<WalletConnectionRequest> handleIncomingRequest(
     WalletConnectionRequest request,
   ) async {
