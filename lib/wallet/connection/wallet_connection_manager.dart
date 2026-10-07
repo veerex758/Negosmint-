@@ -115,6 +115,14 @@ class WalletConnectionManager {
 
   Future<void> disconnect(String sessionId) => revokeConnection(sessionId);
 
+  Future<String> getPublicAddress() async {
+    final address = await _wallet.getPublicAddress();
+    if (address == null || address.isEmpty || !_isValidAddress(address)) {
+      throw const WalletConnectionException('Wallet is not initialized.');
+    }
+    return address;
+  }
+
   Future<bool> isConnected(String appIdentifier) async =>
       (await getActiveConnections()).any((s) => s.appIdentifier == appIdentifier);
 
