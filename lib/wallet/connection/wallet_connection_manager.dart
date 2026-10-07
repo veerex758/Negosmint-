@@ -89,31 +89,31 @@ class WalletConnectionManager {
     }
     try {
       await handleIncomingRequest(request);
-    final address = await _wallet.getPublicAddress();
-    if (address == null || address.isEmpty || !_isValidAddress(address)) {
-      throw const WalletConnectionException('Wallet is not initialized.');
-    }
-    final network = _networks.firstWhere((n) => n.chainId == request.chainId);
-    final now = DateTime.now().toUtc();
-    final session = WalletConnectionSession(
-      sessionId: _sessionId(),
-      appName: request.appName,
-      appIdentifier: request.appIdentifier,
-      walletAddress: address,
-      network: network.name,
-      chainId: network.chainId,
-      permissions: request.permissions,
-      createdAt: now,
-      lastUsedAt: now,
-      expiresAt: now.add(const Duration(days: 30)),
-      status: WalletConnectionStatus.connected,
-    );
-    final sessions = await _storage.loadSessions();
-    await _storage.saveSessions([
-      ...sessions.where((s) => s.sessionId != session.sessionId),
-      session,
-    ]);
-    await _storage.markRequestConsumed(request.requestId);
+      final address = await _wallet.getPublicAddress();
+      if (address == null || address.isEmpty || !_isValidAddress(address)) {
+        throw const WalletConnectionException('Wallet is not initialized.');
+      }
+      final network = _networks.firstWhere((n) => n.chainId == request.chainId);
+      final now = DateTime.now().toUtc();
+      final session = WalletConnectionSession(
+        sessionId: _sessionId(),
+        appName: request.appName,
+        appIdentifier: request.appIdentifier,
+        walletAddress: address,
+        network: network.name,
+        chainId: network.chainId,
+        permissions: request.permissions,
+        createdAt: now,
+        lastUsedAt: now,
+        expiresAt: now.add(const Duration(days: 30)),
+        status: WalletConnectionStatus.connected,
+      );
+      final sessions = await _storage.loadSessions();
+      await _storage.saveSessions([
+        ...sessions.where((s) => s.sessionId != session.sessionId),
+        session,
+      ]);
+      await _storage.markRequestConsumed(request.requestId);
       return WalletConnectionResult.approved(session,
           requestId: request.requestId);
     } finally {
