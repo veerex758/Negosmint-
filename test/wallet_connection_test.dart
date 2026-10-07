@@ -126,10 +126,37 @@ void main() {
     );
 
     await manager.approveConnection(request());
+    expect(storage.consumed, contains('req-1'));
     expect(
       () => manager.handleIncomingRequest(request()),
       throwsA(isA<WalletConnectionException>()),
     );
+  });
+
+  test('signing result rejects unauthorized requests without secrets', () async {
+    final storage = FakeConnectionStorage();
+    final manager = WalletConnectionManager(
+      wallet: FakeWalletService(),
+      storage: storage,
+      networks: const [SupportedNetworks.sepolia],
+    );
+
+    final connection = await manager.approveConnection(request());
+    final result = await manager.signTransactionResult(
+      WalletSigningRequest(
+        sessionId: connection.sessionId!,
+        requestId: 'sign-1',
+        chainId: 11155111,
+        to: '0x2222222222222222222222222222222222222222',
+        value: '0x01',
+        data: '0x',
+        actionDescription: 'Send test ETH',
+      ),
+    );
+
+    expect(result.status, WalletSigningResultStatus.rejected);
+    expect(result.requestId, 'sign-1');
+    expect(result.signedTransaction, isNull);
   });
 
   test('revoked applications cannot reuse the connection', () async {
