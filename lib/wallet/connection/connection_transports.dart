@@ -21,11 +21,6 @@ class NegosMintDeepLinkTransport implements DeepLinkTransport {
     // kept out of connection metadata and is only emitted as a signing result.
   }
 
-  @override
-  Future<void> sendSigningResult(WalletSigningResult result) async {
-    // OS deep-link delivery will be added here. Never attach wallet secrets.
-  }
-
   String encode(WalletConnectionRequest request) =>
       WalletConnectionCodec.encodeRequest(request);
 }
@@ -38,11 +33,6 @@ class NegosMintQRCodeTransport implements QRCodeTransport {
   @override
   Future<void> send(WalletConnectionResult result) async {
     // A future QR response flow can render WalletConnectionCodec.encodeResult().
-  }
-
-  @override
-  Future<void> sendSigningResult(WalletSigningResult result) async {
-    // A future QR response flow can render WalletConnectionCodec.encodeSigningResult().
   }
 
   @override
