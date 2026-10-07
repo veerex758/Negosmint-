@@ -1,3 +1,4 @@
+import 'wallet_connection_request.dart';
 import 'wallet_connection_session.dart';
 
 enum WalletConnectionResultStatus { approved, rejected }
