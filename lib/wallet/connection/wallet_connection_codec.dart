@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'wallet_connection_request.dart';
 import 'wallet_connection_result.dart';
+import 'wallet_signing_result.dart';
 
 class WalletConnectionCodec {
   static const scheme = 'negosmintwallet';
@@ -54,5 +55,8 @@ class WalletConnectionCodec {
   }
 
   static String encodeResult(WalletConnectionResult result) =>
+      jsonEncode(result.toJson());
+
+  static String encodeSigningResult(WalletSigningResult result) =>
       jsonEncode(result.toJson());
 }
