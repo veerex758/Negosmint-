@@ -58,6 +58,17 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
           const Text('Only the public wallet information listed below will be shared.',
               style: TextStyle(height: 1.45)),
           const SizedBox(height: 24),
+          FutureBuilder<String>(
+            future: _manager.getPublicAddress(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox.shrink();
+              return Card(child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: _InfoRow(label: 'Wallet', value: _shorten(snapshot.data!)),
+              ));
+            },
+          ),
+          const SizedBox(height: 12),
           Card(child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(children: [
@@ -111,6 +122,10 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
     );
   }
 }
+
+String _shorten(String address) => address.length > 12
+    ? address.substring(0, 8) + '…' + address.substring(address.length - 6)
+    : address;
 
 class _InfoRow extends StatelessWidget {
   final String label;
