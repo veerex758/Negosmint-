@@ -56,3 +56,19 @@ Mainnet is not enabled until the security and testnet validation process is comp
 ## Non-custodial rule
 
 A server breach must not provide an attacker with the ability to spend from a user's wallet.
+
+
+## Wallet connection
+
+The connection module is isolated from key management:
+
+- Connection requests contain app identity, permissions, chain ID, expiry, and transport callback metadata only.
+- The manager can request the public address from WalletService but has no API for private keys, seeds, mnemonics, or PINs.
+- Sessions persist only public connection metadata.
+- New connections require explicit user approval.
+- Revoked sessions cannot be reused by the same application identifier.
+- Connection request IDs are consumed to prevent replay.
+- Signing permissions are separate from read-only connection permissions.
+- Signing requests are validated against the active session and chain before any future signing engine is invoked.
+- Deep links and QR payloads use a transport-neutral codec. OS deep-link delivery and QR scanning remain transport adapters.
+- Future interoperability should follow established wallet/provider standards rather than a proprietary signing protocol. EIP-1193 defines the provider request model and EIP-2255 defines permission concepts. citeturn2search0turn2search6
