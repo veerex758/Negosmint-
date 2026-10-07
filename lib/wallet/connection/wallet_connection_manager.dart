@@ -28,6 +28,15 @@ class WalletConnectionManager {
     }
     request.validateNetwork(_networks);
     _validateApplication(request);
+    if (await _storage.wasRequestConsumed(request.requestId)) {
+      throw const WalletConnectionException('Connection request has already been used.');
+    }
+    final allSessions = await _storage.loadSessions();
+    if (allSessions.any((session) =>
+        session.appIdentifier == request.appIdentifier &&
+        session.status == WalletConnectionStatus.revoked)) {
+      throw const WalletConnectionException('This application was revoked and must start a new connection request.');
+    }
     final existing = await getActiveConnections();
     if (existing.any((session) => session.appIdentifier == request.appIdentifier)) {
       throw const WalletConnectionException('This application is already connected.');
@@ -40,7 +49,7 @@ class WalletConnectionManager {
   ) async {
     await handleIncomingRequest(request);
     final address = await _wallet.getPublicAddress();
-    if (address == null || address.isEmpty) {
+    if (address == null || address.isEmpty || !_isValidAddress(address)) {
       throw const WalletConnectionException('Wallet is not initialized.');
     }
     final network = _networks.firstWhere((n) => n.chainId == request.chainId);
@@ -66,8 +75,11 @@ class WalletConnectionManager {
     return WalletConnectionResult.approved(session, requestId: request.requestId);
   }
 
-  WalletConnectionResult rejectConnection(WalletConnectionRequest request) =>
-      WalletConnectionResult.rejected(requestId: request.requestId);
+  Future<WalletConnectionResult> rejectConnection(WalletConnectionRequest request) async {
+    await handleIncomingRequest(request);
+    await _storage.markRequestConsumed(request.requestId);
+    return WalletConnectionResult.rejected(requestId: request.requestId);
+  }
 
   Future<List<WalletConnectionSession>> getActiveConnections() async {
     final sessions = await _storage.loadSessions();
@@ -138,6 +150,20 @@ class WalletConnectionManager {
       throw const WalletConnectionException('Unknown requesting application.');
     }
   }
+
+  bool _isValidAddress(String value) =>
+      RegExp(r'^0x[0-9a-fA-F]{40}
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  }
+
+  bool _same(List<WalletConnectionSession> a, List<WalletConnectionSession> b) =>
+      a.length == b.length &&
+      List.generate(a.length, (i) => a[i].toJson().toString() == b[i].toJson().toString())
+          .every((v) => v);
+}
+).hasMatch(value);
 
   String _sessionId() {
     final random = Random.secure();
