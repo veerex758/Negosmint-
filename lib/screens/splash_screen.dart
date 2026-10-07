@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
-import 'home_screen.dart';
+import 'wallet_lock_screen.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 650),
         pageBuilder: (_, animation, __) => hasWallet
-            ? HomeScreen(address: snapshot!.address)
+            ? WalletLockScreen(address: snapshot!.address)
             : const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) => FadeTransition(
           opacity: CurvedAnimation(
