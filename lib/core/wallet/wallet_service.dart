@@ -212,7 +212,7 @@ class WalletService {
         transaction,
         chainId: EvmRpcService.chainId,
       );
-      return '0x' + signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      return '0x${signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
     } on WalletException {
       rethrow;
     } on FormatException {

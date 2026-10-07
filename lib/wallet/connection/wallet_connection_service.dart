@@ -4,7 +4,7 @@ import 'wallet_connection_manager.dart';
 import 'wallet_connection_request.dart';
 import 'wallet_connection_result.dart';
 import 'wallet_connection_session.dart';
-import 'wallet_signing_request.dart';import 'wallet_connection_session.dart';
+import 'wallet_signing_request.dart';
 
 class WalletConnectionService {
   final WalletConnectionManager manager;
