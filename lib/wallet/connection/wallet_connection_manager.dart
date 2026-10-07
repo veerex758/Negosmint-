@@ -105,6 +105,7 @@ class WalletConnectionManager {
       ...sessions.where((s) => s.sessionId != session.sessionId),
       session,
     ]);
+    await _storage.markRequestConsumed(request.requestId);
     return WalletConnectionResult.approved(session,
         requestId: request.requestId);
   }
