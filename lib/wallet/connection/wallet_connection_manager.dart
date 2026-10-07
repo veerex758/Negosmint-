@@ -8,7 +8,6 @@ import 'wallet_connection_session.dart';
 import 'wallet_connection_storage.dart';
 import 'wallet_signing_request.dart';
 import 'wallet_signing_result.dart';
-import 'wallet_signing_result.dart';
 
 class WalletConnectionManager {
   final WalletService _wallet;

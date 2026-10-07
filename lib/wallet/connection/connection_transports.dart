@@ -3,7 +3,6 @@ import 'wallet_connection_request.dart';
 import 'wallet_connection_result.dart';
 import 'wallet_connection_transport.dart';
 import 'wallet_signing_result.dart';
-import 'wallet_signing_result.dart';
 
 class NegosMintDeepLinkTransport implements DeepLinkTransport {
   @override
