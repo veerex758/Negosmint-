@@ -51,7 +51,7 @@ class WalletConnectionRequest {
 
   bool get isExpired => DateTime.now().toUtc().isAfter(expiresAt);
 
-  bool requestsSigning =>
+  bool get requestsSigning =>
       permissions.contains(WalletConnectionPermission.requestSignature) ||
       permissions.contains(WalletConnectionPermission.requestTransaction);
 
