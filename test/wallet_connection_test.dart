@@ -257,4 +257,31 @@ void main() {
 
     expect(session.isActive, isFalse);
   });
+
+  test('connection codec rejects oversized payloads', () {
+    expect(
+      () => WalletConnectionCodec.parseRequest('a' * 8193),
+      throwsA(isA<WalletConnectionException>()),
+    );
+  });
+
+  test('connection codec round-trips deep-link requests', () {
+    final original = request();
+    final encoded = WalletConnectionCodec.encodeRequest(original);
+    final decoded = WalletConnectionCodec.parseRequest(encoded);
+    expect(decoded.requestId, original.requestId);
+    expect(decoded.appIdentifier, original.appIdentifier);
+    expect(decoded.chainId, original.chainId);
+    expect(decoded.permissions, original.permissions);
+  });
+
+  test('connection codec rejects malformed deep links', () {
+    expect(
+      () => WalletConnectionCodec.parseRequest(
+        'negosmintwallet://connect?request=not-valid',
+      ),
+      throwsA(isA<WalletConnectionException>()),
+    );
+  });
+
 }
