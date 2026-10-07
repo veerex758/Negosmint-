@@ -1,0 +1,33 @@
+import 'wallet_connection_codec.dart';
+import 'wallet_connection_request.dart';
+import 'wallet_connection_result.dart';
+import 'wallet_connection_transport.dart';
+
+class NegosMintDeepLinkTransport implements DeepLinkTransport {
+  @override
+  Future<WalletConnectionRequest> receive(String payload) async =>
+      WalletConnectionCodec.parseRequest(payload);
+
+  @override
+  Future<void> send(WalletConnectionResult result) async {
+    // OS deep-link delivery will be added here. The result contains public
+    // connection metadata only; never attach wallet secrets to the URI.
+  }
+
+  String encode(WalletConnectionRequest request) =>
+      WalletConnectionCodec.encodeRequest(request);
+}
+
+class NegosMintQRCodeTransport implements QRCodeTransport {
+  @override
+  Future<WalletConnectionRequest> receive(String payload) async =>
+      WalletConnectionCodec.parseRequest(payload);
+
+  @override
+  Future<void> send(WalletConnectionResult result) async {
+    // A future QR response flow can render WalletConnectionCodec.encodeResult().
+  }
+
+  String encode(WalletConnectionRequest request) =>
+      WalletConnectionCodec.encodeRequest(request);
+}
