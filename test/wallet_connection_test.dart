@@ -6,6 +6,7 @@ import 'package:negosmint_wallet/wallet/connection/wallet_connection_request.dar
 import 'package:negosmint_wallet/wallet/connection/wallet_connection_session.dart';
 import 'package:negosmint_wallet/wallet/connection/wallet_connection_storage.dart';
 import 'package:negosmint_wallet/wallet/connection/wallet_signing_request.dart';
+import 'package:negosmint_wallet/wallet/connection/wallet_signing_result.dart';
 import 'package:negosmint_wallet/core/wallet/wallet_service.dart';
 
 class FakeWalletService extends WalletService {
@@ -182,6 +183,20 @@ void main() {
       () => wrongChain.validate(const [SupportedNetworks.sepolia]),
       throwsA(isA<WalletConnectionException>()),
     );
+  });
+
+  test('signing result contains only response data', () {
+    const result = WalletSigningResult.approved(
+      requestId: 'request-1',
+      sessionId: 'session-1',
+      signedTransaction: '0xdeadbeef',
+    );
+    final payload = WalletConnectionCodec.encodeSigningResult(result);
+
+    expect(payload, contains('0xdeadbeef'));
+    expect(payload, isNot(contains('privateKey')));
+    expect(payload, isNot(contains('mnemonic')));
+    expect(payload, isNot(contains('seed')));
   });
 
   test('expired sessions are not active', () {
