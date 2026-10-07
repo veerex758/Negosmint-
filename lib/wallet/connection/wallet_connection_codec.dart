@@ -14,7 +14,8 @@ class WalletConnectionCodec {
     if (trimmed.startsWith('$scheme://connect')) {
       final uri = Uri.tryParse(trimmed);
       if (uri == null || uri.host != 'connect') {
-        throw const WalletConnectionException('Malformed NegosMint connection link.');
+        throw const WalletConnectionException(
+            'Malformed NegosMint connection link.');
       }
       final data = uri.queryParameters['request'];
       if (data == null || data.isEmpty) {
@@ -22,7 +23,8 @@ class WalletConnectionCodec {
       }
       try {
         return WalletConnectionRequest.fromJson(
-          Map<String, dynamic>.from(jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(data))))),
+          Map<String, dynamic>.from(jsonDecode(
+              utf8.decode(base64Url.decode(base64Url.normalize(data))))),
         );
       } catch (_) {
         throw const WalletConnectionException('Malformed connection request.');
@@ -32,7 +34,8 @@ class WalletConnectionCodec {
     try {
       final decoded = jsonDecode(trimmed);
       if (decoded is! Map<String, dynamic>) {
-        throw const WalletConnectionException('QR payload must be a JSON object.');
+        throw const WalletConnectionException(
+            'QR payload must be a JSON object.');
       }
       return WalletConnectionRequest.fromJson(decoded);
     } catch (_) {

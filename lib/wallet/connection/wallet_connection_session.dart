@@ -71,7 +71,8 @@ class WalletConnectionSession {
 
   static WalletConnectionSession fromJson(Map<String, dynamic> json) {
     final permissions = (json['permissions'] as List<dynamic>? ?? [])
-        .map((value) => WalletConnectionPermissionCodec.fromWire(value.toString()))
+        .map((value) =>
+            WalletConnectionPermissionCodec.fromWire(value.toString()))
         .whereType<WalletConnectionPermission>()
         .toList(growable: false);
     final status = WalletConnectionStatus.values.firstWhere(

@@ -18,15 +18,19 @@ extension WalletConnectionPermissionCodec on WalletConnectionPermission {
   String get label => switch (this) {
         WalletConnectionPermission.readAddress => 'View wallet address',
         WalletConnectionPermission.readNetwork => 'View supported network',
-        WalletConnectionPermission.requestSignature => 'Request message signatures',
-        WalletConnectionPermission.requestTransaction => 'Request transaction signatures',
+        WalletConnectionPermission.requestSignature =>
+          'Request message signatures',
+        WalletConnectionPermission.requestTransaction =>
+          'Request transaction signatures',
       };
 
   static WalletConnectionPermission? fromWire(String value) {
-    return WalletConnectionPermission.values.cast<WalletConnectionPermission?>().firstWhere(
-      (permission) => permission!.wireName == value,
-      orElse: () => null,
-    );
+    return WalletConnectionPermission.values
+        .cast<WalletConnectionPermission?>()
+        .firstWhere(
+          (permission) => permission!.wireName == value,
+          orElse: () => null,
+        );
   }
 }
 
@@ -84,12 +88,16 @@ class WalletConnectionRequest {
         appIdentifier.length > 200 ||
         chainId is! int ||
         expiresAt == null ||
-        expiresAt.isBefore(DateTime.now().toUtc().subtract(const Duration(minutes: 1)))) {
-      throw const WalletConnectionException('Invalid or expired connection request.');
+        expiresAt.isBefore(
+            DateTime.now().toUtc().subtract(const Duration(minutes: 1)))) {
+      throw const WalletConnectionException(
+          'Invalid or expired connection request.');
     }
 
     final rawPermissions = json['permissions'];
-    if (rawPermissions is! List || rawPermissions.isEmpty || rawPermissions.length > 4) {
+    if (rawPermissions is! List ||
+        rawPermissions.isEmpty ||
+        rawPermissions.length > 4) {
       throw const WalletConnectionException('Invalid connection permissions.');
     }
 

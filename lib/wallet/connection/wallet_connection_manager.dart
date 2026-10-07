@@ -29,10 +29,12 @@ class WalletConnectionManager {
     Duration lifetime = const Duration(minutes: 5),
   }) {
     if (permissions.isEmpty) {
-      throw const WalletConnectionException('At least one permission is required.');
+      throw const WalletConnectionException(
+          'At least one permission is required.');
     }
     if (lifetime <= Duration.zero || lifetime > const Duration(minutes: 15)) {
-      throw const WalletConnectionException('Invalid connection request lifetime.');
+      throw const WalletConnectionException(
+          'Invalid connection request lifetime.');
     }
     final now = DateTime.now().toUtc();
     return WalletConnectionRequest(
@@ -55,17 +57,21 @@ class WalletConnectionManager {
     request.validateNetwork(_networks);
     _validateApplication(request);
     if (await _storage.wasRequestConsumed(request.requestId)) {
-      throw const WalletConnectionException('Connection request has already been used.');
+      throw const WalletConnectionException(
+          'Connection request has already been used.');
     }
     final allSessions = await _storage.loadSessions();
     if (allSessions.any((session) =>
         session.appIdentifier == request.appIdentifier &&
         session.status == WalletConnectionStatus.revoked)) {
-      throw const WalletConnectionException('This application was revoked and must start a new connection request.');
+      throw const WalletConnectionException(
+          'This application was revoked and must start a new connection request.');
     }
     final existing = await getActiveConnections();
-    if (existing.any((session) => session.appIdentifier == request.appIdentifier)) {
-      throw const WalletConnectionException('This application is already connected.');
+    if (existing
+        .any((session) => session.appIdentifier == request.appIdentifier)) {
+      throw const WalletConnectionException(
+          'This application is already connected.');
     }
     return request;
   }
@@ -98,10 +104,12 @@ class WalletConnectionManager {
       ...sessions.where((s) => s.sessionId != session.sessionId),
       session,
     ]);
-    return WalletConnectionResult.approved(session, requestId: request.requestId);
+    return WalletConnectionResult.approved(session,
+        requestId: request.requestId);
   }
 
-  Future<WalletConnectionResult> rejectConnection(WalletConnectionRequest request) async {
+  Future<WalletConnectionResult> rejectConnection(
+      WalletConnectionRequest request) async {
     await handleIncomingRequest(request);
     await _storage.markRequestConsumed(request.requestId);
     return WalletConnectionResult.rejected(requestId: request.requestId);
@@ -133,9 +141,11 @@ class WalletConnectionManager {
 
   Future<void> revokeConnection(String sessionId) async {
     final sessions = await _storage.loadSessions();
-    final updated = sessions.map((session) => session.sessionId == sessionId
-        ? session.copyWith(status: WalletConnectionStatus.revoked)
-        : session).toList();
+    final updated = sessions
+        .map((session) => session.sessionId == sessionId
+            ? session.copyWith(status: WalletConnectionStatus.revoked)
+            : session)
+        .toList();
     await _storage.saveSessions(updated);
   }
 
@@ -150,7 +160,8 @@ class WalletConnectionManager {
   }
 
   Future<bool> isConnected(String appIdentifier) async =>
-      (await getActiveConnections()).any((s) => s.appIdentifier == appIdentifier);
+      (await getActiveConnections())
+          .any((s) => s.appIdentifier == appIdentifier);
 
   Future<void> authorizeRequest({
     required String sessionId,
@@ -162,14 +173,17 @@ class WalletConnectionManager {
       throw const WalletConnectionException('Connection is not active.');
     }
     if (session.chainId != chainId) {
-      throw const WalletConnectionException('Signing request uses the wrong network.');
+      throw const WalletConnectionException(
+          'Signing request uses the wrong network.');
     }
     if (!session.hasPermission(permission)) {
-      throw const WalletConnectionException('Application is not authorized for this request.');
+      throw const WalletConnectionException(
+          'Application is not authorized for this request.');
     }
     if (permission == WalletConnectionPermission.requestTransaction) {
       if (!session.hasPermission(WalletConnectionPermission.requestSignature)) {
-        throw const WalletConnectionException('Transaction signing permission is not authorized.');
+        throw const WalletConnectionException(
+            'Transaction signing permission is not authorized.');
       }
     }
   }

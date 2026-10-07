@@ -62,16 +62,18 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final networkName = widget.request.chainId == SupportedNetworks.sepolia.chainId
-        ? SupportedNetworks.sepolia.name
-        : 'Unsupported network';
+    final networkName =
+        widget.request.chainId == SupportedNetworks.sepolia.chainId
+            ? SupportedNetworks.sepolia.name
+            : 'Unsupported network';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sign Transaction')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
         children: [
-          const Icon(Icons.edit_note_rounded, size: 48, color: AppColors.forest),
+          const Icon(Icons.edit_note_rounded,
+              size: 48, color: AppColors.forest),
           const SizedBox(height: 16),
           const Text('Review before signing',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
@@ -90,9 +92,12 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
                   const Divider(height: 26),
                   _Row(label: 'Network', value: networkName),
                   const Divider(height: 26),
-                  _Row(label: 'Action', value: widget.request.actionDescription),
+                  _Row(
+                      label: 'Action', value: widget.request.actionDescription),
                   const Divider(height: 26),
-                  _Row(label: 'Recipient', value: widget.request.to ?? 'Not specified'),
+                  _Row(
+                      label: 'Recipient',
+                      value: widget.request.to ?? 'Not specified'),
                   if (widget.request.value != null) ...[
                     const Divider(height: 26),
                     _Row(label: 'Value', value: widget.request.value!),
@@ -101,7 +106,8 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
                     const Divider(height: 26),
                     const _Row(
                       label: 'Data',
-                      value: 'Contract interaction — raw calldata requires detailed review.',
+                      value:
+                          'Contract interaction — raw calldata requires detailed review.',
                     ),
                   ],
                 ],
@@ -110,7 +116,9 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700)),
+            Text(_error!,
+                style: const TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.w700)),
           ],
           const SizedBox(height: 26),
           OutlinedButton(
@@ -136,10 +144,15 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(width: 100, child: Text(label, style: const TextStyle(color: Colors.black54))),
-      Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700))),
-    ],
-  );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+              width: 100,
+              child:
+                  Text(label, style: const TextStyle(color: Colors.black54))),
+          Expanded(
+              child: Text(value,
+                  style: const TextStyle(fontWeight: FontWeight.w700))),
+        ],
+      );
 }

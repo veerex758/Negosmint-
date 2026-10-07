@@ -9,7 +9,8 @@ class ConnectionRequestScreen extends StatefulWidget {
   final WalletConnectionRequest request;
   const ConnectionRequestScreen({super.key, required this.request});
   @override
-  State<ConnectionRequestScreen> createState() => _ConnectionRequestScreenState();
+  State<ConnectionRequestScreen> createState() =>
+      _ConnectionRequestScreenState();
 }
 
 class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
@@ -18,7 +19,10 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
   String? _error;
 
   Future<void> _approve() async {
-    setState(() { _busy = true; _error = null; });
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
     try {
       final result = await _manager.approveConnection(widget.request);
       if (!mounted) return;
@@ -26,14 +30,21 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
         throw const WalletConnectionException('Connection was not approved.');
       }
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen(address: result.walletAddress)),
+        MaterialPageRoute(
+            builder: (_) => HomeScreen(address: result.walletAddress)),
       );
     } on WalletConnectionException catch (e) {
       if (!mounted) return;
-      setState(() { _busy = false; _error = e.message; });
+      setState(() {
+        _busy = false;
+        _error = e.message;
+      });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _busy = false; _error = 'Unable to approve this connection request.'; });
+      setState(() {
+        _busy = false;
+        _error = 'Unable to approve this connection request.';
+      });
     }
   }
 
@@ -52,24 +63,29 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
         children: [
           const Icon(Icons.link_rounded, size: 48, color: AppColors.forest),
           const SizedBox(height: 16),
-          Text('Connect to ' + widget.request.appName + '?',
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
+          Text('Connect to ${widget.request.appName}?',
+              style:
+                  const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
           const SizedBox(height: 8),
-          const Text('Only the public wallet information listed below will be shared.',
+          const Text(
+              'Only the public wallet information listed below will be shared.',
               style: TextStyle(height: 1.45)),
           const SizedBox(height: 24),
           FutureBuilder<String>(
             future: _manager.getPublicAddress(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return const SizedBox.shrink();
-              return Card(child: Padding(
+              return Card(
+                  child: Padding(
                 padding: const EdgeInsets.all(18),
-                child: _InfoRow(label: 'Wallet', value: _shorten(snapshot.data!)),
+                child:
+                    _InfoRow(label: 'Wallet', value: _shorten(snapshot.data!)),
               ));
             },
           ),
           const SizedBox(height: 12),
-          Card(child: Padding(
+          Card(
+              child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(children: [
               _InfoRow(label: 'App', value: widget.request.appName),
@@ -85,14 +101,19 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
           const Text('Requested permissions',
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
-          Card(child: Column(
-            children: widget.request.permissions.map((permission) => ListTile(
-              leading: const Icon(Icons.check_circle_outline),
-              title: Text(permission.label),
-              subtitle: permission == WalletConnectionPermission.requestTransaction
-                  ? const Text('This does not authorize automatic transactions.')
-                  : null,
-            )).toList(),
+          Card(
+              child: Column(
+            children: widget.request.permissions
+                .map((permission) => ListTile(
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(permission.label),
+                      subtitle: permission ==
+                              WalletConnectionPermission.requestTransaction
+                          ? const Text(
+                              'This does not authorize automatic transactions.')
+                          : null,
+                    ))
+                .toList(),
           )),
           if (widget.request.requestsSigning) ...[
             const SizedBox(height: 12),
@@ -110,13 +131,17 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
           ],
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700)),
+            Text(_error!,
+                style: const TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.w700)),
           ],
           const SizedBox(height: 26),
-          FilledButton(onPressed: _busy ? null : _approve,
+          FilledButton(
+              onPressed: _busy ? null : _approve,
               child: Text(_busy ? 'Connecting…' : 'Connect')),
           const SizedBox(height: 10),
-          OutlinedButton(onPressed: _busy ? null : _reject, child: const Text('Cancel')),
+          OutlinedButton(
+              onPressed: _busy ? null : _reject, child: const Text('Cancel')),
         ],
       ),
     );
@@ -124,7 +149,7 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
 }
 
 String _shorten(String address) => address.length > 12
-    ? address.substring(0, 8) + '…' + address.substring(address.length - 6)
+    ? '${address.substring(0, 8)}…${address.substring(address.length - 6)}'
     : address;
 
 class _InfoRow extends StatelessWidget {
@@ -133,10 +158,15 @@ class _InfoRow extends StatelessWidget {
   const _InfoRow({required this.label, required this.value});
   @override
   Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(width: 88, child: Text(label, style: const TextStyle(color: Colors.black54))),
-      Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700))),
-    ],
-  );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+              width: 88,
+              child:
+                  Text(label, style: const TextStyle(color: Colors.black54))),
+          Expanded(
+              child: Text(value,
+                  style: const TextStyle(fontWeight: FontWeight.w700))),
+        ],
+      );
 }

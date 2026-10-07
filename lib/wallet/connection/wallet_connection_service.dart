@@ -21,7 +21,8 @@ class WalletConnectionService {
   ) =>
       manager.approveConnection(request);
 
-  Future<WalletConnectionResult> rejectConnection(WalletConnectionRequest request) =>
+  Future<WalletConnectionResult> rejectConnection(
+          WalletConnectionRequest request) =>
       manager.rejectConnection(request);
 
   Future<List<WalletConnectionSession>> getActiveConnections() =>

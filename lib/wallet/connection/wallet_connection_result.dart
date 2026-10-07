@@ -23,7 +23,8 @@ class WalletConnectionResult {
     required this.errorCode,
   });
 
-  factory WalletConnectionResult.approved(WalletConnectionSession session, {required String requestId}) =>
+  factory WalletConnectionResult.approved(WalletConnectionSession session,
+          {required String requestId}) =>
       WalletConnectionResult(
         status: WalletConnectionResultStatus.approved,
         requestId: requestId,
