@@ -175,30 +175,7 @@ class WalletService {
     if (valueWei < BigInt.zero) {
       throw const WalletException('Transaction value cannot be negative.');
     }
-    if (!RegExp(r'^0x[0-9a-fA-F]*
-    final raw = await _storage.read(key: _activityKey);
-    if (raw == null || raw.isEmpty) return const [];
-    return raw.split('|').where((value) => value.isNotEmpty).toList();
-  }
-
-  Future<void> _saveActivity(String hash) async {
-    final current = await getActivity();
-    final updated = <String>[
-      hash,
-      ...current.where((value) => value != hash),
-    ];
-    await _storage.write(
-      key: _activityKey,
-      value: updated.take(20).join('|'),
-    );
-  }
-
-  Future<void> clearWallet() async {
-    await _keyStore.deleteWallet();
-    await _storage.delete(key: _activityKey);
-  }
-}
-).hasMatch(data) || data.length.isOdd) {
+    if (!RegExp(r'^0x[0-9a-fA-F]*$').hasMatch(data) || data.length.isOdd) {
       throw const WalletException('Invalid transaction data.');
     }
     final mnemonic = await _keyStore.loadMnemonic();
@@ -222,7 +199,8 @@ class WalletService {
       if (credentials.address.eip55With0x.toLowerCase() ==
           recipient.eip55With0x.toLowerCase()) {
         throw const WalletException(
-            'Recipient cannot be the same as your wallet.');
+          'Recipient cannot be the same as your wallet.',
+        );
       }
       final transaction = eth.Transaction(
         to: recipient,
