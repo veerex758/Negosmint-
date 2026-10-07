@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../wallet/connection/wallet_connection_manager.dart';
+import '../wallet/connection/wallet_connection_request.dart';
 import '../wallet/connection/wallet_connection_session.dart';
 import '../wallet/connection/wallet_signing_request.dart';
 import '../core/network/network_config.dart';
