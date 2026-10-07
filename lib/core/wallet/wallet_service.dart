@@ -205,7 +205,7 @@ class WalletService {
       }
       final transaction = eth.Transaction(
         to: recipient,
-        value: eth.EtherAmount.inWei(valueWei),
+        value: wallet.EtherAmount.inWei(valueWei),
         data: eth.hexToBytes(data),
       );
       final signed = await client.signTransaction(
