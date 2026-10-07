@@ -11,7 +11,7 @@ class NegosMintWalletApp extends StatelessWidget {
       title: 'NegosMint Wallet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      darkTheme: AppColors.dark,
       themeMode: ThemeMode.system,
       home: const SplashScreen(),
     );
