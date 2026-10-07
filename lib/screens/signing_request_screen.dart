@@ -120,11 +120,13 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!,
-                style: const TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w700,
-                ),
+            Text(
+              _error!,
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
           const SizedBox(height: 26),
           OutlinedButton(
