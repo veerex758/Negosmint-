@@ -72,6 +72,14 @@ class WalletService {
 
   Future<String?> getPublicAddress() => _keyStore.loadAddress();
 
+  Future<String?> revealRecoveryPhrase() async {
+    if (!await _biometrics.authenticateForSigning()) return null;
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) return null;
+    return mnemonic.join(' ');
+  }
+
+
   Future<String> sendSepoliaEth({
     required String to,
     required BigInt valueWei,
