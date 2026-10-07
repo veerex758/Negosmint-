@@ -7,6 +7,7 @@ import 'wallet_connection_result.dart';
 import 'wallet_connection_session.dart';
 import 'wallet_connection_storage.dart';
 import 'wallet_signing_request.dart';
+import 'wallet_signing_result.dart';
 
 class WalletConnectionManager {
   final WalletService _wallet;
@@ -169,6 +170,24 @@ class WalletConnectionManager {
       (network) => network.chainId == chainId,
       orElse: () =>
           throw const WalletConnectionException('Unsupported wallet network.'));
+
+  Future<WalletSigningResult> signTransactionResult(
+    WalletSigningRequest request,
+  ) async {
+    try {
+      final signed = await signTransaction(request);
+      return WalletSigningResult.approved(
+        requestId: request.requestId,
+        sessionId: request.sessionId,
+        signedTransaction: signed,
+      );
+    } on WalletConnectionException {
+      return WalletSigningResult.rejected(
+        requestId: request.requestId,
+        errorCode: 'WALLET_REQUEST_REJECTED',
+      );
+    }
+  }
 
   Future<String> signTransaction(WalletSigningRequest request) async {
     await authorizeRequest(
