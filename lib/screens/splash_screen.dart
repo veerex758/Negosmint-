@@ -92,16 +92,16 @@ class _SplashScreenState extends State<SplashScreen>
             math.min(1, _controller.value / .58),
           );
           final textT = Curves.easeOutCubic.transform(
-            ((t - .24) / .42).clamp(0.0, 1.0),
+            math.max(0.0, math.min(1.0, (t - .24) / .42)),
           );
           final barT = Curves.easeOutCubic.transform(
-            ((t - .48) / .34).clamp(0.0, 1.0),
+            math.max(0.0, math.min(1.0, (t - .48) / .34)),
           );
           final ringT = Curves.easeOutCubic.transform(
-            ((t - .08) / .92).clamp(0.0, 1.0),
+            math.max(0.0, math.min(1.0, (t - .08) / .92)),
           );
           final exitT = Curves.easeInCubic.transform(
-            ((t - .76) / .24).clamp(0.0, 1.0),
+            math.max(0.0, math.min(1.0, (t - .76) / .24)),
           );
 
           return Stack(
@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Transform.scale(
                   scale: .86 + (.14 * logoT),
                   child: Opacity(
-                    opacity: (1 - (exitT * .65)).clamp(0.0, 1.0),
+                    opacity: math.max(0.0, math.min(1.0, 1 - (exitT * .65))),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
