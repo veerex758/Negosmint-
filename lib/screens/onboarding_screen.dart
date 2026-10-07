@@ -58,7 +58,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'Wallet could not be secured. Please try the backup check again.';
+        _error =
+            'Wallet could not be secured. Please try the backup check again.';
       });
       return;
     }

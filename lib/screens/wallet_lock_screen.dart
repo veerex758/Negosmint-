@@ -38,7 +38,8 @@ class _WalletLockScreenState extends State<WalletLockScreen> {
     } else {
       setState(() {
         _busy = false;
-        _error = 'Authentication was not completed. Your wallet remains locked.';
+        _error =
+            'Authentication was not completed. Your wallet remains locked.';
       });
     }
   }
@@ -93,7 +94,9 @@ class _WalletLockScreenState extends State<WalletLockScreen> {
                     child: FilledButton.icon(
                       onPressed: _busy ? null : _unlock,
                       icon: const Icon(Icons.fingerprint_rounded),
-                      label: Text(_busy ? 'Waiting for authentication…' : 'Unlock wallet'),
+                      label: Text(_busy
+                          ? 'Waiting for authentication…'
+                          : 'Unlock wallet'),
                     ),
                   ),
                 ],

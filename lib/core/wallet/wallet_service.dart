@@ -79,7 +79,6 @@ class WalletService {
     return mnemonic.join(' ');
   }
 
-
   Future<String> sendSepoliaEth({
     required String to,
     required BigInt valueWei,
@@ -117,7 +116,8 @@ class WalletService {
       final sender = credentials.address;
       if (sender.eip55With0x.toLowerCase() ==
           recipient.eip55With0x.toLowerCase()) {
-        throw const WalletException('Recipient cannot be the same as your wallet.');
+        throw const WalletException(
+            'Recipient cannot be the same as your wallet.');
       }
 
       final balance = await client.getBalance(sender);
