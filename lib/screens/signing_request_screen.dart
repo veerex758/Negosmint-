@@ -122,8 +122,9 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
           FilledButton.icon(
             onPressed: _busy ? null : _reviewAndAuthorize,
             icon: const Icon(Icons.lock_outline_rounded),
-            label: Text(_busy ? 'Signing locally…' : 'Confirm & Sign'),
-            label: Text(_busy ? 'Checking authorization…' : 'Confirm & Sign'),
+            label: Text(
+              _busy ? 'Signing locally…' : 'Confirm & Sign',
+            ),
           ),
         ],
       ),
