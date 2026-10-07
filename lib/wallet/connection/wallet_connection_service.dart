@@ -6,6 +6,7 @@ import 'wallet_connection_result.dart';
 import 'wallet_connection_session.dart';
 import 'wallet_signing_request.dart';
 import 'wallet_signing_result.dart';
+import 'wallet_signing_result.dart';
 
 class WalletConnectionService {
   final WalletConnectionManager manager;
@@ -39,6 +40,11 @@ class WalletConnectionService {
 
   Future<String> signTransaction(WalletSigningRequest request) =>
       manager.signTransaction(request);
+
+  Future<WalletSigningResult> signTransactionResult(
+    WalletSigningRequest request,
+  ) =>
+      manager.signTransactionResult(request);
 
   Future<WalletSigningResult> signTransactionResult(
     WalletSigningRequest request,
