@@ -5,6 +5,7 @@ import 'wallet_connection_session.dart';
 /// Persists connection metadata only. No key material is accepted by this class.
 class WalletConnectionStorage {
   static const _sessionsKey = 'wallet.connection.sessions.v1';
+  static const _consumedRequestsKey = 'wallet.connection.requests.v1';
   final FlutterSecureStorage _storage;
 
   const WalletConnectionStorage({
@@ -34,5 +35,24 @@ class WalletConnectionStorage {
         value: jsonEncode(sessions.map((session) => session.toJson()).toList()),
       );
 
-  Future<void> clear() => _storage.delete(key: _sessionsKey);
+  Future<bool> wasRequestConsumed(String requestId) async {
+    final raw = await _storage.read(key: _consumedRequestsKey);
+    if (raw == null || raw.isEmpty) return false;
+    return raw.split('|').contains(requestId);
+  }
+
+  Future<void> markRequestConsumed(String requestId) async {
+    if (requestId.isEmpty || await wasRequestConsumed(requestId)) return;
+    final raw = await _storage.read(key: _consumedRequestsKey);
+    final ids = raw == null || raw.isEmpty ? <String>[] : raw.split('|');
+    await _storage.write(
+      key: _consumedRequestsKey,
+      value: <String>[requestId, ...ids].take(100).join('|'),
+    );
+  }
+
+  Future<void> clear() async {
+    await _storage.delete(key: _sessionsKey);
+    await _storage.delete(key: _consumedRequestsKey);
+  }
 }
