@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
 
@@ -18,7 +17,7 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
     if (_revealed) return;
     setState(() => _loading = true);
     try {
-      final phrase = await WalletService().getRecoveryPhrase();
+      final phrase = await WalletService().revealRecoveryPhrase();
       if (!mounted) return;
       setState(() {
         _phrase = phrase;
@@ -113,25 +112,9 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _copyPhrase,
-              icon: const Icon(Icons.copy_rounded),
-              label: const Text('Copy phrase'),
-            ),
           ],
         ]),
       );
-
-  Future<void> _copyPhrase() async {
-    await Clipboard.setData(ClipboardData(text: _phrase ?? ''));
-
-    if (!mounted) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Phrase copied — protect it carefully')),
-    );
-  }
 
   Future<void> _confirm() async {
     final ok = await showDialog<bool>(
