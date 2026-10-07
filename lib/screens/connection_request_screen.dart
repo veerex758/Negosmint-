@@ -55,7 +55,9 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final network = _manager.networkFor(widget.request.chainId);
+    final network = widget.request.validateNetwork(
+      const [SupportedNetworks.sepolia],
+    );
     return Scaffold(
       appBar: AppBar(title: const Text('Connection Request')),
       body: ListView(
