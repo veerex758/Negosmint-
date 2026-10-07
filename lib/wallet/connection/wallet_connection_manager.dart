@@ -63,7 +63,7 @@ class WalletConnectionManager {
       ...sessions.where((s) => s.sessionId != session.sessionId),
       session,
     ]);
-    return WalletConnectionResult.approved(session);
+    return WalletConnectionResult.approved(session, requestId: request.requestId);
   }
 
   WalletConnectionResult rejectConnection(WalletConnectionRequest request) =>
