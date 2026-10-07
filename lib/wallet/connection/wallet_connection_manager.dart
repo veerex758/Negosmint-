@@ -13,6 +13,7 @@ class WalletConnectionManager {
   final WalletService _wallet;
   final WalletConnectionStorage _storage;
   final List<NetworkConfig> _networks;
+  final Set<String> _requestsInProgress = <String>{};
 
   WalletConnectionManager({
     WalletService? wallet,
@@ -81,7 +82,13 @@ class WalletConnectionManager {
   Future<WalletConnectionResult> approveConnection(
     WalletConnectionRequest request,
   ) async {
-    await handleIncomingRequest(request);
+    if (!_requestsInProgress.add(request.requestId)) {
+      throw const WalletConnectionException(
+        'Connection request is already being processed.',
+      );
+    }
+    try {
+      await handleIncomingRequest(request);
     final address = await _wallet.getPublicAddress();
     if (address == null || address.isEmpty || !_isValidAddress(address)) {
       throw const WalletConnectionException('Wallet is not initialized.');
@@ -107,8 +114,11 @@ class WalletConnectionManager {
       session,
     ]);
     await _storage.markRequestConsumed(request.requestId);
-    return WalletConnectionResult.approved(session,
-        requestId: request.requestId);
+      return WalletConnectionResult.approved(session,
+          requestId: request.requestId);
+    } finally {
+      _requestsInProgress.remove(request.requestId);
+    }
   }
 
   Future<WalletConnectionResult> rejectConnection(
