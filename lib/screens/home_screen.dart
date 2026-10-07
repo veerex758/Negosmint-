@@ -9,6 +9,7 @@ import 'security_screen.dart';
 import 'recovery_phrase_screen.dart';
 import 'network_screen.dart';
 import 'about_screen.dart';
+import 'connected_apps_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? address;
@@ -648,6 +649,9 @@ class _SettingsTab extends StatelessWidget {
             const Divider(height: 1, indent: 72),
             _settingTile(context, Icons.network_check_outlined, 'Network',
                 'Sepolia testnet only', const NetworkScreen()),
+            const Divider(height: 1, indent: 72),
+            _settingTile(context, Icons.link_rounded, 'Connected Apps',
+                'Manage wallet connections', const ConnectedAppsScreen()),
             const Divider(height: 1, indent: 72),
             _settingTile(context, Icons.info_outline, 'About NegosMint Wallet',
                 'Version and wallet information', const AboutScreen()),
