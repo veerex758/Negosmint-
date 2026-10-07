@@ -37,7 +37,10 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
     }
   }
 
-  void _reject() => Navigator.of(context).pop(_manager.rejectConnection(widget.request));
+  Future<void> _reject() async {
+    final result = await _manager.rejectConnection(widget.request);
+    if (mounted) Navigator.of(context).pop(result);
+  }
 
   @override
   Widget build(BuildContext context) {
