@@ -35,6 +35,9 @@ class WalletConnectionService {
   Future<bool> isConnected(String appIdentifier) =>
       manager.isConnected(appIdentifier);
 
+  Future<String> signTransaction(WalletSigningRequest request) =>
+      manager.signTransaction(request);
+
   Future<void> authorizeRequest({
     required String sessionId,
     required WalletConnectionPermission permission,
