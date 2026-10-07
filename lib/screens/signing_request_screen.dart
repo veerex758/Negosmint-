@@ -65,11 +65,16 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
         children: [
-          const Icon(Icons.edit_note_rounded,
-              size: 48, color: AppColors.forest),
+          const Icon(
+            Icons.edit_note_rounded,
+            size: 48,
+            color: AppColors.forest,
+          ),
           const SizedBox(height: 16),
-          const Text('Review before signing',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
+          const Text(
+            'Review before signing',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+          ),
           const SizedBox(height: 8),
           const Text(
             'The wallet will never send your private key to the requesting application. Signing happens locally after explicit approval.',
@@ -86,14 +91,20 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
                   _Row(label: 'Network', value: networkName),
                   const Divider(height: 26),
                   _Row(
-                      label: 'Action', value: widget.request.actionDescription),
+                    label: 'Action',
+                    value: widget.request.actionDescription,
+                  ),
                   const Divider(height: 26),
                   _Row(
-                      label: 'Recipient',
-                      value: widget.request.to ?? 'Not specified'),
+                    label: 'Recipient',
+                    value: widget.request.to ?? 'Not specified',
+                  ),
                   if (widget.request.value != null) ...[
                     const Divider(height: 26),
-                    _Row(label: 'Value', value: widget.request.value!),
+                    _Row(
+                      label: 'Value',
+                      value: widget.request.value!,
+                    ),
                   ],
                   if (widget.request.isContractInteraction) ...[
                     const Divider(height: 26),
@@ -111,7 +122,9 @@ class _SigningRequestScreenState extends State<SigningRequestScreen> {
             const SizedBox(height: 16),
             Text(_error!,
                 style: const TextStyle(
-                    color: Colors.redAccent, fontWeight: FontWeight.w700)),
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w700,
+                ),
           ],
           const SizedBox(height: 26),
           OutlinedButton(
@@ -142,12 +155,15 @@ class _Row extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-              width: 100,
-              child:
-                  Text(label, style: const TextStyle(color: Colors.black54))),
+            width: 100,
+            child: Text(label, style: const TextStyle(color: Colors.black54)),
+          ),
           Expanded(
-              child: Text(value,
-                  style: const TextStyle(fontWeight: FontWeight.w700))),
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       );
 }
