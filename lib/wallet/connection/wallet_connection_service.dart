@@ -11,14 +11,6 @@ class WalletConnectionService {
   WalletConnectionService({WalletConnectionManager? manager})
       : manager = manager ?? WalletConnectionManager();
 
-  Future<WalletConnectionRequest> createConnectionRequest(
-    String payload,
-  ) async {
-    throw UnsupportedError(
-      'Wallet apps receive requests from transports. Use handleIncomingRequest with a parsed request.',
-    );
-  }
-
   Future<WalletConnectionRequest> handleIncomingRequest(
     WalletConnectionRequest request,
   ) =>
