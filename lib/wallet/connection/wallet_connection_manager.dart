@@ -163,6 +163,11 @@ class WalletConnectionManager {
       (await getActiveConnections())
           .any((s) => s.appIdentifier == appIdentifier);
 
+  NetworkConfig networkFor(int chainId) =>
+      _networks.firstWhere((network) => network.chainId == chainId,
+          orElse: () => throw const WalletConnectionException(
+              'Unsupported wallet network.'));
+
   Future<void> authorizeRequest({
     required String sessionId,
     required WalletConnectionPermission permission,
