@@ -45,11 +45,6 @@ class WalletConnectionService {
   ) =>
       manager.signTransactionResult(request);
 
-  Future<WalletSigningResult> signTransactionResult(
-    WalletSigningRequest request,
-  ) =>
-      manager.signTransactionResult(request);
-
   Future<void> authorizeRequest({
     required String sessionId,
     required WalletConnectionPermission permission,
