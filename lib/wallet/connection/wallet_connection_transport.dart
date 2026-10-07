@@ -1,6 +1,7 @@
 import 'wallet_connection_request.dart';
 import 'wallet_connection_result.dart';
 import 'wallet_signing_result.dart';
+import 'wallet_signing_result.dart';
 
 abstract interface class WalletConnectionTransport {
   Future<WalletConnectionRequest> receive(String payload);
