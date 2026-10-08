@@ -31,6 +31,25 @@ jobs:
           flutter-version: "3.47.0"
           channel: stable
       - run: flutter create --platforms=android --project-name negosmint_wallet .
+      - name: Configure Android wallet deep link
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          text = path.read_text()
+          marker = '        <intent-filter android:autoVerify="false">'
+          block = '''        <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="negosmintwallet" android:host="connect" />
+          </intent-filter>
+'''
+          if 'android:scheme="negosmintwallet"' not in text:
+              text = text.replace('        <intent-filter>', block + '        <intent-filter>', 1)
+              path.write_text(text)
+          PY
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
