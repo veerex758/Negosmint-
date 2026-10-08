@@ -239,6 +239,41 @@ void main() {
     expect(payload, isNot(contains('seed')));
   });
 
+
+  test('transaction fee preview calculates the exact fee', () {
+    const preview = WalletTransactionFeePreview(
+      gasLimit: BigInt.from(21000),
+      gasPriceWei: BigInt.from(1000000000),
+    );
+
+    expect(preview.feeWei, BigInt.from(21000000000000));
+  });
+
+  test('rejected signing result has no signed transaction', () {
+    const result = WalletSigningResult.rejected(
+      requestId: 'request-2',
+      errorCode: 'WALLET_REQUEST_REJECTED',
+    );
+
+    expect(result.status, WalletSigningResultStatus.rejected);
+    expect(result.requestId, 'request-2');
+    expect(result.signedTransaction, isNull);
+    expect(result.errorCode, 'WALLET_REQUEST_REJECTED');
+  });
+
+  test('signing result preserves request correlation', () {
+    const result = WalletSigningResult.approved(
+      requestId: 'request-3',
+      sessionId: 'session-3',
+      signedTransaction: '0xdeadbeef',
+    );
+
+    final json = result.toJson();
+    expect(json['requestId'], 'request-3');
+    expect(json['sessionId'], 'session-3');
+    expect(json['signedTransaction'], '0xdeadbeef');
+  });
+
   test('expired sessions are not active', () {
     final now = DateTime.now().toUtc();
     final session = WalletConnectionSession(
