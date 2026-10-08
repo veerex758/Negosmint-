@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102D69"/>
+      <stop offset="1" stop-color="#020A1D"/>
+    </linearGradient>
+    <linearGradient id="wallet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20D7F4"/>
+      <stop offset="0.48" stop-color="#087CF0"/>
+      <stop offset="1" stop-color="#1238C9"/>
+    </linearGradient>
+    <linearGradient id="wallet2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1468F2"/>
+      <stop offset="1" stop-color="#0A258F"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE45B"/>
+      <stop offset="0.45" stop-color="#FFB51B"/>
+      <stop offset="1" stop-color="#F27A0A"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20F1E7"/>
+      <stop offset="1" stop-color="#087AF2"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#000" flood-opacity=".45"/>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <rect x="24" y="24" width="976" height="976" rx="210" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="390" fill="#0B2B72" opacity=".22" filter="url(#soft)"/>
+
+  <g filter="url(#shadow)">
+    <circle cx="548" cy="328" r="155" fill="url(#coin)" stroke="#FFD84A" stroke-width="10"/>
+    <circle cx="548" cy="328" r="124" fill="none" stroke="#FFDB4A" stroke-width="7" opacity=".55"/>
+    <path d="M548 225l-46 78 46 27 46-27z" fill="#071A49"/>
+    <path d="M548 343l-46-27 46 76 46-76z" fill="#071A49"/>
+    <path d="M548 225v105l46-27z" fill="#0C2A69" opacity=".9"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M206 438c0-55 45-100 100-100h514c45 0 82 37 82 82v329c0 57-46 103-103 103H306c-55 0-100-45-100-100z" fill="url(#wallet2)"/>
+    <path d="M206 455c0-55 45-100 100-100h514c45 0 82 37 82 82v118H306c-55 0-100-45-100-100z" fill="url(#wallet)"/>
+    <path d="M216 455c0-49 40-89 89-89h499c35 0 63 28 63 63v31H305c-49 0-89 40-89 89z" fill="#31DDF5" opacity=".25"/>
+    <path d="M768 520h118c39 0 70 31 70 70v90c0 39-31 70-70 70H768c-39 0-70-31-70-70v-90c0-39 31-70 70-70z" fill="#1648D5" stroke="#2A9CFF" stroke-width="6"/>
+    <circle cx="828" cy="635" r="26" fill="#F7FBFF"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M512 440l117 48-18 124c-10 71-49 126-99 153-50-27-89-82-99-153l-18-124z" fill="#F8FBFF"/>
+    <path d="M512 494c-38 0-69 31-69 69v29h-14c-14 0-25 11-25 25v75c0 14 11 25 25 25h166c14 0 25-11 25-25v-75c0-14-11-25-25-25h-14v-29c0-38-31-69-69-69zm0 35c19 0 34 15 34 34v29h-68v-29c0-19 15-34 34-34z" fill="#0A235E"/>
+    <circle cx="512" cy="652" r="10" fill="#F8FBFF"/>
+    <path d="M512 662v28" stroke="#F8FBFF" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <path d="M220 650c-50 69-16 150 70 190 126 59 338 79 531 24 82-23 129-61 153-101"
+        fill="none" stroke="url(#ring)" stroke-width="48" stroke-linecap="round"/>
+  <path d="M217 650c-8 18-11 37-8 56" fill="none" stroke="#31F0E8" stroke-width="18" stroke-linecap="round"/>
+</svg>
