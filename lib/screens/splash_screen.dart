@@ -11,6 +11,7 @@ import '../wallet/connection/wallet_connection_request.dart';
 import 'connection_request_screen.dart';
 import '../wallet/connection/wallet_connect_bridge.dart';
 import 'wallet_connect_proposal_screen.dart';
+import 'wallet_connect_signing_request_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen>
   WalletConnectBridge? _walletConnectBridge;
   StreamSubscription<WalletConnectProposal>? _proposalSubscription;
   StreamSubscription<Uri>? _walletConnectUriSubscription;
+  StreamSubscription<WalletConnectSessionRequest>? _walletConnectRequestSubscription;
 
   @override
   void initState() {
@@ -64,11 +66,33 @@ class _SplashScreenState extends State<SplashScreen>
       }
       _walletConnectBridge = bridge;
       _proposalSubscription = bridge.proposals.listen(_handleWalletConnectProposal);
+      _walletConnectRequestSubscription =
+          bridge.requests.listen(_handleWalletConnectRequest);
     } catch (_) {
       // WalletConnect is optional until a public Reown project ID is supplied.
     }
   }
 
+
+
+  Future<void> _handleWalletConnectRequest(
+    WalletConnectSessionRequest request,
+  ) async {
+    final bridge = _walletConnectBridge;
+    final signing = request.signingRequest;
+    if (!mounted || bridge == null || signing == null) return;
+
+    final service = WalletService();
+    await Navigator.of(context).push(
+      MaterialPageRoute<bool>(
+        builder: (_) => WalletConnectSigningRequestScreen(
+          bridge: bridge,
+          request: request,
+          walletService: service,
+        ),
+      ),
+    );
+  }
 
   Future<void> _handleWalletConnectUri(Uri uri) async {
     final bridge = _walletConnectBridge;
@@ -160,6 +184,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _walletConnectUriSubscription?.cancel();
+    _walletConnectRequestSubscription?.cancel();
     _proposalSubscription?.cancel();
     _walletConnectBridge?.dispose();
     _navigationTimer?.cancel();
