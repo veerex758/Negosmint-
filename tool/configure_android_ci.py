@@ -1,6 +1,63 @@
 from pathlib import Path
 
 
+JITPACK_URL = "https://jitpack.io"
+
+
+def configure_project_repositories() -> None:
+    build = Path("android/build.gradle")
+    if not build.exists():
+        build = Path("android/build.gradle.kts")
+    if not build.exists():
+        raise SystemExit("Android root build.gradle(.kts) not found")
+
+    text = build.read_text()
+    if JITPACK_URL in text:
+        print(f"JitPack already configured in {build}")
+        return
+
+    if build.suffix == ".kts":
+        jitpack = '        maven { url = uri("https://jitpack.io") }'
+    else:
+        jitpack = "        maven { url 'https://jitpack.io' }"
+
+    marker = "allprojects"
+    start = text.find(marker)
+    if start >= 0:
+        repo = text.find("mavenCentral()", start)
+        if repo < 0:
+            raise SystemExit(
+                "allprojects block exists but mavenCentral() was not found"
+            )
+        insert_at = repo + len("mavenCentral()")
+        text = text[:insert_at] + "\n" + jitpack + text[insert_at:]
+    else:
+        if build.suffix == ".kts":
+            text += '''\n\nallprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+'''
+        else:
+            text += '''\n\nallprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+'''
+
+    build.write_text(text)
+
+    if JITPACK_URL not in build.read_text():
+        raise SystemExit("JitPack repository was not configured in root build file")
+    print(f"Configured JitPack in {build}")
+
+
 def configure_settings() -> None:
     settings = Path("android/settings.gradle.kts")
     kotlin = True
@@ -11,7 +68,7 @@ def configure_settings() -> None:
         raise SystemExit("Android settings.gradle(.kts) not found")
 
     text = settings.read_text()
-    if "https://jitpack.io" not in text:
+    if JITPACK_URL not in text:
         jitpack = (
             '        maven { url = uri("https://jitpack.io") }'
             if kotlin
@@ -48,8 +105,8 @@ def configure_settings() -> None:
 '''
         settings.write_text(text)
 
-    if "https://jitpack.io" not in settings.read_text():
-        raise SystemExit("JitPack repository was not configured")
+    if JITPACK_URL not in settings.read_text():
+        raise SystemExit("JitPack repository was not configured in settings")
     print(f"Configured JitPack in {settings}")
 
 
@@ -85,5 +142,6 @@ def configure_manifest() -> None:
     print(f"Configured wallet deep links in {manifest}")
 
 
+configure_project_repositories()
 configure_settings()
 configure_manifest()
