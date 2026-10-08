@@ -1,5 +1,7 @@
 import 'package:reown_walletkit/reown_walletkit.dart';
 
+import 'wallet_connection_request.dart';
+
 /// Thin interoperability boundary around Reown WalletKit.
 ///
 /// This class owns WalletConnect/Reown protocol state only. It does not own
