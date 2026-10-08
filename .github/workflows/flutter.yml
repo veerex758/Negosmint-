@@ -55,6 +55,11 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --project-name negosmint_wallet .
 
+      - name: Configure Android Maven repositories
+        shell: bash
+        run: |
+          python3 -c 'from pathlib import Path; p=Path("android/build.gradle"); s=p.read_text(); needle="mavenCentral()"; addition="mavenCentral()\\n        maven { url = uri(\"https://jitpack.io\") }"; p.write_text(s if "https://jitpack.io" in s else s.replace(needle, addition, 1))'
+
       - name: Configure Android wallet deep link
         shell: bash
         run: |
