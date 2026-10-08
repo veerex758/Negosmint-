@@ -46,8 +46,7 @@ class WalletDeepLinkReceiver {
 
   WalletConnectionRequest? _parse(Uri uri) {
     try {
-      if (uri.scheme != WalletConnectionCodec.scheme ||
-          uri.host != 'connect') {
+      if (uri.scheme != WalletConnectionCodec.scheme || uri.host != 'connect') {
         return null;
       }
       return WalletConnectionCodec.parseRequest(uri.toString());
