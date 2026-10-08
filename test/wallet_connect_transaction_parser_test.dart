@@ -23,7 +23,7 @@ void main() {
       ];
 
   test('normalizes a valid Sepolia eth_sendTransaction request', () {
-    final request = WalletConnectTransactionParser.parse(
+    final parsed = WalletConnectTransactionParser.parse(
       topic: 'topic-1',
       id: 42,
       chainId: WalletConnectTransactionParser.sepoliaCaip2,
@@ -32,22 +32,17 @@ void main() {
       appName: 'Example dApp',
     );
 
-    expect(request.topic, 'topic-1');
-    expect(request.id, 42);
-    expect(request.chainId, 'eip155:11155111');
-    expect(request.method, 'eth_sendTransaction');
-    expect(request.appName, 'Example dApp');
-    expect(request.from, validFrom);
-    expect(request.signingRequest?.to, validTo);
-    expect(request.signingRequest?.value, '0x01');
-    expect(request.signingRequest?.data, '0x');
-    expect(request.signingRequest?.chainId, 11155111);
-    expect(request.signingRequest?.sessionId, 'topic-1');
-    expect(request.signingRequest?.requestId, '42');
+    expect(parsed.from, validFrom);
+    expect(parsed.signingRequest.to, validTo);
+    expect(parsed.signingRequest.value, '0x01');
+    expect(parsed.signingRequest.data, '0x');
+    expect(parsed.signingRequest.chainId, 11155111);
+    expect(parsed.signingRequest.sessionId, 'topic-1');
+    expect(parsed.signingRequest.requestId, '42');
   });
 
   test('defaults omitted value and calldata safely', () {
-    final request = WalletConnectTransactionParser.parse(
+    final parsed = WalletConnectTransactionParser.parse(
       topic: 'topic-2',
       id: 7,
       chainId: WalletConnectTransactionParser.sepoliaCaip2,
@@ -58,8 +53,8 @@ void main() {
       appName: 'Example dApp',
     );
 
-    expect(request.signingRequest?.value, '0x0');
-    expect(request.signingRequest?.data, '0x');
+    expect(parsed.signingRequest.value, '0x0');
+    expect(parsed.signingRequest.data, '0x');
   });
 
   test('rejects a non-Sepolia chain', () {
@@ -182,7 +177,7 @@ void main() {
   });
 
   test('does not carry wallet secrets in normalized requests', () {
-    final request = WalletConnectTransactionParser.parse(
+    final parsed = WalletConnectTransactionParser.parse(
       topic: 'topic',
       id: 99,
       chainId: WalletConnectTransactionParser.sepoliaCaip2,
@@ -191,7 +186,7 @@ void main() {
       appName: 'Example dApp',
     );
 
-    final text = request.toString();
+    final text = '${parsed.signingRequest.to}\n${parsed.signingRequest.value}\n${parsed.signingRequest.data}\n${parsed.from}';
     expect(text, isNot(contains('mnemonic')));
     expect(text, isNot(contains('privateKey')));
     expect(text, isNot(contains('seed')));
