@@ -26,11 +26,6 @@ jobs:
           flutter-version: "3.47.0"
           channel: stable
 
-      - name: Configure Android dependency repositories
-        shell: bash
-        run: |
-          python3 -c 'from pathlib import Path; p=Path("android/settings.gradle"); s=p.read_text(); needle="mavenCentral()"; addition="mavenCentral()\\n        maven { url = uri(\\"https://jitpack.io\\") }"; p.write_text(s if "https://jitpack.io" in s else s.replace(needle, addition, 1))'
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -63,7 +58,14 @@ jobs:
       - name: Configure Android Maven repositories
         shell: bash
         run: |
-          python3 -c 'from pathlib import Path; p=Path("android/settings.gradle.kts"); s=p.read_text(); needle="mavenCentral()"; addition="mavenCentral()\\n        maven { url = uri(\"https://jitpack.io\") }"; p.write_text(s if "https://jitpack.io" in s else s.replace(needle, addition, 1))'
+          if [ -f android/settings.gradle.kts ]; then
+            sed -i '/mavenCentral()/a\\        maven { url = uri("https://jitpack.io") }' android/settings.gradle.kts
+          elif [ -f android/settings.gradle ]; then
+            sed -i '/mavenCentral()/a\\        maven { url = uri("https://jitpack.io") }' android/settings.gradle
+          else
+            echo "Android settings file not found"
+            exit 1
+          fi
 
       - name: Configure Android wallet deep link
         shell: bash
