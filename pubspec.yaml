@@ -33,8 +33,3 @@ launcher_icons:
   image_path: assets/images/negoswallet_icon.svg
   android:
     generate: true
-    image_path: assets/images/negoswallet_icon.svg
-    adaptive:
-      generate: true
-      background: "#071A49"
-      foreground: assets/images/negoswallet_icon.svg
