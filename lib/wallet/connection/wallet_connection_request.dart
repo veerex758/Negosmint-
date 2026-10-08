@@ -146,13 +146,10 @@ class WalletConnectionRequest {
       throw const WalletConnectionException('Invalid connection callback.');
     }
 
-    if (uri.scheme.toLowerCase() == 'http') {
+    if (uri.scheme.toLowerCase() != 'https') {
       throw const WalletConnectionException(
-          'Insecure connection callbacks are not supported.');
-    }
-
-    if (uri.scheme.toLowerCase() == 'https' && uri.host.isEmpty) {
-      throw const WalletConnectionException('Invalid connection callback.');
+        'Only HTTPS connection callbacks are supported.',
+      );
     }
   }
 
