@@ -30,17 +30,8 @@ class WalletConnectProposal {
     required this.expiresAt,
   });
 
-  bool get requestsSigning => requiredMethods.any(_signingMethods.contains);
+  bool get requestsSigning => requiredMethods.contains('eth_sendTransaction');
   bool get isExpired => DateTime.now().toUtc().isAfter(expiresAt);
-
-  static const _signingMethods = {
-    'eth_sendTransaction',
-    'eth_sign',
-    'personal_sign',
-    'eth_signTypedData',
-    'eth_signTypedData_v3',
-    'eth_signTypedData_v4',
-  };
 }
 
 class WalletConnectSessionRequest {
@@ -150,12 +141,11 @@ class WalletConnectBridge {
       throw const WalletConnectionException('Wallet address is invalid.');
     }
 
-    final account = 'eip155:11155111:$address';
     await walletKit.approveSession(
       id: proposal.id,
       namespaces: {
         'eip155': Namespace(
-          accounts: [account],
+          accounts: ['eip155:11155111:$address'],
           methods: List.unmodifiable(_supportedMethods),
           events: List.unmodifiable(_supportedEvents),
         ),
@@ -185,7 +175,6 @@ class WalletConnectBridge {
     final eip155 = proposal.requiredNamespaces['eip155'];
     if (eip155 == null) return;
 
-    final chains = eip155.chains ?? const <String>[];
     _proposals.add(
       WalletConnectProposal(
         id: event.id,
@@ -193,7 +182,7 @@ class WalletConnectBridge {
         appDescription: proposal.proposer.metadata.description,
         appUrl: proposal.proposer.metadata.url,
         pairingTopic: proposal.pairingTopic,
-        requiredChains: List.unmodifiable(chains),
+        requiredChains: List.unmodifiable(eip155.chains ?? const <String>[]),
         requiredMethods: List.unmodifiable(eip155.methods),
         requiredEvents: List.unmodifiable(eip155.events),
         expiresAt: DateTime.fromMillisecondsSinceEpoch(
@@ -216,11 +205,23 @@ class WalletConnectBridge {
       value != null && RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
   Future<void> respondRejected(WalletConnectSessionRequest request) async {
+    await respondError(
+      request,
+      code: 4001,
+      message: 'User rejected the request.',
+    );
+  }
+
+  Future<void> respondError(
+    WalletConnectSessionRequest request, {
+    required int code,
+    required String message,
+  }) async {
     await walletKit.respondSessionRequest(
       topic: request.topic,
       response: JsonRpcResponse(
         id: request.id,
-        error: const JsonRpcError(code: 4001, message: 'User rejected'),
+        error: JsonRpcError(code: code, message: message),
       ),
     );
   }
@@ -229,50 +230,8 @@ class WalletConnectBridge {
     WalletConnectSessionRequest request,
     String transactionHash,
   ) async {
-    if (!RegExp(r'^0x[0-9a-fA-F]{64}
-  void _onSessionRequest(SessionRequestEvent? event) {
-    if (event == null || _requests.isClosed) return;
-    final request = event.params;
-    final session = walletKit.getActiveSessions()[request.topic];
-    if (session == null) return;
-
-    try {
-      final normalized = WalletConnectTransactionParser.parse(
-        topic: request.topic,
-        id: request.id,
-        chainId: request.chainId,
-        methodName: request.method,
-        params: request.params,
-        appName: session.peer.metadata.name,
-      );
-      final normalizedAppName = session.peer.metadata.name;
-      _requests.add(
-        WalletConnectSessionRequest(
-          topic: normalized.signingRequest.sessionId,
-          id: request.id,
-          chainId: request.chainId,
-          method: request.method,
-          signingRequest: normalized.signingRequest,
-          appName: normalizedAppName,
-          from: normalized.from,
-        ),
-      );
-    } on WalletConnectionException {
-      // Invalid/untrusted requests never reach signing UI.
-    } catch (_) {
-      // Unexpected protocol payloads are treated as untrusted input.
-    }
-  }
-
-  Future<void> dispose() async {
-    await _proposals.close();
-    await _requests.close();
-  }
-}
-).hasMatch(transactionHash)) {
-      throw const WalletConnectionException(
-        'Invalid transaction hash.',
-      );
+    if (!RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(transactionHash)) {
+      throw const WalletConnectionException('Invalid transaction hash.');
     }
     await walletKit.respondSessionRequest(
       topic: request.topic,
@@ -287,7 +246,10 @@ class WalletConnectBridge {
     if (event == null || _requests.isClosed) return;
     final request = event.params;
     final session = walletKit.getActiveSessions()[request.topic];
-    if (session == null) return;
+
+    if (session == null) {
+      return;
+    }
 
     try {
       final normalized = WalletConnectTransactionParser.parse(
@@ -298,7 +260,6 @@ class WalletConnectBridge {
         params: request.params,
         appName: session.peer.metadata.name,
       );
-      final normalizedAppName = session.peer.metadata.name;
       _requests.add(
         WalletConnectSessionRequest(
           topic: normalized.signingRequest.sessionId,
@@ -306,14 +267,61 @@ class WalletConnectBridge {
           chainId: request.chainId,
           method: request.method,
           signingRequest: normalized.signingRequest,
-          appName: normalizedAppName,
+          appName: session.peer.metadata.name,
           from: normalized.from,
         ),
       );
-    } on WalletConnectionException {
-      // Invalid/untrusted requests never reach signing UI.
+    } on WalletConnectionException catch (error) {
+      _respondProtocolError(
+        topic: request.topic,
+        id: request.id,
+        code: _protocolErrorCode(error),
+        message: _safeProtocolMessage(error),
+      );
     } catch (_) {
-      // Unexpected protocol payloads are treated as untrusted input.
+      _respondProtocolError(
+        topic: request.topic,
+        id: request.id,
+        code: -32600,
+        message: 'Invalid request.',
+      );
+    }
+  }
+
+  int _protocolErrorCode(WalletConnectionException error) {
+    final message = error.message.toLowerCase();
+    if (message.contains('unsupported')) return 4200;
+    if (message.contains('malformed') || message.contains('invalid')) {
+      return -32602;
+    }
+    return -32600;
+  }
+
+  String _safeProtocolMessage(WalletConnectionException error) {
+    final message = error.message.toLowerCase();
+    if (message.contains('unsupported')) return 'Unsupported method or network.';
+    if (message.contains('malformed') || message.contains('invalid')) {
+      return 'Invalid request parameters.';
+    }
+    return 'Invalid request.';
+  }
+
+  Future<void> _respondProtocolError({
+    required String topic,
+    required int id,
+    required int code,
+    required String message,
+  }) async {
+    try {
+      await walletKit.respondSessionRequest(
+        topic: topic,
+        response: JsonRpcResponse(
+          id: id,
+          error: JsonRpcError(code: code, message: message),
+        ),
+      );
+    } catch (_) {
+      // The request may have expired or the session may have disconnected.
     }
   }
 
