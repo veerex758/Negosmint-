@@ -63,6 +63,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate NegosWallet launcher icon
+        run: dart run launcher_icons
+
       - name: Build Android APK
         run: flutter build apk --release
 
