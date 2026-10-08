@@ -58,14 +58,31 @@ jobs:
       - name: Configure Android Maven repositories
         shell: bash
         run: |
-          if [ -f android/settings.gradle.kts ]; then
-            sed -i '/mavenCentral()/a\\        maven { url = uri("https://jitpack.io") }' android/settings.gradle.kts
-          elif [ -f android/settings.gradle ]; then
-            sed -i '/mavenCentral()/a\\        maven { url = uri("https://jitpack.io") }' android/settings.gradle
-          else
-            echo "Android settings file not found"
-            exit 1
-          fi
+          python3 <<'PY'
+          from pathlib import Path
+
+          candidates = [Path("android/settings.gradle.kts"), Path("android/settings.gradle")]
+          settings = next((p for p in candidates if p.exists()), None)
+          if settings is None:
+              raise SystemExit("Android settings.gradle(.kts) not found")
+
+          text = settings.read_text()
+          jitpack = 'maven { url = uri("https://jitpack.io") }'
+
+          if "https://jitpack.io" not in text:
+              marker = "dependencyResolutionManagement"
+              start = text.find(marker)
+              if start < 0:
+                  raise SystemExit("dependencyResolutionManagement block not found")
+
+              repo = text.find("mavenCentral()", start)
+              if repo < 0:
+                  raise SystemExit("mavenCentral() inside dependencyResolutionManagement not found")
+
+              insert_at = repo + len("mavenCentral()")
+              text = text[:insert_at] + "\n            " + jitpack + text[insert_at:]
+              settings.write_text(text)
+          PY
 
       - name: Configure Android wallet deep link
         shell: bash
