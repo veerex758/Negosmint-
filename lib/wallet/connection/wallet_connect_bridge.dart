@@ -128,6 +128,7 @@ class WalletConnectBridge {
     'eth_getBlockByNumber',
     'eth_getBlockByHash',
     'net_version',
+    'eth_sendTransaction',
   };
 
   static const _supportedEvents = {'chainChanged', 'accountsChanged'};
@@ -261,7 +262,6 @@ class WalletConnectBridge {
   static bool _isEvmAddress(String value) =>
       RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
-
   Future<void> respondRejected(WalletConnectSessionRequest request) async {
     await walletKit.respondSessionRequest(
       topic: request.topic,
@@ -288,7 +288,8 @@ class WalletConnectBridge {
   void _onSessionRequest(SessionRequestEvent? event) {
     if (event == null || _requests.isClosed) return;
     final request = event.params;
-    if (request.chainId != 'eip155:' + SupportedNetworks.sepolia.chainId.toString()) {
+    if (request.chainId !=
+        'eip155:' + SupportedNetworks.sepolia.chainId.toString()) {
       return;
     }
 
