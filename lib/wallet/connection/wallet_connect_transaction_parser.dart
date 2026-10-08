@@ -21,7 +21,7 @@ class WalletConnectTransactionParser {
   static const String method = 'eth_sendTransaction';
   static const int maxDataLength = 100000;
 
-  static WalletConnectSessionRequest parse({
+  static WalletConnectTransactionParseResult parse({
     required String topic,
     required int id,
     required String chainId,
