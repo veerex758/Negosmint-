@@ -117,8 +117,12 @@ class WalletConnectionRequest {
     if (callback != null && callback is! String) {
       throw const WalletConnectionException('Invalid connection callback.');
     }
-    if (callback is String && callback.length > 2048) {
-      throw const WalletConnectionException('Connection callback is too long.');
+    if (callback is String) {
+      if (callback.length > 2048) {
+        throw const WalletConnectionException(
+            'Connection callback is too long.');
+      }
+      _validateCallback(callback);
     }
 
     return WalletConnectionRequest(
@@ -130,6 +134,26 @@ class WalletConnectionRequest {
       callback: callback as String?,
       expiresAt: expiresAt.toUtc(),
     );
+  }
+
+  static void _validateCallback(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw const WalletConnectionException('Invalid connection callback.');
+    }
+
+    if (uri.userInfo.isNotEmpty || uri.fragment.isNotEmpty) {
+      throw const WalletConnectionException('Invalid connection callback.');
+    }
+
+    if (uri.scheme.toLowerCase() == 'http') {
+      throw const WalletConnectionException(
+          'Insecure connection callbacks are not supported.');
+    }
+
+    if (uri.scheme.toLowerCase() == 'https' && uri.host.isEmpty) {
+      throw const WalletConnectionException('Invalid connection callback.');
+    }
   }
 
   static String _requiredString(Map<String, dynamic> json, String key) {
