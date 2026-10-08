@@ -258,6 +258,42 @@ void main() {
     expect(session.isActive, isFalse);
   });
 
+  test('connection requests reject unsafe callback URIs', () {
+    final base = request().toJson();
+
+    expect(
+      () => WalletConnectionRequest.fromJson({
+        ...base,
+        'callback': 'http://task.example/callback',
+      }),
+      throwsA(isA<WalletConnectionException>()),
+    );
+
+    expect(
+      () => WalletConnectionRequest.fromJson({
+        ...base,
+        'callback': 'https://task.example/callback#fragment',
+      }),
+      throwsA(isA<WalletConnectionException>()),
+    );
+
+    expect(
+      () => WalletConnectionRequest.fromJson({
+        ...base,
+        'callback': 'https://user:pass@task.example/callback',
+      }),
+      throwsA(isA<WalletConnectionException>()),
+    );
+
+    expect(
+      () => WalletConnectionRequest.fromJson({
+        ...base,
+        'callback': 'https://task.example/callback',
+      }),
+      returnsNormally,
+    );
+  });
+
   test('connection codec rejects oversized payloads', () {
     expect(
       () => WalletConnectionCodec.parseRequest('a' * 8193),
