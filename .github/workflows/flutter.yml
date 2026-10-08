@@ -73,16 +73,34 @@ jobs:
           if "https://jitpack.io" not in text:
               marker = "dependencyResolutionManagement"
               start = text.find(marker)
-              if start < 0:
-                  raise SystemExit("dependencyResolutionManagement block not found")
 
-              repo = text.find("mavenCentral()", start)
-              if repo < 0:
-                  raise SystemExit("mavenCentral() inside dependencyResolutionManagement not found")
+              if start >= 0:
+                  repo = text.find("mavenCentral()", start)
+                  if repo < 0:
+                      raise SystemExit(
+                          "dependencyResolutionManagement exists but mavenCentral() was not found"
+                      )
 
-              insert_at = repo + len("mavenCentral()")
-              text = text[:insert_at] + "\n        " + jitpack + text[insert_at:]
+                  insert_at = repo + len("mavenCentral()")
+                  text = text[:insert_at] + "\n        " + jitpack + text[insert_at:]
+              else:
+                  # Flutter 3.47 may generate a settings file without a
+                  # dependencyResolutionManagement block. Add one explicitly
+                  # so project dependencies can resolve from JitPack.
+                  text += """
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+"""
               settings.write_text(text)
+
+          if "https://jitpack.io" not in settings.read_text():
+              raise SystemExit("JitPack repository was not configured")
 
           print(f"Configured JitPack in {settings}")
           PY
