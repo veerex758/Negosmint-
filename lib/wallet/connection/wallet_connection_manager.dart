@@ -191,10 +191,10 @@ class WalletConnectionManager {
         sessionId: request.sessionId,
         signedTransaction: signedTransaction,
       );
-    } on WalletConnectionException catch (error) {
+    } on WalletConnectionException {
       return WalletSigningResult.rejected(
         requestId: request.requestId,
-        errorCode: error.message,
+        errorCode: 'WALLET_REQUEST_REJECTED',
       );
     }
   }
