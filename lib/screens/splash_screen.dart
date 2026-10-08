@@ -109,6 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final service = WalletService();
     final address = await service.getPublicAddress();
+    if (!mounted) return;
     if (address == null) {
       await _walletConnectBridge?.reject(proposal.id);
       return;
