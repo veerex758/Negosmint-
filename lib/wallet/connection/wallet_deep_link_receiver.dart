@@ -13,12 +13,15 @@ class WalletDeepLinkReceiver {
   final AppLinks _appLinks;
   final StreamController<WalletConnectionRequest> _controller =
       StreamController<WalletConnectionRequest>.broadcast();
+  final StreamController<Uri> _walletConnectController =
+      StreamController<Uri>.broadcast();
   StreamSubscription<Uri>? _subscription;
 
   WalletDeepLinkReceiver({AppLinks? appLinks})
       : _appLinks = appLinks ?? AppLinks();
 
   Stream<WalletConnectionRequest> get requests => _controller.stream;
+  Stream<Uri> get walletConnectUris => _walletConnectController.stream;
 
   Future<void> start() async {
     if (_subscription != null) return;
@@ -35,9 +38,14 @@ class WalletDeepLinkReceiver {
     await _subscription?.cancel();
     _subscription = null;
     await _controller.close();
+    await _walletConnectController.close();
   }
 
   void _emit(Uri uri) {
+    if (uri.scheme.toLowerCase() == 'wc' && !_walletConnectController.isClosed) {
+      _walletConnectController.add(uri);
+      return;
+    }
     final request = _parse(uri);
     if (request != null && !_controller.isClosed) {
       _controller.add(request);
