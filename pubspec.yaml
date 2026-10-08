@@ -24,6 +24,17 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   integration_test:
     sdk: flutter
+  launcher_icons: ^0.16.0
 
 flutter:
   uses-material-design: true
+
+launcher_icons:
+  image_path: assets/images/negoswallet_icon.svg
+  android:
+    generate: true
+    image_path: assets/images/negoswallet_icon.svg
+    adaptive:
+      generate: true
+      background: "#071A49"
+      foreground: assets/images/negoswallet_icon.svg
