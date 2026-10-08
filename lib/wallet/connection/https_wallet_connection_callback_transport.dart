@@ -27,27 +27,32 @@ class HttpsWalletConnectionCallbackTransport
   @override
   Future<WalletConnectionRequest> receive(String payload) async {
     final request = WalletConnectionCodec.parseRequest(payload);
-    final callback = request.callback;
-    if (callback != null) {
-      final uri = Uri.tryParse(callback);
-      if (uri == null || uri.scheme.toLowerCase() != 'https') {
-        throw const WalletConnectionException(
-          'Only HTTPS callbacks are supported for response delivery.',
-        );
-      }
-      if (_callbacks.containsKey(request.requestId)) {
-        throw const WalletConnectionException(
-          'A response callback is already registered for this request.',
-        );
-      }
-      if (_callbacks.length >= 32) {
-        throw const WalletConnectionException(
-          'Too many pending wallet response callbacks.',
-        );
-      }
-      _callbacks[request.requestId] = uri;
-    }
+    register(request);
     return request;
+  }
+
+  /// Registers a validated request for a later response.
+  void register(WalletConnectionRequest request) {
+    final callback = request.callback;
+    if (callback == null) return;
+
+    final uri = Uri.tryParse(callback);
+    if (uri == null || uri.scheme.toLowerCase() != 'https') {
+      throw const WalletConnectionException(
+        'Only HTTPS callbacks are supported for response delivery.',
+      );
+    }
+    if (_callbacks.containsKey(request.requestId)) {
+      throw const WalletConnectionException(
+        'A response callback is already registered for this request.',
+      );
+    }
+    if (_callbacks.length >= 32) {
+      throw const WalletConnectionException(
+        'Too many pending wallet response callbacks.',
+      );
+    }
+    _callbacks[request.requestId] = uri;
   }
 
   @override
