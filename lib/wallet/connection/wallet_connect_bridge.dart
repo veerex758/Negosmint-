@@ -41,6 +41,7 @@ import 'package:reown_walletkit/reown_walletkit.dart';
 import '../../core/network/network_config.dart';
 import '../../core/wallet/wallet_service.dart';
 import 'wallet_signing_request.dart';
+import 'wallet_connect_transaction_parser.dart';
 
 import 'wallet_connection_request.dart';
 
@@ -290,43 +291,27 @@ class WalletConnectBridge {
   void _onSessionRequest(SessionRequestEvent? event) {
     if (event == null || _requests.isClosed) return;
     final request = event.params;
-    if (request.chainId !=
-        'eip155:' + SupportedNetworks.sepolia.chainId.toString()) {
-      return;
-    }
 
-    final method = request.method;
-    WalletSigningRequest? signing;
-    if (method == 'eth_sendTransaction') {
-      final params = request.params;
-      if (params is! List || params.isEmpty || params.first is! Map) return;
-      final tx = Map<String, dynamic>.from(params.first as Map);
-      signing = WalletSigningRequest(
-        sessionId: request.topic,
-        requestId: request.id.toString(),
-        chainId: SupportedNetworks.sepolia.chainId,
-        to: tx['to']?.toString(),
-        value: tx['value']?.toString(),
-        data: tx['data']?.toString() ?? '0x',
-        actionDescription: 'Send transaction',
-      );
-    } else {
-      return;
-    }
-
+    // Never surface a request from a topic that is not an active approved
+    // session. This prevents an unsolicited request from reaching signing UI.
     final session = walletKit.getActiveSessions()[request.topic];
-    final appName = session?.peer.metadata.name ?? 'Connected application';
-    _requests.add(
-      WalletConnectSessionRequest(
+    if (session == null) return;
+
+    try {
+      final normalized = WalletConnectTransactionParser.parse(
         topic: request.topic,
         id: request.id,
         chainId: request.chainId,
-        method: method,
-        signingRequest: signing,
-        appName: appName,
-        from: tx['from']?.toString(),
-      ),
-    );
+        methodName: request.method,
+        params: request.params,
+        appName: session.peer.metadata.name,
+      );
+      _requests.add(normalized);
+    } on WalletConnectionException {
+      // Invalid/untrusted requests never reach signing UI.
+    } catch (_) {
+      // Treat unexpected protocol payloads as untrusted input.
+    }
   }
 
   Future<void> dispose() async {
