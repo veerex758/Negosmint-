@@ -272,6 +272,14 @@ void main() {
     expect(
       () => WalletConnectionRequest.fromJson({
         ...base,
+        'callback': 'negosmint://callback',
+      }),
+      throwsA(isA<WalletConnectionException>()),
+    );
+
+    expect(
+      () => WalletConnectionRequest.fromJson({
+        ...base,
         'callback': 'https://task.example/callback#fragment',
       }),
       throwsA(isA<WalletConnectionException>()),
