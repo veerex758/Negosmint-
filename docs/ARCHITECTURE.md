@@ -72,3 +72,14 @@ The connection module is isolated from key management:
 - Signing requests are validated against the active session and chain before any future signing engine is invoked.
 - Deep links and QR payloads use a transport-neutral codec. OS deep-link delivery and QR scanning remain transport adapters.
 - Future interoperability should follow established wallet/provider standards rather than a proprietary signing protocol. EIP-1193 defines the provider request model and EIP-2255 defines permission concepts.
+
+
+### Response delivery
+
+- Connection decisions can be delivered through a validated HTTPS callback.
+- Callback responses are sent with HTTP POST and JSON bodies; response data is never placed in URL query parameters.
+- Callback requests disable HTTP redirects and require a successful 2xx response.
+- The callback transport correlates every response with the originating request ID and removes the callback registration after successful delivery.
+- Failed delivery does not silently discard the registration, allowing a controlled retry.
+- Signed transaction payloads may cross the boundary only as already-signed response data; private key material never crosses it.
+- Standardized interoperability remains a separate milestone. EIP-1193 provides transport/protocol-agnostic provider request semantics and standard authorization errors, while EIP-2255 provides wallet permission concepts.
