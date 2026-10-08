@@ -58,7 +58,7 @@ jobs:
       - name: Configure Android wallet deep link
         shell: bash
         run: |
-          python3 -c 'from pathlib import Path; p=Path("android/app/src/main/AndroidManifest.xml"); s=p.read_text(); marker="        <intent-filter>"; block="        <intent-filter>\\n              <action android:name=\"android.intent.action.VIEW\" />\\n              <category android:name=\"android.intent.category.DEFAULT\" />\\n              <category android:name=\"android.intent.category.BROWSABLE\" />\\n              <data android:scheme=\"negosmintwallet\" android:host=\"connect\" />\\n          </intent-filter>\\n"; p.write_text(s if "android:scheme=\"negosmintwallet\"" in s else s.replace(marker, block + marker, 1))'
+          python3 -c 'from pathlib import Path; p=Path("android/app/src/main/AndroidManifest.xml"); s=p.read_text(); marker="        <intent-filter>"; block="        <intent-filter>\\n              <action android:name=\"android.intent.action.VIEW\" />\\n              <category android:name=\"android.intent.category.DEFAULT\" />\\n              <category android:name=\"android.intent.category.BROWSABLE\" />\\n              <data android:scheme=\"negosmintwallet\" android:host=\"connect\" />\\n          </intent-filter>\\n          <intent-filter>\\n              <action android:name=\"android.intent.action.VIEW\" />\\n              <category android:name=\"android.intent.category.DEFAULT\" />\\n              <category android:name=\"android.intent.category.BROWSABLE\" />\\n              <data android:scheme=\"wc\" />\\n          </intent-filter>\\n"; p.write_text(s if "android:scheme=\"negosmintwallet\"" in s else s.replace(marker, block + marker, 1))'
 
       - name: Install dependencies
         run: flutter pub get
