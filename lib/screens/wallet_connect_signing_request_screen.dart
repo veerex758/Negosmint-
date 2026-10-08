@@ -138,7 +138,8 @@ class _WalletConnectSigningRequestScreenState
                     const Divider(height: 26),
                     const _Row(
                       label: 'Data',
-                      value: 'Contract interaction — review calldata carefully.',
+                      value:
+                          'Contract interaction — review calldata carefully.',
                     ),
                   ],
                 ],

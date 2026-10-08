@@ -42,7 +42,8 @@ class WalletDeepLinkReceiver {
   }
 
   void _emit(Uri uri) {
-    if (uri.scheme.toLowerCase() == 'wc' && !_walletConnectController.isClosed) {
+    if (uri.scheme.toLowerCase() == 'wc' &&
+        !_walletConnectController.isClosed) {
       _walletConnectController.add(uri);
       return;
     }

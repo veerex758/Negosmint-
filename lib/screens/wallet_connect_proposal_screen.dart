@@ -80,7 +80,9 @@ class _WalletConnectProposalScreenState
           CircleAvatar(
             radius: 32,
             child: Text(
-              proposal.appName.isEmpty ? '?' : proposal.appName[0].toUpperCase(),
+              proposal.appName.isEmpty
+                  ? '?'
+                  : proposal.appName[0].toUpperCase(),
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
             ),
           ),
@@ -105,7 +107,8 @@ class _WalletConnectProposalScreenState
               padding: const EdgeInsets.all(18),
               child: Column(
                 children: [
-                  _InfoRow(label: 'Wallet', value: _shorten(widget.walletAddress)),
+                  _InfoRow(
+                      label: 'Wallet', value: _shorten(widget.walletAddress)),
                   const Divider(height: 26),
                   const _InfoRow(label: 'Network', value: 'Sepolia'),
                   const Divider(height: 26),

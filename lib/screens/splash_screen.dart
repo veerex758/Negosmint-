@@ -29,7 +29,8 @@ class _SplashScreenState extends State<SplashScreen>
   WalletConnectBridge? _walletConnectBridge;
   StreamSubscription<WalletConnectProposal>? _proposalSubscription;
   StreamSubscription<Uri>? _walletConnectUriSubscription;
-  StreamSubscription<WalletConnectSessionRequest>? _walletConnectRequestSubscription;
+  StreamSubscription<WalletConnectSessionRequest>?
+      _walletConnectRequestSubscription;
 
   @override
   void initState() {
@@ -52,8 +53,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-
-
   Future<void> _startWalletConnect() async {
     const projectId = String.fromEnvironment('REOWN_PROJECT_ID');
     if (projectId.isEmpty) return;
@@ -65,15 +64,14 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
       _walletConnectBridge = bridge;
-      _proposalSubscription = bridge.proposals.listen(_handleWalletConnectProposal);
+      _proposalSubscription =
+          bridge.proposals.listen(_handleWalletConnectProposal);
       _walletConnectRequestSubscription =
           bridge.requests.listen(_handleWalletConnectRequest);
     } catch (_) {
       // WalletConnect is optional until a public Reown project ID is supplied.
     }
   }
-
-
 
   Future<void> _handleWalletConnectRequest(
     WalletConnectSessionRequest request,

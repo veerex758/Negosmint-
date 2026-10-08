@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:reown_walletkit/reown_walletkit.dart';
 
-import '../../core/network/network_config.dart';
 import '../../core/wallet/wallet_service.dart';
 import 'wallet_connection_request.dart';
 import 'wallet_connect_transaction_parser.dart';
@@ -151,7 +150,7 @@ class WalletConnectBridge {
       throw const WalletConnectionException('Wallet address is invalid.');
     }
 
-    final account = 'eip155:11155111:' + address;
+    final account = 'eip155:11155111:$address';
     await walletKit.approveSession(
       id: proposal.id,
       namespaces: {
@@ -221,7 +220,7 @@ class WalletConnectBridge {
       topic: request.topic,
       response: JsonRpcResponse(
         id: request.id,
-        error: JsonRpcError(code: 4001, message: 'User rejected'),
+        error: const JsonRpcError(code: 4001, message: 'User rejected'),
       ),
     );
   }
