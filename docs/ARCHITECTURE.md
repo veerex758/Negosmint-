@@ -83,3 +83,14 @@ The connection module is isolated from key management:
 - Failed delivery does not silently discard the registration, allowing a controlled retry.
 - Signed transaction payloads may cross the boundary only as already-signed response data; private key material never crosses it.
 - Standardized interoperability remains a separate milestone. EIP-1193 provides transport/protocol-agnostic provider request semantics and standard authorization errors, while EIP-2255 provides wallet permission concepts.
+
+
+### Standard WalletConnect interoperability
+
+- Reown WalletKit is isolated behind `WalletConnectBridge`.
+- Standard `wc:` pairing URIs are accepted by the bridge; pairing itself does not approve a session.
+- Session proposals must still pass through explicit wallet UI approval/rejection before accounts or signing capabilities are exposed.
+- The bridge has no access to wallet seed phrases, private keys, PINs, or decrypted signing material.
+- WalletConnect/Reown protocol state is separate from the wallet's self-custody key store.
+- The Reown project ID is configuration metadata, not a wallet secret, and must not be treated as private key material.
+- The current dependency is `reown_walletkit 1.5.1`. Its publisher states that WalletKit is built on the WalletConnect Network and provides pairing, session, and request handling APIs. 
