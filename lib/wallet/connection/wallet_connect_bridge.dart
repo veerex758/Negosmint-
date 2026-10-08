@@ -166,7 +166,7 @@ class WalletConnectBridge {
   Future<void> reject(int proposalId) async {
     await walletKit.rejectSession(
       id: proposalId,
-      reason: Errors.getSdkError(Errors.USER_REJECTED),
+      reason: Errors.getSdkError(Errors.USER_REJECTED).toSignError(),
     );
   }
 
@@ -253,7 +253,18 @@ class WalletConnectBridge {
         params: request.params,
         appName: session.peer.metadata.name,
       );
-      _requests.add(normalized);
+      final normalizedAppName = session.peer.metadata.name;
+      _requests.add(
+        WalletConnectSessionRequest(
+          topic: normalized.signingRequest.sessionId,
+          id: request.id,
+          chainId: request.chainId,
+          method: request.method,
+          signingRequest: normalized.signingRequest,
+          appName: normalizedAppName,
+          from: normalized.from,
+        ),
+      );
     } on WalletConnectionException {
       // Invalid/untrusted requests never reach signing UI.
     } catch (_) {
