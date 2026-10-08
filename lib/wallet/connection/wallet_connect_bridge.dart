@@ -92,6 +92,7 @@ class WalletConnectSessionRequest {
   final String method;
   final WalletSigningRequest? signingRequest;
   final String appName;
+  final String? from;
 
   const WalletConnectSessionRequest({
     required this.topic,
@@ -100,6 +101,7 @@ class WalletConnectSessionRequest {
     required this.method,
     required this.signingRequest,
     required this.appName,
+    required this.from,
   });
 }
 
@@ -322,6 +324,7 @@ class WalletConnectBridge {
         method: method,
         signingRequest: signing,
         appName: appName,
+        from: tx['from']?.toString(),
       ),
     );
   }
