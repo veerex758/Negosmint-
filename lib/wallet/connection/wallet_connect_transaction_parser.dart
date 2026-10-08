@@ -5,6 +5,16 @@ import 'wallet_signing_request.dart';
 ///
 /// This class is deliberately independent from Reown WalletKit so the
 /// security boundary can be unit-tested without a live WalletConnect client.
+class WalletConnectTransactionParseResult {
+  final WalletSigningRequest signingRequest;
+  final String? from;
+
+  const WalletConnectTransactionParseResult({
+    required this.signingRequest,
+    required this.from,
+  });
+}
+
 class WalletConnectTransactionParser {
   static const int sepoliaChainId = 11155111;
   static const String sepoliaCaip2 = 'eip155:11155111';
@@ -55,11 +65,7 @@ class WalletConnectTransactionParser {
     _validateHexQuantity(value, 'transaction value');
     _validateHexData(data);
 
-    return WalletConnectSessionRequest(
-      topic: topic,
-      id: id,
-      chainId: chainId,
-      method: methodName,
+    return WalletConnectTransactionParseResult(
       signingRequest: WalletSigningRequest(
         sessionId: topic,
         requestId: id.toString(),
@@ -69,7 +75,6 @@ class WalletConnectTransactionParser {
         data: data,
         actionDescription: 'Send transaction',
       ),
-      appName: appName,
       from: from,
     );
   }
