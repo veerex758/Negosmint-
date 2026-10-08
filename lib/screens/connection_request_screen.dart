@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../wallet/connection/wallet_connection_manager.dart';
@@ -26,16 +24,13 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
   void initState() {
     super.initState();
     _callbackTransport = HttpsWalletConnectionCallbackTransport();
-    _registerCallback();
-  }
-
-  Future<void> _registerCallback() async {
-    if (widget.request.callback == null) return;
-    try {
-      await _callbackTransport.receive(jsonEncode(widget.request.toJson()));
-    } catch (_) {
-      // The request was already validated before reaching this screen. Keep
-      // callback registration failure non-fatal; approval remains local.
+    if (widget.request.callback != null) {
+      try {
+        _callbackTransport.register(widget.request);
+      } catch (_) {
+        // The request was already validated before reaching this screen.
+        // Keep callback registration failure non-fatal; approval remains local.
+      }
     }
   }
 
