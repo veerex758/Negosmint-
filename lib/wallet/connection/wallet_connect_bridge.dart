@@ -151,7 +151,7 @@ class WalletConnectBridge {
       throw const WalletConnectionException('Wallet address is invalid.');
     }
 
-    final account = 'eip155:11155111:\$address';
+    final account = 'eip155:11155111:' + address;
     await walletKit.approveSession(
       id: proposal.id,
       namespaces: {
