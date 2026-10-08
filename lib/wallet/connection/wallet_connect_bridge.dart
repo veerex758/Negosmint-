@@ -201,8 +201,6 @@ class WalletConnectBridge {
     required ReownSignError reason,
   }) =>
       walletKit.disconnectSession(topic: topic, reason: reason);
-}
-
 
   void _onProposal(SessionProposalEvent? event) {
     if (event == null || _proposals.isClosed) return;
@@ -241,3 +239,4 @@ class WalletConnectBridge {
       RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
   Future<void> dispose() => _proposals.close();
+}
