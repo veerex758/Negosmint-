@@ -36,6 +36,16 @@ class _WalletConnectSigningRequestScreenState
     });
 
     try {
+      final from = widget.request.from;
+      final walletAddress = await widget.walletService.getPublicAddress();
+      if (from != null &&
+          (walletAddress == null ||
+              from.toLowerCase() != walletAddress.toLowerCase())) {
+        throw const WalletException(
+          'The transaction sender does not match this wallet.',
+        );
+      }
+
       final to = signing.to;
       if (to == null || to.isEmpty) {
         throw const WalletException('Transaction recipient is missing.');
