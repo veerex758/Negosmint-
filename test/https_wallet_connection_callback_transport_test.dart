@@ -77,7 +77,7 @@ void main() {
 
     await transport.receive(jsonEncode(callbackRequest().toJson()));
     await transport.sendSigningResult(
-      WalletSigningResult.rejected(requestId: 'callback-1'),
+      const WalletSigningResult.rejected(requestId: 'callback-1'),
     );
 
     final request = client.lastRequest! as http.Request;
