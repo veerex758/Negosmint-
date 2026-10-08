@@ -225,15 +225,60 @@ class WalletConnectBridge {
     );
   }
 
-  Future<void> respondSigned(
+  Future<void> respondTransactionHash(
     WalletConnectSessionRequest request,
-    String signedTransaction,
+    String transactionHash,
   ) async {
+    if (!RegExp(r'^0x[0-9a-fA-F]{64}
+  void _onSessionRequest(SessionRequestEvent? event) {
+    if (event == null || _requests.isClosed) return;
+    final request = event.params;
+    final session = walletKit.getActiveSessions()[request.topic];
+    if (session == null) return;
+
+    try {
+      final normalized = WalletConnectTransactionParser.parse(
+        topic: request.topic,
+        id: request.id,
+        chainId: request.chainId,
+        methodName: request.method,
+        params: request.params,
+        appName: session.peer.metadata.name,
+      );
+      final normalizedAppName = session.peer.metadata.name;
+      _requests.add(
+        WalletConnectSessionRequest(
+          topic: normalized.signingRequest.sessionId,
+          id: request.id,
+          chainId: request.chainId,
+          method: request.method,
+          signingRequest: normalized.signingRequest,
+          appName: normalizedAppName,
+          from: normalized.from,
+        ),
+      );
+    } on WalletConnectionException {
+      // Invalid/untrusted requests never reach signing UI.
+    } catch (_) {
+      // Unexpected protocol payloads are treated as untrusted input.
+    }
+  }
+
+  Future<void> dispose() async {
+    await _proposals.close();
+    await _requests.close();
+  }
+}
+).hasMatch(transactionHash)) {
+      throw const WalletConnectionException(
+        'Invalid transaction hash.',
+      );
+    }
     await walletKit.respondSessionRequest(
       topic: request.topic,
       response: JsonRpcResponse(
         id: request.id,
-        result: signedTransaction,
+        result: transactionHash,
       ),
     );
   }
