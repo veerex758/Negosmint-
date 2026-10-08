@@ -1,55 +1,13 @@
-impo
-  void _onProposal(SessionProposalEvent? event) {
-    if (event == null || _proposals.isClosed) return;
-    final proposal = event.params;
-    final eip155 = proposal.requiredNamespaces['eip155'];
-    if (eip155 == null) return;
-
-    final chains = eip155.chains ?? const <String>[];
-    _proposals.add(
-      WalletConnectProposal(
-        id: event.id,
-        appName: proposal.proposer.metadata.name,
-        appDescription: proposal.proposer.metadata.description,
-        appUrl: proposal.proposer.metadata.url,
-        pairingTopic: proposal.pairingTopic,
-        requiredChains: List.unmodifiable(chains),
-        requiredMethods: List.unmodifiable(eip155.methods),
-        requiredEvents: List.unmodifiable(eip155.events),
-        expiresAt: DateTime.fromMillisecondsSinceEpoch(
-          proposal.expiry * 1000,
-          isUtc: true,
-        ),
-      ),
-    );
-  }
-
-  bool _isSupportedProposal(WalletConnectProposal proposal) {
-    final sepolia = 'eip155:' + SupportedNetworks.sepolia.chainId.toString();
-    return proposal.requiredChains.length == 1 &&
-        proposal.requiredChains.single == sepolia &&
-        proposal.requiredMethods.every(_supportedMethods.contains) &&
-        proposal.requiredEvents.every(_supportedEvents.contains);
-  }
-
-  static bool _isEvmAddress(String value) =>
-      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
-rt 'dart:async';
+import 'dart:async';
 
 import 'package:reown_walletkit/reown_walletkit.dart';
 
 import '../../core/network/network_config.dart';
 import '../../core/wallet/wallet_service.dart';
-import 'wallet_signing_request.dart';
-import 'wallet_connect_transaction_parser.dart';
-
 import 'wallet_connection_request.dart';
+import 'wallet_connect_transaction_parser.dart';
+import 'wallet_signing_request.dart';
 
-/// Thin interoperability boundary around Reown WalletKit.
-///
-/// This class owns WalletConnect/Reown protocol state only. It does not own
-/// wallet keys and never receives a seed phrase, private key, PIN, or
-/// decrypted key material.
 class WalletConnectProposal {
   final int id;
   final String appName;
@@ -136,8 +94,6 @@ class WalletConnectBridge {
 
   static const _supportedEvents = {'chainChanged', 'accountsChanged'};
 
-  /// Creates the protocol client. [projectId] is a public Reown project
-  /// identifier; it is not a wallet secret.
   static Future<WalletConnectBridge> create({
     required String projectId,
     String name = 'NegosWallet',
@@ -168,10 +124,6 @@ class WalletConnectBridge {
     return bridge;
   }
 
-  /// Accepts a standard WalletConnect URI and starts pairing.
-  ///
-  /// Pairing does not approve a session. The wallet must still present the
-  /// incoming proposal to the user and explicitly approve or reject it.
   Stream<WalletConnectProposal> get proposals => _proposals.stream;
   Stream<WalletConnectSessionRequest> get requests => _requests.stream;
 
@@ -199,8 +151,7 @@ class WalletConnectBridge {
       throw const WalletConnectionException('Wallet address is invalid.');
     }
 
-    final account =
-        'eip155:' + SupportedNetworks.sepolia.chainId.toString() + ':' + address;
+    final account = 'eip155:11155111:\$address';
     await walletKit.approveSession(
       id: proposal.id,
       namespaces: {
@@ -255,15 +206,15 @@ class WalletConnectBridge {
   }
 
   bool _isSupportedProposal(WalletConnectProposal proposal) {
-    final sepolia = 'eip155:' + SupportedNetworks.sepolia.chainId.toString();
+    const sepolia = 'eip155:11155111';
     return proposal.requiredChains.length == 1 &&
         proposal.requiredChains.single == sepolia &&
         proposal.requiredMethods.every(_supportedMethods.contains) &&
         proposal.requiredEvents.every(_supportedEvents.contains);
   }
 
-  static bool _isEvmAddress(String value) =>
-      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
+  static bool _isEvmAddress(String? value) =>
+      value != null && RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
   Future<void> respondRejected(WalletConnectSessionRequest request) async {
     await walletKit.respondSessionRequest(
@@ -291,9 +242,6 @@ class WalletConnectBridge {
   void _onSessionRequest(SessionRequestEvent? event) {
     if (event == null || _requests.isClosed) return;
     final request = event.params;
-
-    // Never surface a request from a topic that is not an active approved
-    // session. This prevents an unsolicited request from reaching signing UI.
     final session = walletKit.getActiveSessions()[request.topic];
     if (session == null) return;
 
@@ -310,7 +258,7 @@ class WalletConnectBridge {
     } on WalletConnectionException {
       // Invalid/untrusted requests never reach signing UI.
     } catch (_) {
-      // Treat unexpected protocol payloads as untrusted input.
+      // Unexpected protocol payloads are treated as untrusted input.
     }
   }
 
