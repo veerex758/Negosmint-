@@ -62,7 +62,7 @@ void main() {
     expect(client.lastRequest!.headers['content-type'], 'application/json');
     expect(client.lastRequest!.headers['x-negosmint-request-id'],
         request.requestId);
-    final body = await (client.lastRequest! as http.Request).body;
+    final body = (client.lastRequest! as http.Request).body;
     expect(body, contains('"requestId":"callback-1"'));
     expect(body, contains('"status":"rejected"'));
     expect(body, isNot(contains('privateKey')));
@@ -76,7 +76,7 @@ void main() {
     final transport = HttpsWalletConnectionCallbackTransport(client: client);
 
     await transport.receive(jsonEncode(callbackRequest().toJson()));
-    await transport.send(
+    await transport.sendSigningResult(
       WalletSigningResult.rejected(requestId: 'callback-1'),
     );
 
