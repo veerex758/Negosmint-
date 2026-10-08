@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import '../core/wallet/wallet_service.dart';
 import 'wallet_lock_screen.dart';
 import 'onboarding_screen.dart';
+import '../wallet/connection/wallet_deep_link_receiver.dart';
+import '../wallet/connection/wallet_connection_request.dart';
+import 'connection_request_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,10 +21,16 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   Timer? _navigationTimer;
+  late final WalletDeepLinkReceiver _deepLinkReceiver;
+  WalletConnectionRequest? _incomingRequest;
 
   @override
   void initState() {
     super.initState();
+    _deepLinkReceiver = WalletDeepLinkReceiver();
+    _deepLinkReceiver.requests.listen(_handleIncomingRequest);
+    _deepLinkReceiver.start();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1850),
@@ -33,7 +42,19 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  void _handleIncomingRequest(WalletConnectionRequest request) {
+    if (!mounted || _incomingRequest != null) return;
+    _incomingRequest = request;
+    _navigationTimer?.cancel();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => ConnectionRequestScreen(request: request),
+      ),
+    );
+  }
+
   Future<void> _openNext() async {
+    if (_incomingRequest != null) return;
     if (!mounted) return;
 
     final service = WalletService();
@@ -76,6 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _navigationTimer?.cancel();
+    _deepLinkReceiver.dispose();
     _controller.dispose();
     super.dispose();
   }
