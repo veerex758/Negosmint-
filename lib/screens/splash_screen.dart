@@ -34,7 +34,8 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _deepLinkReceiver = WalletDeepLinkReceiver();
     _deepLinkReceiver.requests.listen(_handleIncomingRequest);
-    _deepLinkReceiver.walletConnectUris.listen(_handleWalletConnectUri);
+    _walletConnectUriSubscription =
+        _deepLinkReceiver.walletConnectUris.listen(_handleWalletConnectUri);
     _deepLinkReceiver.start();
     _startWalletConnect();
 
