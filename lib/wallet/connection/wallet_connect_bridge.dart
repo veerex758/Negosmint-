@@ -1,4 +1,40 @@
-import 'dart:async';
+impo
+  void _onProposal(SessionProposalEvent? event) {
+    if (event == null || _proposals.isClosed) return;
+    final proposal = event.params;
+    final eip155 = proposal.requiredNamespaces['eip155'];
+    if (eip155 == null) return;
+
+    final chains = eip155.chains ?? const <String>[];
+    _proposals.add(
+      WalletConnectProposal(
+        id: event.id,
+        appName: proposal.proposer.metadata.name,
+        appDescription: proposal.proposer.metadata.description,
+        appUrl: proposal.proposer.metadata.url,
+        pairingTopic: proposal.pairingTopic,
+        requiredChains: List.unmodifiable(chains),
+        requiredMethods: List.unmodifiable(eip155.methods),
+        requiredEvents: List.unmodifiable(eip155.events),
+        expiresAt: DateTime.fromMillisecondsSinceEpoch(
+          proposal.expiry * 1000,
+          isUtc: true,
+        ),
+      ),
+    );
+  }
+
+  bool _isSupportedProposal(WalletConnectProposal proposal) {
+    final sepolia = 'eip155:' + SupportedNetworks.sepolia.chainId.toString();
+    return proposal.requiredChains.length == 1 &&
+        proposal.requiredChains.single == sepolia &&
+        proposal.requiredMethods.every(_supportedMethods.contains) &&
+        proposal.requiredEvents.every(_supportedEvents.contains);
+  }
+
+  static bool _isEvmAddress(String value) =>
+      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
+rt 'dart:async';
 
 import 'package:reown_walletkit/reown_walletkit.dart';
 
