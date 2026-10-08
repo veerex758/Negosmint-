@@ -7,13 +7,14 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: read
 
 jobs:
   analyze:
+    name: Analyze, format, and test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,6 +39,7 @@ jobs:
         run: flutter test
 
   android-release-build:
+    name: Build Android APK
     runs-on: ubuntu-latest
     needs: analyze
     steps:
@@ -56,27 +58,7 @@ jobs:
       - name: Configure Android wallet deep link
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("android/app/src/main/AndroidManifest.xml")
-          text = path.read_text()
-
-          block = """        <intent-filter>
-              <action android:name="android.intent.action.VIEW" />
-              <category android:name="android.intent.category.DEFAULT" />
-              <category android:name="android.intent.category.BROWSABLE" />
-              <data android:scheme="negosmintwallet" android:host="connect" />
-          </intent-filter>
-"""
-          if 'android:scheme="negosmintwallet"' not in text:
-              text = text.replace(
-                  "        <intent-filter>",
-                  block + "        <intent-filter>",
-                  1,
-              )
-              path.write_text(text)
-          PY
+          python3 -c 'from pathlib import Path; p=Path("android/app/src/main/AndroidManifest.xml"); s=p.read_text(); marker="        <intent-filter>"; block="        <intent-filter>\\n              <action android:name=\"android.intent.action.VIEW\" />\\n              <category android:name=\"android.intent.category.DEFAULT\" />\\n              <category android:name=\"android.intent.category.BROWSABLE\" />\\n              <data android:scheme=\"negosmintwallet\" android:host=\"connect\" />\\n          </intent-filter>\\n"; p.write_text(s if "android:scheme=\"negosmintwallet\"" in s else s.replace(marker, block + marker, 1))'
 
       - name: Install dependencies
         run: flutter pub get
