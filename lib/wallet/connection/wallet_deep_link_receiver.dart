@@ -11,32 +11,37 @@ import 'wallet_connection_request.dart';
 /// This receiver does not navigate the UI and never handles wallet secrets.
 class WalletDeepLinkReceiver {
   final AppLinks _appLinks;
+  final StreamController<WalletConnectionRequest> _controller =
+      StreamController<WalletConnectionRequest>.broadcast();
   StreamSubscription<Uri>? _subscription;
 
   WalletDeepLinkReceiver({AppLinks? appLinks})
       : _appLinks = appLinks ?? AppLinks();
 
-  Future<WalletConnectionRequest?> getInitialRequest() async {
-    final uri = await _appLinks.getInitialLink();
-    if (uri == null) return null;
-    return _parse(uri);
-  }
+  Stream<WalletConnectionRequest> get requests => _controller.stream;
 
-  Stream<WalletConnectionRequest> listen() {
-    _subscription?.cancel();
-    _subscription = _appLinks.uriLinkStream.map(_parse).whereType<WalletConnectionRequest>();
-    return _subscriptionStream;
-  }
+  Future<void> start() async {
+    if (_subscription != null) return;
 
-  Stream<WalletConnectionRequest> get _subscriptionStream {
-    // Re-create from the plugin stream so the returned stream is broadcast-safe
-    // for the app lifecycle without exposing the raw URI outside this boundary.
-    return _appLinks.uriLinkStream.map(_parse).whereType<WalletConnectionRequest>();
+    final initial = await _appLinks.getInitialLink();
+    if (initial != null) {
+      _emit(initial);
+    }
+
+    _subscription = _appLinks.uriLinkStream.listen(_emit);
   }
 
   Future<void> dispose() async {
     await _subscription?.cancel();
     _subscription = null;
+    await _controller.close();
+  }
+
+  void _emit(Uri uri) {
+    final request = _parse(uri);
+    if (request != null && !_controller.isClosed) {
+      _controller.add(request);
+    }
   }
 
   WalletConnectionRequest? _parse(Uri uri) {
