@@ -40,6 +40,7 @@ import 'package:reown_walletkit/reown_walletkit.dart';
 
 import '../../core/network/network_config.dart';
 import '../../core/wallet/wallet_service.dart';
+import 'wallet_signing_request.dart';
 
 import 'wallet_connection_request.dart';
 
@@ -84,6 +85,24 @@ class WalletConnectProposal {
   };
 }
 
+class WalletConnectSessionRequest {
+  final String topic;
+  final int id;
+  final String chainId;
+  final String method;
+  final WalletSigningRequest? signingRequest;
+  final String appName;
+
+  const WalletConnectSessionRequest({
+    required this.topic,
+    required this.id,
+    required this.chainId,
+    required this.method,
+    required this.signingRequest,
+    required this.appName,
+  });
+}
+
 class WalletConnectBridge {
   final ReownWalletKit walletKit;
 
@@ -91,6 +110,8 @@ class WalletConnectBridge {
 
   final StreamController<WalletConnectProposal> _proposals =
       StreamController<WalletConnectProposal>.broadcast();
+  final StreamController<WalletConnectSessionRequest> _requests =
+      StreamController<WalletConnectSessionRequest>.broadcast();
 
   static const _supportedMethods = {
     'eth_chainId',
@@ -139,6 +160,7 @@ class WalletConnectBridge {
 
     final bridge = WalletConnectBridge._(walletKit);
     walletKit.onSessionProposal.subscribe(bridge._onProposal);
+    walletKit.onSessionRequest.subscribe(bridge._onSessionRequest);
     return bridge;
   }
 
@@ -147,6 +169,7 @@ class WalletConnectBridge {
   /// Pairing does not approve a session. The wallet must still present the
   /// incoming proposal to the user and explicitly approve or reject it.
   Stream<WalletConnectProposal> get proposals => _proposals.stream;
+  Stream<WalletConnectSessionRequest> get requests => _requests.stream;
 
   Future<PairingInfo> pair(Uri uri) async {
     if (uri.scheme.toLowerCase() != 'wc') {
@@ -238,5 +261,72 @@ class WalletConnectBridge {
   static bool _isEvmAddress(String value) =>
       RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(value);
 
-  Future<void> dispose() => _proposals.close();
+
+  Future<void> respondRejected(WalletConnectSessionRequest request) async {
+    await walletKit.respondSessionRequest(
+      topic: request.topic,
+      response: JsonRpcResponse(
+        id: request.id,
+        error: JsonRpcError(code: 4001, message: 'User rejected'),
+      ),
+    );
+  }
+
+  Future<void> respondSigned(
+    WalletConnectSessionRequest request,
+    String signedTransaction,
+  ) async {
+    await walletKit.respondSessionRequest(
+      topic: request.topic,
+      response: JsonRpcResponse(
+        id: request.id,
+        result: signedTransaction,
+      ),
+    );
+  }
+
+  void _onSessionRequest(SessionRequestEvent? event) {
+    if (event == null || _requests.isClosed) return;
+    final request = event.params;
+    if (request.chainId != 'eip155:' + SupportedNetworks.sepolia.chainId.toString()) {
+      return;
+    }
+
+    final method = request.method;
+    WalletSigningRequest? signing;
+    if (method == 'eth_sendTransaction') {
+      final params = request.params;
+      if (params is! List || params.isEmpty || params.first is! Map) return;
+      final tx = Map<String, dynamic>.from(params.first as Map);
+      signing = WalletSigningRequest(
+        sessionId: request.topic,
+        requestId: request.id.toString(),
+        chainId: SupportedNetworks.sepolia.chainId,
+        to: tx['to']?.toString(),
+        value: tx['value']?.toString(),
+        data: tx['data']?.toString() ?? '0x',
+        actionDescription: 'Send transaction',
+      );
+    } else {
+      return;
+    }
+
+    final session = walletKit.getActiveSessions()[request.topic];
+    final appName = session?.peer.metadata.name ?? 'Connected application';
+    _requests.add(
+      WalletConnectSessionRequest(
+        topic: request.topic,
+        id: request.id,
+        chainId: request.chainId,
+        method: method,
+        signingRequest: signing,
+        appName: appName,
+      ),
+    );
+  }
+
+  Future<void> dispose() async {
+    await _proposals.close();
+    await _requests.close();
+  }
 }
