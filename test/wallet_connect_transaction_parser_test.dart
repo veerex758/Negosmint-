@@ -193,6 +193,33 @@ void main() {
     expect(text, isNot(contains('pin')));
   });
 
+
+  test('rejects empty transaction quantity', () {
+    expect(
+      () => WalletConnectTransactionParser.parse(
+        topic: 'topic',
+        id: 3,
+        chainId: WalletConnectTransactionParser.sepoliaCaip2,
+        methodName: WalletConnectTransactionParser.method,
+        params: validParams(value: '0x'),
+        appName: 'Example dApp',
+      ),
+      throwsA(isA<WalletConnectionException>()),
+    );
+  });
+
+  test('accepts large valid hex quantity without parsing it', () {
+    final parsed = WalletConnectTransactionParser.parse(
+      topic: 'topic',
+      id: 4,
+      chainId: WalletConnectTransactionParser.sepoliaCaip2,
+      methodName: WalletConnectTransactionParser.method,
+      params: validParams(value: '0x' + ('f' * 64)),
+      appName: 'Example dApp',
+    );
+    expect(parsed.signingRequest.value, '0x' + ('f' * 64));
+  });
+
   test('proposal signing detection identifies transaction requests', () {
     final proposal = WalletConnectProposal(
       id: 1,
