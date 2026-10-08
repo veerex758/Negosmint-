@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../wallet/connection/wallet_connection_manager.dart';
 import '../wallet/connection/wallet_connection_request.dart';
 import '../wallet/connection/wallet_connection_result.dart';
+import '../wallet/connection/https_wallet_connection_callback_transport.dart';
 import 'home_screen.dart';
 
 class ConnectionRequestScreen extends StatefulWidget {
@@ -15,8 +18,31 @@ class ConnectionRequestScreen extends StatefulWidget {
 
 class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
   final _manager = WalletConnectionManager();
+  late final HttpsWalletConnectionCallbackTransport _callbackTransport;
   bool _busy = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _callbackTransport = HttpsWalletConnectionCallbackTransport();
+    _registerCallback();
+  }
+
+  Future<void> _registerCallback() async {
+    if (widget.request.callback == null) return;
+    try {
+      await _callbackTransport.receive(jsonEncode(widget.request.toJson()));
+    } catch (_) {
+      // The request was already validated before reaching this screen. Keep
+      // callback registration failure non-fatal; approval remains local.
+    }
+  }
+
+  Future<void> _sendResult(WalletConnectionResult result) async {
+    if (widget.request.callback == null) return;
+    await _callbackTransport.send(result);
+  }
 
   Future<void> _approve() async {
     setState(() {
@@ -29,6 +55,8 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
       if (result.status != WalletConnectionResultStatus.approved) {
         throw const WalletConnectionException('Connection was not approved.');
       }
+      await _sendResult(result);
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (_) => HomeScreen(address: result.walletAddress)),
@@ -49,8 +77,30 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
   }
 
   Future<void> _reject() async {
-    final result = await _manager.rejectConnection(widget.request);
-    if (mounted) Navigator.of(context).pop(result);
+    setState(() => _busy = true);
+    try {
+      final result = await _manager.rejectConnection(widget.request);
+      await _sendResult(result);
+      if (mounted) Navigator.of(context).pop(result);
+    } on WalletConnectionException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = e.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = 'Unable to cancel this connection request.';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _callbackTransport.dispose();
+    super.dispose();
   }
 
   @override
