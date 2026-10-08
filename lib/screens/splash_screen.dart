@@ -27,12 +27,14 @@ class _SplashScreenState extends State<SplashScreen>
   WalletConnectionRequest? _incomingRequest;
   WalletConnectBridge? _walletConnectBridge;
   StreamSubscription<WalletConnectProposal>? _proposalSubscription;
+  StreamSubscription<Uri>? _walletConnectUriSubscription;
 
   @override
   void initState() {
     super.initState();
     _deepLinkReceiver = WalletDeepLinkReceiver();
     _deepLinkReceiver.requests.listen(_handleIncomingRequest);
+    _deepLinkReceiver.walletConnectUris.listen(_handleWalletConnectUri);
     _deepLinkReceiver.start();
     _startWalletConnect();
 
@@ -63,6 +65,17 @@ class _SplashScreenState extends State<SplashScreen>
       _proposalSubscription = bridge.proposals.listen(_handleWalletConnectProposal);
     } catch (_) {
       // WalletConnect is optional until a public Reown project ID is supplied.
+    }
+  }
+
+
+  Future<void> _handleWalletConnectUri(Uri uri) async {
+    final bridge = _walletConnectBridge;
+    if (bridge == null) return;
+    try {
+      await bridge.pair(uri);
+    } catch (_) {
+      // Invalid pairing URIs are ignored; no wallet secrets are involved.
     }
   }
 
@@ -145,6 +158,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _walletConnectUriSubscription?.cancel();
     _proposalSubscription?.cancel();
     _walletConnectBridge?.dispose();
     _navigationTimer?.cancel();
