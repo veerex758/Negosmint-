@@ -9,6 +9,8 @@ import 'onboarding_screen.dart';
 import '../wallet/connection/wallet_deep_link_receiver.dart';
 import '../wallet/connection/wallet_connection_request.dart';
 import 'connection_request_screen.dart';
+import '../wallet/connection/wallet_connect_bridge.dart';
+import 'wallet_connect_proposal_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,6 +25,8 @@ class _SplashScreenState extends State<SplashScreen>
   Timer? _navigationTimer;
   late final WalletDeepLinkReceiver _deepLinkReceiver;
   WalletConnectionRequest? _incomingRequest;
+  WalletConnectBridge? _walletConnectBridge;
+  StreamSubscription<WalletConnectProposal>? _proposalSubscription;
 
   @override
   void initState() {
@@ -30,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
     _deepLinkReceiver = WalletDeepLinkReceiver();
     _deepLinkReceiver.requests.listen(_handleIncomingRequest);
     _deepLinkReceiver.start();
+    _startWalletConnect();
 
     _controller = AnimationController(
       vsync: this,
@@ -39,6 +44,50 @@ class _SplashScreenState extends State<SplashScreen>
     _navigationTimer = Timer(
       const Duration(milliseconds: 2050),
       _openNext,
+    );
+  }
+
+
+
+  Future<void> _startWalletConnect() async {
+    const projectId = String.fromEnvironment('REOWN_PROJECT_ID');
+    if (projectId.isEmpty) return;
+
+    try {
+      final bridge = await WalletConnectBridge.create(projectId: projectId);
+      if (!mounted) {
+        await bridge.dispose();
+        return;
+      }
+      _walletConnectBridge = bridge;
+      _proposalSubscription = bridge.proposals.listen(_handleWalletConnectProposal);
+    } catch (_) {
+      // WalletConnect is optional until a public Reown project ID is supplied.
+    }
+  }
+
+  Future<void> _handleWalletConnectProposal(
+    WalletConnectProposal proposal,
+  ) async {
+    if (!mounted || _incomingRequest != null) return;
+
+    final service = WalletService();
+    final address = await service.getPublicAddress();
+    if (address == null) {
+      await _walletConnectBridge?.reject(proposal.id);
+      return;
+    }
+
+    _navigationTimer?.cancel();
+    await Navigator.of(context).push(
+      MaterialPageRoute<bool>(
+        builder: (_) => WalletConnectProposalScreen(
+          bridge: _walletConnectBridge!,
+          proposal: proposal,
+          walletService: service,
+          walletAddress: address,
+        ),
+      ),
     );
   }
 
@@ -96,6 +145,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _proposalSubscription?.cancel();
+    _walletConnectBridge?.dispose();
     _navigationTimer?.cancel();
     _deepLinkReceiver.dispose();
     _controller.dispose();
