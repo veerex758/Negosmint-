@@ -85,7 +85,7 @@ class Erc20AssetService {
     final normalized = _normalizeAddress(address);
     // Read metadata first. This rejects contracts that do not expose the
     // minimum ERC-20 read methods before persisting them.
-    await loadAsset(normalized, '0x0000000000000000000000000000000000000000');
+    await loadAsset(normalized, '0x0000000000000000000000000000000000000001');
     final addresses = await getRegisteredAddresses();
     if (addresses.contains(normalized)) return;
     await _storage.write(
