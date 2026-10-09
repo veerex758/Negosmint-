@@ -9,7 +9,7 @@ class SecurityScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Security')),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
           children: const [
             _Header(
               icon: Icons.shield_outlined,
@@ -38,6 +38,11 @@ class SecurityScreen extends StatelessWidget {
             ),
             SizedBox(height: 4),
             Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: AppColors.forest.withValues(alpha: .10)),
+              ),
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Row(
@@ -62,6 +67,11 @@ class SecurityScreen extends StatelessWidget {
             SizedBox(height: 12),
             Card(
               clipBehavior: Clip.antiAlias,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: AppColors.forest.withValues(alpha: .10)),
+              ),
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Row(
@@ -101,12 +111,25 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
         color: AppColors.mist,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: AppColors.forest.withValues(alpha: .12)),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: AppColors.forest, size: 30),
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.sage.withValues(alpha: .24),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: AppColors.forest, size: 28),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -149,8 +172,16 @@ class _Item extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 5),
-        leading: Icon(icon, color: AppColors.forest),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.mist,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: AppColors.forest),
+        ),
         title: Text(
           title,
           style: const TextStyle(fontWeight: FontWeight.w700),
