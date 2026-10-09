@@ -138,12 +138,29 @@ class _HomeTabState extends State<_HomeTab> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                          color: AppColors.forest,
-                          borderRadius: BorderRadius.circular(16)),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [AppColors.forest, Color(0xFF31563F)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.sage.withValues(alpha: .45),
+                            width: 1,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1F1E3A2B),
+                              blurRadius: 14,
+                              offset: Offset(0, 6),
+                            ),
+                          ]),
                       child: const Center(
                           child: Text('NM',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.ivory,
+                                  fontSize: 15,
+                                  letterSpacing: -.6,
                                   fontWeight: FontWeight.w900)))),
                   const SizedBox(width: 14),
                   const Expanded(
@@ -153,14 +170,15 @@ class _HomeTabState extends State<_HomeTab> {
                         Text('NEGOSWALLET',
                             style: TextStyle(
                                 color: AppColors.forest,
-                                fontSize: 11,
-                                letterSpacing: 1.4,
-                                fontWeight: FontWeight.w800)),
+                                fontSize: 10,
+                                letterSpacing: 1.8,
+                                fontWeight: FontWeight.w900)),
                         SizedBox(height: 3),
                         Text('Your portfolio',
                             style: TextStyle(
-                                fontSize: 21,
-                                fontWeight: FontWeight.w800,
+                                fontSize: 22,
+                                letterSpacing: -.6,
+                                fontWeight: FontWeight.w900,
                                 color: AppColors.charcoal))
                       ])),
                   IconButton(
@@ -178,6 +196,10 @@ class _HomeTabState extends State<_HomeTab> {
                           end: Alignment.bottomRight,
                           colors: [AppColors.forest, Color(0xFF31563F)]),
                       borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: AppColors.sage.withValues(alpha: .28),
+                        width: 1,
+                      ),
                       boxShadow: const [
                         BoxShadow(
                             color: Color(0x241E3A2B),
@@ -315,9 +337,12 @@ class _HomeTabState extends State<_HomeTab> {
                 sliver: SliverToBoxAdapter(
                     child: Row(children: [
                   const Expanded(
-                      child: Text('Assets',
+                      child: Text('Your assets',
                           style: TextStyle(
-                              fontSize: 19, fontWeight: FontWeight.w800))),
+                              fontSize: 20,
+                              letterSpacing: -.45,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.charcoal))),
                   TextButton(
                       onPressed: () => _showAssets(context),
                       child: const Text('Manage'))
@@ -747,10 +772,24 @@ class _SettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      ListView(padding: const EdgeInsets.all(22), children: [
+      ListView(padding: const EdgeInsets.fromLTRB(22, 24, 22, 28), children: [
         const Text('Settings',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 20),
+            style: TextStyle(
+              fontSize: 29,
+              letterSpacing: -.8,
+              fontWeight: FontWeight.w900,
+              color: AppColors.charcoal,
+            )),
+        const SizedBox(height: 8),
+        const Text(
+          'Manage your wallet and security preferences.',
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.45,
+            color: Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 22),
         Card(
           clipBehavior: Clip.antiAlias,
           child: Column(children: [
