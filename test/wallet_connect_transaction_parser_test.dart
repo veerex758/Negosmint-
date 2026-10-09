@@ -214,10 +214,10 @@ void main() {
       id: 4,
       chainId: WalletConnectTransactionParser.sepoliaCaip2,
       methodName: WalletConnectTransactionParser.method,
-      params: validParams(value: '0x' + ('f' * 64)),
+      params: validParams(value: '0x${'f' * 64}'),
       appName: 'Example dApp',
     );
-    expect(parsed.signingRequest.value, '0x' + ('f' * 64));
+    expect(parsed.signingRequest.value, '0x${'f' * 64}');
   });
 
   test('proposal signing detection identifies transaction requests', () {
