@@ -1,0 +1,272 @@
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:negosmint_wallet/core/assets/erc20_asset_service.dart';
+import 'package:negosmint_wallet/core/assets/activity_indexer.dart';
+import 'package:negosmint_wallet/core/assets/transaction_parser.dart';
+import 'package:negosmint_wallet/core/assets/sepolia_activity_history_service.dart';
+
+void main() {
+  group('ERC-20 unit formatting', () {
+    test('formats values using token decimals without floating point', () {
+      expect(Erc20Asset.formatUnits(BigInt.from(1234567), 6), '1.234567');
+      expect(Erc20Asset.formatUnits(BigInt.from(1000000), 6), '1');
+      expect(Erc20Asset.formatUnits(BigInt.from(123456789), 8), '1.234567');
+      expect(Erc20Asset.formatUnits(BigInt.from(42), 0), '42');
+      expect(Erc20Asset.formatUnits(BigInt.from(1), 18), '<0.000001');
+    });
+
+    test('rejects impossible decimal counts', () {
+      expect(() => Erc20Asset.formatUnits(BigInt.one, 256),
+          throwsArgumentError);
+    });
+  });
+
+  group('TransactionParser', () {
+    const wallet = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const other = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    const token = '0xcccccccccccccccccccccccccccccccccccccccc';
+    const hash =
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+
+    String topic(String address) => '0x${address.substring(2).padLeft(64, '0')}';
+
+    test('parses a native ETH transfer and direction', () {
+      final parsed = TransactionParser.parse(
+        walletAddress: wallet,
+        transaction: {
+          'hash': hash,
+          'from': wallet,
+          'to': other,
+          'value': '0xde0b6b3a7640000',
+          'input': '0x',
+        },
+        receipt: {'status': '0x1', 'blockNumber': '0x10', 'logs': []},
+      );
+      expect(parsed, hasLength(1));
+      expect(parsed.single.isNative, isTrue);
+      expect(parsed.single.rawAmount, BigInt.from(1000000000000000000));
+      expect(parsed.single.direction, AssetTransferDirection.sent);
+      expect(parsed.single.blockNumber, 16);
+      expect(parsed.single.failed, isFalse);
+    });
+
+    test('parses ERC-20 Transfer event from receipt logs', () {
+      final parsed = TransactionParser.parse(
+        walletAddress: wallet,
+        transaction: {
+          'hash': hash,
+          'from': other,
+          'to': token,
+          'value': '0x0',
+          'input': '0xa9059cbb',
+        },
+        receipt: {
+          'status': '0x1',
+          'blockNumber': '0x20',
+          'logs': [
+            {
+              'address': token,
+              'topics': [
+                TransactionParser.transferTopic,
+                topic(other),
+                topic(wallet),
+              ],
+              'data': '0x${BigInt.from(2500000).toRadixString(16).padLeft(64, '0')}',
+            }
+          ],
+        },
+      );
+      expect(parsed, hasLength(1));
+      expect(parsed.single.isNative, isFalse);
+      expect(parsed.single.tokenAddress, token);
+      expect(parsed.single.rawAmount, BigInt.from(2500000));
+      expect(parsed.single.direction, AssetTransferDirection.received);
+    });
+
+    test('marks reverted receipts as failed', () {
+      final parsed = TransactionParser.parse(
+        walletAddress: wallet,
+        transaction: {
+          'hash': hash,
+          'from': wallet,
+          'to': other,
+          'value': '0x1',
+          'input': '0x',
+        },
+        receipt: {'status': '0x0', 'blockNumber': '0x11', 'logs': []},
+      );
+      expect(parsed.single.failed, isTrue);
+    });
+
+    test('ignores malformed logs and missing transaction hashes', () {
+      final malformed = TransactionParser.parse(
+        walletAddress: wallet,
+        transaction: {
+          'from': wallet,
+          'to': other,
+          'value': '0x1',
+          'input': '0x',
+        },
+      );
+      expect(malformed, isEmpty);
+    });
+  });
+
+  group('Persistent activity log decoding', () {
+    const wallet = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const other = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    const token = '0xcccccccccccccccccccccccccccccccccccccccc';
+    const hash =
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+
+    String topic(String address) => '0x${address.substring(2).padLeft(64, '0')}';
+
+    test('decodes indexed ERC-20 transfer logs', () {
+      final transfer = IndexedTokenTransfer.fromLog({
+        'address': token,
+        'transactionHash': hash,
+        'blockNumber': '0x20',
+        'logIndex': '0x2',
+        'topics': [
+          IndexedTokenTransfer.transferTopic,
+          topic(other),
+          topic(wallet),
+        ],
+        'data': '0x${BigInt.from(1234).toRadixString(16).padLeft(64, '0')}',
+      });
+      expect(transfer, isNotNull);
+      expect(transfer!.transactionHash, hash);
+      expect(transfer.tokenAddress, token);
+      expect(transfer.from, other);
+      expect(transfer.to, wallet);
+      expect(transfer.rawAmount, BigInt.from(1234));
+      expect(transfer.blockNumber, 32);
+      expect(transfer.logIndex, 2);
+      expect(transfer.involves(wallet), isTrue);
+    });
+
+    test('rejects malformed logs and persisted records', () {
+      expect(
+        IndexedTokenTransfer.fromLog({'address': token}),
+        isNull,
+      );
+      expect(
+        IndexedTokenTransfer.fromJson({
+          'hash': '0xbad',
+          'token': token,
+          'from': other,
+          'to': wallet,
+          'amount': '1',
+          'block': 1,
+          'logIndex': 0,
+        }),
+        isNull,
+      );
+    });
+
+    test('round-trips an indexed transfer through JSON', () {
+      final transfer = IndexedTokenTransfer(
+        transactionHash: hash,
+        tokenAddress: token,
+        from: other,
+        to: wallet,
+        rawAmount: BigInt.from(1234),
+        blockNumber: 32,
+        logIndex: 2,
+      );
+      final restored = IndexedTokenTransfer.fromJson(transfer.toJson());
+      expect(restored?.transactionHash, hash);
+      expect(restored?.rawAmount, BigInt.from(1234));
+      expect(restored?.blockNumber, 32);
+    });
+  });
+
+
+  group('Sepolia activity history pagination', () {
+    const wallet = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const firstHash =
+        '0x1111111111111111111111111111111111111111111111111111111111111111';
+    const secondHash =
+        '0x2222222222222222222222222222222222222222222222222222222222222222';
+
+    test('merges transaction and token-transfer hashes and preserves cursors',
+        () async {
+      final client = MockClient((request) async {
+        if (request.url.path.endsWith('/transactions')) {
+          return http.Response(
+            jsonEncode({
+              'items': [
+                {'hash': firstHash},
+                {'hash': 'not-a-hash'},
+              ],
+              'next_page_params': {'block_number': 100, 'index': 4},
+            }),
+            200,
+          );
+        }
+        return http.Response(
+          jsonEncode({
+            'items': [
+              {'transaction_hash': firstHash},
+              {'transaction_hash': secondHash},
+            ],
+            'next_page_params': null,
+          }),
+          200,
+        );
+      });
+      final service = SepoliaActivityHistoryService(client: client);
+      try {
+        final page = await service.fetchPage(wallet);
+        expect(page.transactionHashes, unorderedEquals([firstHash, secondHash]));
+        expect(page.transactionCursor, {'block_number': 100, 'index': 4});
+        expect(page.tokenTransferCursor, isNull);
+        expect(page.hasMore, isTrue);
+      } finally {
+        service.dispose();
+      }
+    });
+
+    test('rejects invalid wallet addresses before making requests', () async {
+      final service = SepoliaActivityHistoryService(
+        client: MockClient((_) async => http.Response('{}', 200)),
+      );
+      try {
+        await expectLater(
+          service.fetchPage('bad-address'),
+          throwsFormatException,
+        );
+      } finally {
+        service.dispose();
+      }
+    });
+  });
+
+  group('ExplorerLinks', () {
+    test('builds Sepolia explorer URLs', () {
+      expect(
+        ExplorerLinks.transaction(
+          '0x${'a' * 64}',
+        ),
+        'https://sepolia.etherscan.io/tx/0x${List<String>.filled(64, 'a').join()}',
+      );
+      expect(
+        ExplorerLinks.address('0x${List<String>.filled(40, 'b').join()}'),
+        'https://sepolia.etherscan.io/address/0x${List<String>.filled(40, 'b').join()}',
+      );
+      expect(
+        ExplorerLinks.token('0x${List<String>.filled(40, 'c').join()}'),
+        'https://sepolia.etherscan.io/token/0x${List<String>.filled(40, 'c').join()}',
+      );
+    });
+
+    test('rejects malformed hashes and addresses', () {
+      expect(() => ExplorerLinks.transaction('0x123'), throwsFormatException);
+      expect(() => ExplorerLinks.address('not-an-address'),
+          throwsFormatException);
+    });
+  });
+}
