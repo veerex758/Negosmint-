@@ -59,7 +59,7 @@ class ReceiveScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Testnet • Chain ID ${SupportedNetworks.sepolia.chainId} • ETH',
+                          'Testnet • Chain ID 11155111 • ETH',
                           style: TextStyle(color: Colors.black54, fontSize: 12),
                         ),
                       ],
