@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:negosmint_wallet/core/assets/erc20_asset_service.dart';
+import 'package:negosmint_wallet/core/assets/activity_indexer.dart';
 import 'package:negosmint_wallet/core/assets/transaction_parser.dart';
 
 void main() {
@@ -106,6 +107,75 @@ void main() {
         },
       );
       expect(malformed, isEmpty);
+    });
+  });
+
+  group('Persistent activity log decoding', () {
+    const wallet = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const other = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    const token = '0xcccccccccccccccccccccccccccccccccccccccc';
+    const hash =
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+
+    String topic(String address) => '0x${address.substring(2).padLeft(64, '0')}';
+
+    test('decodes indexed ERC-20 transfer logs', () {
+      final transfer = IndexedTokenTransfer.fromLog({
+        'address': token,
+        'transactionHash': hash,
+        'blockNumber': '0x20',
+        'logIndex': '0x2',
+        'topics': [
+          IndexedTokenTransfer.transferTopic,
+          topic(other),
+          topic(wallet),
+        ],
+        'data': '0x${BigInt.from(1234).toRadixString(16).padLeft(64, '0')}',
+      });
+      expect(transfer, isNotNull);
+      expect(transfer!.transactionHash, hash);
+      expect(transfer.tokenAddress, token);
+      expect(transfer.from, other);
+      expect(transfer.to, wallet);
+      expect(transfer.rawAmount, BigInt.from(1234));
+      expect(transfer.blockNumber, 32);
+      expect(transfer.logIndex, 2);
+      expect(transfer.involves(wallet), isTrue);
+    });
+
+    test('rejects malformed logs and persisted records', () {
+      expect(
+        IndexedTokenTransfer.fromLog({'address': token}),
+        isNull,
+      );
+      expect(
+        IndexedTokenTransfer.fromJson({
+          'hash': '0xbad',
+          'token': token,
+          'from': other,
+          'to': wallet,
+          'amount': '1',
+          'block': 1,
+          'logIndex': 0,
+        }),
+        isNull,
+      );
+    });
+
+    test('round-trips an indexed transfer through JSON', () {
+      final transfer = IndexedTokenTransfer(
+        transactionHash: hash,
+        tokenAddress: token,
+        from: other,
+        to: wallet,
+        rawAmount: BigInt.from(1234),
+        blockNumber: 32,
+        logIndex: 2,
+      );
+      final restored = IndexedTokenTransfer.fromJson(transfer.toJson());
+      expect(restored?.transactionHash, hash);
+      expect(restored?.rawAmount, BigInt.from(1234));
+      expect(restored?.blockNumber, 32);
     });
   });
 
