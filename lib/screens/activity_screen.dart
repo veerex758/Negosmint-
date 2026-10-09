@@ -200,6 +200,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                   ? _amount(tx?['value']?.toString())
                                   : '${indexed.rawAmount} token units',
                               time: _time(d?['timestamp']),
+                              tokenAddress: indexed?.tokenAddress,
                               status: switch (status) {
                                 SepoliaTransactionStatus.pending => 'Pending',
                                 SepoliaTransactionStatus.confirmed =>
@@ -238,6 +239,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
 class _TransactionTile extends StatelessWidget {
   final String hash, direction, amount, time, status;
+  final String? tokenAddress;
   final VoidCallback onTap;
   const _TransactionTile(
       {required this.hash,
@@ -245,7 +247,8 @@ class _TransactionTile extends StatelessWidget {
       required this.amount,
       required this.time,
       required this.status,
-      required this.onTap});
+      required this.onTap,
+      this.tokenAddress});
   @override
   Widget build(BuildContext context) {
     final failed = status == 'Failed';
@@ -267,8 +270,21 @@ class _TransactionTile extends StatelessWidget {
         title: Text('$direction  •  $amount',
             style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Text('$status  •  $time')),
+          padding: const EdgeInsets.only(top: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$status  •  $time'),
+              if (tokenAddress != null)
+                Text(
+                  'Token: $tokenAddress',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11),
+                ),
+            ],
+          ),
+        ),
         trailing: const Icon(Icons.chevron_right_rounded, size: 20),
         onTap: onTap,
       ),
