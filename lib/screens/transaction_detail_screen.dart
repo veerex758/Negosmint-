@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/network/evm_rpc_service.dart';
+import '../core/network/transaction_status.dart';
 import '../theme/app_theme.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
@@ -95,9 +96,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     }
   }
 
-  String _status() => _receipt == null
-      ? 'Pending'
-      : (_receipt!['status'] == '0x1' ? 'Confirmed' : 'Failed');
+  String _status() => switch (SepoliaTransactionStatusParser.parse(_receipt)) {
+        SepoliaTransactionStatus.pending => 'Pending',
+        SepoliaTransactionStatus.confirmed => 'Confirmed',
+        SepoliaTransactionStatus.failed => 'Failed',
+      };
 
   String _date() {
     if (_timestamp == null) return 'Pending confirmation';
@@ -143,7 +146,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              _error.toString(),
+                              'Network request failed. Check your connection and retry.',
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
