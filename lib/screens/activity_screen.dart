@@ -145,33 +145,40 @@ class _ActivityScreenState extends State<ActivityScreen> {
     if (_loadingDetails || _hashes.isEmpty) return;
     _loadingDetails = true;
     try {
-      for (final hash in List<String>.from(_hashes)) {
+      final hashes = List<String>.from(_hashes);
+      // A small concurrent batch avoids serially waiting on three RPC calls
+      // for every item while keeping pressure on the public RPC endpoint low.
+      for (var start = 0; start < hashes.length; start += 5) {
         if (!mounted) return;
-        // Confirmed transactions are immutable for this screen's purposes.
-        // Avoid re-fetching their transaction, receipt, and block timestamp on
-        // every 60-second activity refresh; pending transactions are retried.
-        if (_details[hash]?['receipt'] != null) continue;
-        try {
-          final tx = await _rpc.getTransactionByHash(hash);
-          if (tx == null) continue;
-          final receipt = await _rpc.getTransactionReceipt(hash);
-          int? timestamp;
-          final block = receipt?['blockNumber'];
-          if (block is String && block != '0x') {
-            timestamp = await _rpc.getBlockTimestamp(block);
-          }
-          if (mounted) {
-            setState(() => _details[hash] = {
-                  'tx': tx,
-                  'receipt': receipt,
-                  'timestamp': timestamp,
-                });
-          }
-        } catch (_) {}
+        final batch = hashes.skip(start).take(5);
+        await Future.wait(batch.map(_loadTransactionDetail));
       }
     } finally {
       _loadingDetails = false;
     }
+  }
+
+  Future<void> _loadTransactionDetail(String hash) async {
+    // Confirmed transactions are immutable for this screen's purposes.
+    // Pending transactions are retried on later refreshes.
+    if (_details[hash]?['receipt'] != null) return;
+    try {
+      final tx = await _rpc.getTransactionByHash(hash);
+      if (tx == null) return;
+      final receipt = await _rpc.getTransactionReceipt(hash);
+      int? timestamp;
+      final block = receipt?['blockNumber'];
+      if (block is String && block != '0x') {
+        timestamp = await _rpc.getBlockTimestamp(block);
+      }
+      if (mounted) {
+        setState(() => _details[hash] = {
+              'tx': tx,
+              'receipt': receipt,
+              'timestamp': timestamp,
+            });
+      }
+    } catch (_) {}
   }
 
   String _amount(String? value) {
@@ -284,7 +291,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                     walletAddress: _address!,
                                   );
                             final tokenTransfers = parsedTransfers
-                                .where((transfer) => !transfer.isNative)
+                                .where((transfer) =>
+                                    !transfer.isNative &&
+                                    transfer.direction !=
+                                        AssetTransferDirection.unknown)
                                 .toList(growable: false);
                             final walletAddress = _address?.toLowerCase();
                             final nativeFrom =
