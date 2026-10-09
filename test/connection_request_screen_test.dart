@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:negosmint_wallet/core/network/network_config.dart';
 import 'package:negosmint_wallet/screens/connection_request_screen.dart';
 import 'package:negosmint_wallet/wallet/connection/wallet_connection_request.dart';
-import 'package:negosmint_wallet/wallet/connection/wallet_connection_request.dart'
-    show WalletConnectionPermission;
 
 void main() {
   testWidgets(
