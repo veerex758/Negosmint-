@@ -127,6 +127,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     final ok = await _security.verifyPin(pin);
     if (!ok && mounted) {
       final remaining = await _security.lockoutRemaining();
+      if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(remaining > Duration.zero
@@ -156,6 +157,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   Future<void> _removePin() async {
     if (!await _verifyExistingPin()) return;
+    if (!mounted) return;
     if (!_biometricEnabled || !_biometricAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
