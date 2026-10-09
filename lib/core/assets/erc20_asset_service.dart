@@ -43,7 +43,7 @@ class Erc20Asset {
         fraction.length > maxFraction &&
         RegExp(r'^0+$').hasMatch(shown)) {
       final zeros = List<String>.filled(maxFraction - 1, '0').join();
-      final threshold = '<0.$zeros1';
+      final threshold = '<0.${zeros}1';
       return negative ? '-$threshold' : threshold;
     }
     return '${negative ? '-' : ''}$whole${shown.isEmpty ? '' : '.$shown'}';
