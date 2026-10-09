@@ -9,7 +9,7 @@ void main() {
       expect(Erc20Asset.formatUnits(BigInt.from(1000000), 6), '1');
       expect(Erc20Asset.formatUnits(BigInt.from(123456789), 8), '1.234567');
       expect(Erc20Asset.formatUnits(BigInt.from(42), 0), '42');
-      expect(Erc20Asset.formatUnits(BigInt.from(1), 18), '0.000000');
+      expect(Erc20Asset.formatUnits(BigInt.from(1), 18), '<0.000001');
     });
 
     test('rejects impossible decimal counts', () {
