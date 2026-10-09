@@ -83,7 +83,7 @@ Manual results were reported by the developer. The biometric failure is unresolv
 - [x] Add wallet creation/finalization, invalid recovery phrase rejection, and stored-phrase address-restore tests using an isolated fake key store.
 - [x] Add balance-plus-fee boundary tests (exactly enough balance succeeds; one unit short fails) using an isolated validation helper; wrong-chain rejection is covered through an injected RPC service. Physical-device persistence/import checks remain required.
 
-The Sepolia RPC service now accepts an injectable endpoint so tests can use a local JSON-RPC server without contacting a public network. WalletService also accepts an injectable RPC service for deterministic chain-validation tests. RPC tests cover chain-ID parsing, upstream JSON-RPC errors, HTTP 503 responses, malformed JSON, missing result fields, a refused connection, and a stalled response timeout. Separate wallet validation tests cover authentication and pre-network input gates. These tests are not considered passed until CI reports success.
+The Sepolia RPC service now accepts an injectable endpoint so tests can use a local JSON-RPC server without contacting a public network. WalletService also accepts an injectable RPC service for deterministic chain-validation tests. RPC tests cover chain-ID parsing, JSON-RPC version/request-ID matching, upstream errors, HTTP 503 responses, malformed JSON, missing result fields, a refused connection, and a stalled response timeout. Separate wallet validation tests cover authentication and pre-network input gates. These tests are not considered passed until CI reports success.
 
 ### Physical-device / Sepolia testnet checklist
 - [ ] Create wallet and complete recovery-phrase backup verification.
