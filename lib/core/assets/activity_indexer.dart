@@ -226,6 +226,16 @@ class ActivityIndexer {
       if (persisted.length > _maxPersistedTransfers) {
         persisted.removeRange(_maxPersistedTransfers, persisted.length);
       }
+      byId
+        ..clear()
+        ..addEntries(
+          persisted.map(
+            (transfer) => MapEntry(
+              '${transfer.transactionHash}:${transfer.logIndex}',
+              transfer,
+            ),
+          ),
+        );
       await _storage.write(
         key: _key(wallet, 'transfers'),
         value: jsonEncode(
