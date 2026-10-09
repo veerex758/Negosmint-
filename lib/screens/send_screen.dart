@@ -196,8 +196,9 @@ class _SendScreenState extends State<SendScreen> {
     if (request.chainId != PaymentUriParser.sepoliaChainId) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Only Ethereum Sepolia payment requests are supported.'),
+          content: Text(
+            'Only Ethereum Sepolia payment requests are supported.',
+          ),
         ),
       );
       return;
