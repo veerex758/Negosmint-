@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:app_links/app_links.dart';
 
 import 'wallet_connection_codec.dart';
 import 'wallet_connection_request.dart';
+import 'wallet_ownership_request.dart';
 
 /// Receives OS deep links and exposes only validated connection requests.
 ///
@@ -15,6 +17,7 @@ class WalletDeepLinkReceiver {
       StreamController<WalletConnectionRequest>.broadcast();
   final StreamController<Uri> _walletConnectController =
       StreamController<Uri>.broadcast();
+  final StreamController<WalletOwnershipRequest> _ownershipController = StreamController<WalletOwnershipRequest>.broadcast();
   StreamSubscription<Uri>? _subscription;
 
   WalletDeepLinkReceiver({AppLinks? appLinks})
@@ -22,6 +25,7 @@ class WalletDeepLinkReceiver {
 
   Stream<WalletConnectionRequest> get requests => _controller.stream;
   Stream<Uri> get walletConnectUris => _walletConnectController.stream;
+  Stream<WalletOwnershipRequest> get ownershipRequests => _ownershipController.stream;
 
   Future<void> start() async {
     if (_subscription != null) return;
@@ -39,9 +43,17 @@ class WalletDeepLinkReceiver {
     _subscription = null;
     await _controller.close();
     await _walletConnectController.close();
+    await _ownershipController.close();
   }
 
   void _emit(Uri uri) {
+    if (uri.scheme == WalletConnectionCodec.scheme && uri.host == 'ownership') {
+      final request = _parseOwnershipRequest(uri);
+      if (request != null && !_ownershipController.isClosed) {
+        _ownershipController.add(request);
+      }
+      return;
+    }
     if (uri.scheme.toLowerCase() == 'wc' &&
         !_walletConnectController.isClosed) {
       _walletConnectController.add(uri);
@@ -50,6 +62,25 @@ class WalletDeepLinkReceiver {
     final request = _parse(uri);
     if (request != null && !_controller.isClosed) {
       _controller.add(request);
+    }
+  }
+
+  WalletOwnershipRequest? _parseOwnershipRequest(Uri uri) {
+    try {
+      if (uri.toString().length > 8192 ||
+          uri.scheme != WalletConnectionCodec.scheme ||
+          uri.host != 'ownership') {
+        return null;
+      }
+      final encoded = uri.queryParameters['request'];
+      if (encoded == null || encoded.isEmpty) return null;
+      final decoded = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(encoded))),
+      );
+      return WalletOwnershipRequest.parse(decoded);
+    } catch (_) {
+      // Deep links are untrusted input; invalid or expired requests are ignored.
+      return null;
     }
   }
 
