@@ -113,9 +113,10 @@ class EvmRpcService {
     try {
       final q = await c.postUrl(Uri.parse(_endpoint));
       q.headers.contentType = ContentType.json;
+      final requestId = DateTime.now().microsecondsSinceEpoch;
       q.write(jsonEncode({
         'jsonrpc': '2.0',
-        'id': DateTime.now().microsecondsSinceEpoch,
+        'id': requestId,
         'method': method,
         'params': params,
       }));
@@ -130,6 +131,9 @@ class EvmRpcService {
       final d = jsonDecode(body);
       if (d is! Map<String, dynamic>) {
         throw const EvmRpcException('Malformed RPC response.');
+      }
+      if (d['jsonrpc'] != '2.0' || d['id'] != requestId) {
+        throw const EvmRpcException('RPC response does not match the request.');
       }
       if (d['error'] != null) {
         final e = d['error'];
