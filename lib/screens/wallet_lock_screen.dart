@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/security/biometric_service.dart';
 import '../core/security/wallet_security_service.dart';
+import '../core/security/wallet_lock_state.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
@@ -26,6 +27,7 @@ class _WalletLockScreenState extends State<WalletLockScreen> {
   @override
   void initState() {
     super.initState();
+    walletLockActive.value = true;
     _prepare();
   }
 
@@ -43,6 +45,7 @@ class _WalletLockScreenState extends State<WalletLockScreen> {
   }
 
   void _finishUnlock() {
+    walletLockActive.value = false;
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => HomeScreen(address: widget.address)),
