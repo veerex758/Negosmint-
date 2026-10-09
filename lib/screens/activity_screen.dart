@@ -164,8 +164,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
     if (_details[hash]?['receipt'] != null) return;
     try {
       final tx = await _rpc.getTransactionByHash(hash);
-      if (tx == null) return;
       final receipt = await _rpc.getTransactionReceipt(hash);
+      if (tx == null && receipt == null) {
+        if (mounted) {
+          setState(() => _details[hash] = {
+                'tx': null,
+                'receipt': null,
+                'timestamp': null,
+              });
+        }
+        return;
+      }
       int? timestamp;
       final block = receipt?['blockNumber'];
       if (block is String && block != '0x') {
@@ -308,8 +317,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                             ? 'Receive'
                                             : 'Transfer')
                                 .toSet();
+                            // Locally recorded hashes are wallet-originated;
+                            // retain Send while the public RPC has not indexed them.
                             final direction = tokenTransfers.isEmpty
-                                ? (nativeFrom == walletAddress ? 'Send' : 'Receive')
+                                ? (tx == null || nativeFrom == walletAddress
+                                    ? 'Send'
+                                    : 'Receive')
                                 : directions.length == 1
                                     ? directions.single
                                     : 'Transfer';
