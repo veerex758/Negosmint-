@@ -24,7 +24,8 @@ class WalletSnapshot {
 class WalletTransactionFeePreview {
   final BigInt gasLimit;
   final BigInt gasPriceWei;
-  const WalletTransactionFeePreview({required this.gasLimit, required this.gasPriceWei});
+  const WalletTransactionFeePreview(
+      {required this.gasLimit, required this.gasPriceWei});
   BigInt get feeWei => gasLimit * gasPriceWei;
 }
 
@@ -219,7 +220,7 @@ class WalletService {
         transaction,
         chainId: EvmRpcService.chainId,
       );
-      return '0x' + signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      return '0x${signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
     } on WalletException {
       rethrow;
     } on FormatException {
