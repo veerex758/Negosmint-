@@ -95,8 +95,7 @@ class WalletConnectTransactionParser {
   static void _validateHexQuantity(String value, String field) {
     // Ethereum transaction quantities are uint256 values. Bound the input
     // before BigInt parsing or RPC calls to reject oversized hostile payloads.
-    if (!RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(value) ||
-        value.length > 66) {
+    if (!RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(value) || value.length > 66) {
       throw WalletConnectionException('Invalid $field.');
     }
   }
