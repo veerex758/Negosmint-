@@ -86,19 +86,19 @@ class ReceiveScreen extends StatelessWidget {
                 ),
                 child: PaymentUriParser.isValidAddress(address)
                     ? QrImageView(
-                  data: PaymentUriParser.createSepoliaUri(address),
-                  version: QrVersions.auto,
-                  size: 230,
-                  backgroundColor: Colors.white,
-                  eyeStyle: const QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: AppColors.forest,
-                  ),
-                  dataModuleStyle: const QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.charcoal,
-                  ),
-                )
+                        data: PaymentUriParser.createSepoliaUri(address),
+                        version: QrVersions.auto,
+                        size: 230,
+                        backgroundColor: Colors.white,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: AppColors.forest,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: AppColors.charcoal,
+                        ),
+                      )
                     : const SizedBox(
                         width: 230,
                         height: 230,
