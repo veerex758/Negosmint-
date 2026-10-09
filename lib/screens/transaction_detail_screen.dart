@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/network/evm_rpc_service.dart';
+import '../core/assets/transaction_parser.dart';
+import '../core/wallet/wallet_service.dart';
 import '../core/network/transaction_status.dart';
 import '../theme/app_theme.dart';
 
@@ -20,6 +22,7 @@ class TransactionDetailScreen extends StatefulWidget {
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   final _rpc = EvmRpcService();
   Map<String, dynamic>? _tx, _receipt;
+  List<ParsedAssetTransfer> _transfers = const [];
   int? _timestamp;
   bool _loading = true;
   Object? _error;
@@ -48,6 +51,14 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
       }
       final tx = await _rpc.getTransactionByHash(widget.hash);
       final receipt = await _rpc.getTransactionReceipt(widget.hash);
+      final wallet = await WalletService().restoreWallet();
+      final transfers = tx == null || wallet == null
+          ? <ParsedAssetTransfer>[]
+          : TransactionParser.parse(
+              transaction: tx,
+              receipt: receipt,
+              walletAddress: wallet.address,
+            );
       int? time;
       final block = receipt?['blockNumber'];
       if (block is String && block != '0x') {
@@ -57,6 +68,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         setState(() {
           _tx = tx;
           _receipt = receipt;
+          _transfers = transfers;
           _timestamp = time;
           _loading = false;
           _error = null;
@@ -112,7 +124,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     await Clipboard.setData(ClipboardData(text: value));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transaction hash copied')),
+        const SnackBar(content: Text('Copied to clipboard')),
       );
     }
   }
@@ -258,6 +270,39 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                             ],
                           ),
                         ),
+                        if (_transfers.any((transfer) => !transfer.isNative)) ...[
+                          const SizedBox(height: 14),
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'ERC-20 transfer events',
+                                    style: TextStyle(fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Amounts below are raw token units. Use the token decimals shown on the Assets screen to convert them.',
+                                    style: TextStyle(color: Colors.black54, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ..._transfers.where((transfer) => !transfer.isNative).map(
+                                    (transfer) => Column(
+                                      children: [
+                                        _row('Raw amount', transfer.rawAmount.toString()),
+                                        _row('Token contract', transfer.tokenAddress),
+                                        _row('From', transfer.from),
+                                        _row('To', transfer.to),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 18),
                         Card(
                           child: Padding(
@@ -285,6 +330,17 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                                 SelectableText(
                                   widget.hash,
                                   style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(height: 12),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _copy(
+                                      ExplorerLinks.transaction(widget.hash),
+                                    ),
+                                    icon: const Icon(Icons.open_in_new_rounded),
+                                    label: const Text('Copy Sepolia explorer link'),
+                                  ),
                                 ),
                               ],
                             ),

@@ -5,6 +5,7 @@ import '../core/network/evm_rpc_service.dart';
 import 'receive_screen.dart';
 import 'send_screen.dart';
 import 'activity_screen.dart';
+import 'assets_screen.dart';
 import 'security_screen.dart';
 import 'recovery_phrase_screen.dart';
 import 'network_screen.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _HomeTab(
           address: widget.address, onSend: _openSend, onReceive: _openReceive),
       const ActivityScreen(),
+      const AssetsScreen(),
       const _SettingsTab(),
     ];
     return Scaffold(
@@ -53,6 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.receipt_long_outlined),
               selectedIcon: Icon(Icons.receipt_long),
               label: 'Activity'),
+          NavigationDestination(
+              icon: Icon(Icons.token_outlined),
+              selectedIcon: Icon(Icons.token_rounded),
+              label: 'Assets'),
           NavigationDestination(
               icon: Icon(Icons.settings_outlined),
               selectedIcon: Icon(Icons.settings),
@@ -366,28 +372,11 @@ class _HomeTabState extends State<_HomeTab> {
                     'NegosMint Wallet is connected to Ethereum Sepolia. Notifications and mainnet features are not enabled in this build.',
                     style: TextStyle(height: 1.5))
               ])));
-  void _showAssets(BuildContext context) => showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      barrierColor: const Color(0x66000000),
-      showDragHandle: true,
-      builder: (_) => const Padding(
-          padding: EdgeInsets.fromLTRB(24, 8, 24, 30),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Assets',
-                    style:
-                        TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-                SizedBox(height: 10),
-                Text(
-                    'Bitcoin and USDC are placeholders for future asset support. Sepolia ETH is the only live asset in this testnet build.',
-                    style: TextStyle(height: 1.5)),
-                SizedBox(height: 8),
-                Text('Mainnet assets are disabled.',
-                    style: TextStyle(fontWeight: FontWeight.w700))
-              ])));
+  void _showAssets(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const AssetsScreen()),
+    );
+  }
 }
 
 class _AddressCard extends StatelessWidget {
