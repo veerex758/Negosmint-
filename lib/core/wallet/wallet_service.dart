@@ -123,6 +123,13 @@ class WalletService {
     try {
       final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
       final sender = credentials.address;
+      final storedAddress = await getPublicAddress();
+      if (storedAddress == null ||
+          storedAddress.toLowerCase() != sender.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Stored wallet address does not match the signing key.',
+        );
+      }
       if (sender.eip55With0x.toLowerCase() ==
           recipient.eip55With0x.toLowerCase()) {
         throw const WalletException(
@@ -297,10 +304,692 @@ class WalletService {
         'Authentication required to sign this transaction.',
       );
     }
+    if (valueWei < BigInt.zero || valueWei > _maxUint256) {
+      throw const WalletException('Transaction value is outside the supported range.');
+    }
+    if (data.length > 100000 ||
+        !RegExp(r'^0x(?:[0-9a-fA-F]{2})*
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      final sender = credentials.address;
+      final storedAddress = await getPublicAddress();
+      if (storedAddress == null ||
+          storedAddress.toLowerCase() != sender.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Stored wallet address does not match the signing key.',
+        );
+      }
+      if (sender.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+
+      final gasPrice = await client.getGasPrice();
+      final amount = wallet.EtherAmount.inWei(valueWei);
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: amount,
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      final balance = await client.getBalance(sender);
+      final gasCostWei = gasPrice.getInWei * estimatedGas;
+      if (balance.getInWei < valueWei + gasCostWei) {
+        throw const WalletException(
+          'Insufficient Sepolia ETH balance for amount and network fee.',
+        );
+      }
+
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException('Invalid gas estimate returned by network.');
+      }
+      final nonce = await rpc.getTransactionCount(sender.eip55With0x);
+      final signedTransaction = await client.signTransaction(
+        credentials,
+        eth.Transaction(
+          to: recipient,
+          value: amount,
+          data: eth.hexToBytes(data),
+          gasPrice: gasPrice,
+          maxGas: estimatedGas.toInt(),
+          nonce: nonce,
+        ),
+        chainId: EvmRpcService.chainId,
+      );
+      final hash = await client.sendRawTransaction(signedTransaction);
+      await _saveActivity(hash);
+      return hash;
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<List<String>> getActivity() async {
+    final raw = await _storage.read(key: _activityKey);
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split('|').where((value) => value.isNotEmpty).toList();
+  }
+
+  Future<void> _saveActivity(String hash) async {
+    final current = await getActivity();
+    final updated = <String>[
+      hash,
+      ...current.where((value) => value != hash),
+    ];
+    await _storage.write(
+      key: _activityKey,
+      value: updated.take(20).join('|'),
+    );
+  }
+
+  Future<void> clearWallet() async {
+    await _keyStore.deleteWallet();
+    await _storage.delete(key: _activityKey);
+  }
+}
+).hasMatch(data) || data.length.isOdd) {
+      throw const WalletException('Invalid transaction data.');
+    }
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      if (credentials.address.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+      final transaction = eth.Transaction(
+        to: recipient,
+        value: wallet.EtherAmount.inWei(valueWei),
+        data: eth.hexToBytes(data),
+      );
+      final signed = await client.signTransaction(
+        credentials,
+        transaction,
+        chainId: EvmRpcService.chainId,
+      );
+      return '0x${signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<WalletTransactionFeePreview> estimateSepoliaTransactionFee({
+    required String to,
+    required BigInt valueWei,
+    String data = '0x',
+  }) async {
     if (valueWei < BigInt.zero) {
       throw const WalletException('Transaction value cannot be negative.');
     }
     if (!RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final address = await getPublicAddress();
+    if (address == null || address.isEmpty) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final sender = wallet.EthereumAddress.fromHex(address);
+      final gasPrice = await client.getGasPrice();
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: wallet.EtherAmount.inWei(valueWei),
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      return WalletTransactionFeePreview(
+        gasLimit: estimatedGas,
+        gasPriceWei: gasPrice.getInWei,
+      );
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<String> sendSepoliaTransaction({
+    required String to,
+    required BigInt valueWei,
+    String data = '0x',
+  }) async {
+    if (!await _biometrics.authenticateForSigning()) {
+      throw const WalletException(
+        'Authentication required to sign this transaction.',
+      );
+    }
+    if (valueWei < BigInt.zero) {
+      throw const WalletException('Transaction value cannot be negative.');
+    }
+    if (!RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      final sender = credentials.address;
+      if (sender.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+
+      final gasPrice = await client.getGasPrice();
+      final amount = wallet.EtherAmount.inWei(valueWei);
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: amount,
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      final balance = await client.getBalance(sender);
+      final gasCostWei = gasPrice.getInWei * estimatedGas;
+      if (balance.getInWei < valueWei + gasCostWei) {
+        throw const WalletException(
+          'Insufficient Sepolia ETH balance for amount and network fee.',
+        );
+      }
+
+      final maxGas = estimatedGas > BigInt.from(0x7fffffffffffffff)
+          ? 0x7fffffffffffffff
+          : estimatedGas.toInt();
+      final hash = await client.sendTransaction(
+        credentials,
+        eth.Transaction(
+          to: recipient,
+          value: amount,
+          data: eth.hexToBytes(data),
+          gasPrice: gasPrice,
+          maxGas: maxGas,
+        ),
+        chainId: EvmRpcService.chainId,
+      );
+      await _saveActivity(hash);
+      return hash;
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<List<String>> getActivity() async {
+    final raw = await _storage.read(key: _activityKey);
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split('|').where((value) => value.isNotEmpty).toList();
+  }
+
+  Future<void> _saveActivity(String hash) async {
+    final current = await getActivity();
+    final updated = <String>[
+      hash,
+      ...current.where((value) => value != hash),
+    ];
+    await _storage.write(
+      key: _activityKey,
+      value: updated.take(20).join('|'),
+    );
+  }
+
+  Future<void> clearWallet() async {
+    await _keyStore.deleteWallet();
+    await _storage.delete(key: _activityKey);
+  }
+}
+).hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final address = await getPublicAddress();
+    if (address == null || address.isEmpty) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final sender = wallet.EthereumAddress.fromHex(address);
+      final gasPrice = await client.getGasPrice();
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: wallet.EtherAmount.inWei(valueWei),
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      return WalletTransactionFeePreview(
+        gasLimit: estimatedGas,
+        gasPriceWei: gasPrice.getInWei,
+      );
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<String> sendSepoliaTransaction({
+    required String to,
+    required BigInt valueWei,
+    String data = '0x',
+  }) async {
+    if (!await _biometrics.authenticateForSigning()) {
+      throw const WalletException(
+        'Authentication required to sign this transaction.',
+      );
+    }
+    if (valueWei < BigInt.zero) {
+      throw const WalletException('Transaction value cannot be negative.');
+    }
+    if (!RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      final sender = credentials.address;
+      if (sender.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+
+      final gasPrice = await client.getGasPrice();
+      final amount = wallet.EtherAmount.inWei(valueWei);
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: amount,
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      final balance = await client.getBalance(sender);
+      final gasCostWei = gasPrice.getInWei * estimatedGas;
+      if (balance.getInWei < valueWei + gasCostWei) {
+        throw const WalletException(
+          'Insufficient Sepolia ETH balance for amount and network fee.',
+        );
+      }
+
+      final maxGas = estimatedGas > BigInt.from(0x7fffffffffffffff)
+          ? 0x7fffffffffffffff
+          : estimatedGas.toInt();
+      final hash = await client.sendTransaction(
+        credentials,
+        eth.Transaction(
+          to: recipient,
+          value: amount,
+          data: eth.hexToBytes(data),
+          gasPrice: gasPrice,
+          maxGas: maxGas,
+        ),
+        chainId: EvmRpcService.chainId,
+      );
+      await _saveActivity(hash);
+      return hash;
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<List<String>> getActivity() async {
+    final raw = await _storage.read(key: _activityKey);
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split('|').where((value) => value.isNotEmpty).toList();
+  }
+
+  Future<void> _saveActivity(String hash) async {
+    final current = await getActivity();
+    final updated = <String>[
+      hash,
+      ...current.where((value) => value != hash),
+    ];
+    await _storage.write(
+      key: _activityKey,
+      value: updated.take(20).join('|'),
+    );
+  }
+
+  Future<void> clearWallet() async {
+    await _keyStore.deleteWallet();
+    await _storage.delete(key: _activityKey);
+  }
+}
+).hasMatch(data) || data.length.isOdd) {
+      throw const WalletException('Invalid transaction data.');
+    }
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      if (credentials.address.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+      final transaction = eth.Transaction(
+        to: recipient,
+        value: wallet.EtherAmount.inWei(valueWei),
+        data: eth.hexToBytes(data),
+      );
+      final signed = await client.signTransaction(
+        credentials,
+        transaction,
+        chainId: EvmRpcService.chainId,
+      );
+      return '0x${signed.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<WalletTransactionFeePreview> estimateSepoliaTransactionFee({
+    required String to,
+    required BigInt valueWei,
+    String data = '0x',
+  }) async {
+    if (valueWei < BigInt.zero) {
+      throw const WalletException('Transaction value cannot be negative.');
+    }
+    if (!RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final address = await getPublicAddress();
+    if (address == null || address.isEmpty) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final sender = wallet.EthereumAddress.fromHex(address);
+      final gasPrice = await client.getGasPrice();
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: wallet.EtherAmount.inWei(valueWei),
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      return WalletTransactionFeePreview(
+        gasLimit: estimatedGas,
+        gasPriceWei: gasPrice.getInWei,
+      );
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<String> sendSepoliaTransaction({
+    required String to,
+    required BigInt valueWei,
+    String data = '0x',
+  }) async {
+    if (!await _biometrics.authenticateForSigning()) {
+      throw const WalletException(
+        'Authentication required to sign this transaction.',
+      );
+    }
+    if (valueWei < BigInt.zero) {
+      throw const WalletException('Transaction value cannot be negative.');
+    }
+    if (!RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
+      throw const WalletException('Invalid transaction data.');
+    }
+
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    late final wallet.EthereumAddress recipient;
+    try {
+      recipient = wallet.EthereumAddress.fromHex(to);
+    } on FormatException {
+      throw const WalletException('Invalid transaction recipient.');
+    }
+
+    final rpc = EvmRpcService();
+    if (await rpc.getChainId() != EvmRpcService.chainId) {
+      throw const WalletException('Connected network is not Ethereum Sepolia.');
+    }
+
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      final sender = credentials.address;
+      if (sender.eip55With0x.toLowerCase() ==
+          recipient.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Recipient cannot be the same as your wallet.',
+        );
+      }
+
+      final gasPrice = await client.getGasPrice();
+      final amount = wallet.EtherAmount.inWei(valueWei);
+      final estimatedGas = await client.estimateGas(
+        sender: sender,
+        to: recipient,
+        value: amount,
+        data: eth.hexToBytes(data),
+        gasPrice: gasPrice,
+      );
+      final balance = await client.getBalance(sender);
+      final gasCostWei = gasPrice.getInWei * estimatedGas;
+      if (balance.getInWei < valueWei + gasCostWei) {
+        throw const WalletException(
+          'Insufficient Sepolia ETH balance for amount and network fee.',
+        );
+      }
+
+      final maxGas = estimatedGas > BigInt.from(0x7fffffffffffffff)
+          ? 0x7fffffffffffffff
+          : estimatedGas.toInt();
+      final hash = await client.sendTransaction(
+        credentials,
+        eth.Transaction(
+          to: recipient,
+          value: amount,
+          data: eth.hexToBytes(data),
+          gasPrice: gasPrice,
+          maxGas: maxGas,
+        ),
+        chainId: EvmRpcService.chainId,
+      );
+      await _saveActivity(hash);
+      return hash;
+    } on WalletException {
+      rethrow;
+    } on FormatException {
+      throw const WalletException('Invalid transaction data.');
+    } finally {
+      await client.dispose();
+    }
+  }
+
+  Future<List<String>> getActivity() async {
+    final raw = await _storage.read(key: _activityKey);
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split('|').where((value) => value.isNotEmpty).toList();
+  }
+
+  Future<void> _saveActivity(String hash) async {
+    final current = await getActivity();
+    final updated = <String>[
+      hash,
+      ...current.where((value) => value != hash),
+    ];
+    await _storage.write(
+      key: _activityKey,
+      value: updated.take(20).join('|'),
+    );
+  }
+
+  Future<void> clearWallet() async {
+    await _keyStore.deleteWallet();
+    await _storage.delete(key: _activityKey);
+  }
+}
+).hasMatch(data)) {
       throw const WalletException('Invalid transaction data.');
     }
 
