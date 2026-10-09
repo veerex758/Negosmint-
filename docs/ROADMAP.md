@@ -41,7 +41,7 @@
 - [x] Signed transaction broadcast
 - [x] Pending/confirmed/failed tracking from transaction receipts
 
-Implementation note: live-device and real Sepolia transaction scenarios remain part of Phase 7 testnet validation.
+Implementation note: the native ETH send path validates recipients and amounts, previews fees, re-checks network/balance/gas before local signing, broadcasts the signed transaction, and records its hash for receipt-based pending/confirmed/failed display. This change has not been run through CI or a live-device transaction test; maintainers should run those checks before treating Phase 4 as verified. Live-device and real Sepolia scenarios remain part of Phase 7 testnet validation.
 
 ## Phase 5 — Assets and activity
 - ERC-20 registry

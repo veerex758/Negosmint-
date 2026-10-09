@@ -64,8 +64,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
         if (!mounted) return;
         try {
           final tx = await _rpc.getTransactionByHash(hash);
-          if (tx == null) continue;
           final receipt = await _rpc.getTransactionReceipt(hash);
+          if (tx == null && receipt == null) {
+            if (mounted) {
+              setState(() => _details[hash] = {
+                    'tx': null,
+                    'receipt': null,
+                    'timestamp': null,
+                  });
+            }
+            continue;
+          }
           int? timestamp;
           final block = receipt?['blockNumber'];
           if (block is String && block != '0x') {
@@ -161,8 +170,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 d?['receipt'] as Map<String, dynamic>?;
                             final status =
                                 SepoliaTransactionStatusParser.parse(receipt);
-                            final mine =
-                                tx?['from']?.toString().toLowerCase() ==
+                            // This local activity list is populated by
+                            // wallet-originated broadcasts. Preserve the Send
+                            // label while a public RPC has not indexed the tx.
+                            final mine = tx == null ||
+                                tx['from']?.toString().toLowerCase() ==
                                     _address?.toLowerCase();
                             return _TransactionTile(
                               hash: hash,
