@@ -26,7 +26,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _hasMoreHistory = false;
   bool _loadingOlder = false;
   bool _historyInitialized = false;
-  List<IndexedTokenTransfer> _indexedTransfers = const [];
   Timer? _timer;
   List<String> _hashes = const [];
   final Map<String, Map<String, dynamic>> _details = {};
@@ -87,7 +86,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
       if (!mounted) return;
       setState(() {
         _hashes = hashes;
-        _indexedTransfers = indexed;
         _address = snapshot?.address;
         _loading = false;
         _error = null;
