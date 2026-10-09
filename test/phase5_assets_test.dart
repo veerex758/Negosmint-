@@ -115,15 +115,15 @@ void main() {
         ExplorerLinks.transaction(
           '0x${'a' * 64}',
         ),
-        'https://sepolia.etherscan.io/tx/0x${'a' * 64}',
+        'https://sepolia.etherscan.io/tx/0x${List<String>.filled(64, 'a').join()}',
       );
       expect(
-        ExplorerLinks.address('0x${'b' * 40}'),
-        'https://sepolia.etherscan.io/address/0x${'b' * 40}',
+        ExplorerLinks.address('0x${List<String>.filled(40, 'b').join()}'),
+        'https://sepolia.etherscan.io/address/0x${List<String>.filled(40, 'b').join()}',
       );
       expect(
-        ExplorerLinks.token('0x${'c' * 40}'),
-        'https://sepolia.etherscan.io/token/0x${'c' * 40}',
+        ExplorerLinks.token('0x${List<String>.filled(40, 'c').join()}'),
+        'https://sepolia.etherscan.io/token/0x${List<String>.filled(40, 'c').join()}',
       );
     });
 
