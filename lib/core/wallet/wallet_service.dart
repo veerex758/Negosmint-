@@ -120,7 +120,7 @@ class WalletService {
         );
       }
 
-      final signature = await credentials.signPersonalMessageToUint8List(
+      final signature = credentials.signPersonalMessageToUint8List(
         Uint8List.fromList(utf8.encode(message)),
       );
       final encoded = signature
