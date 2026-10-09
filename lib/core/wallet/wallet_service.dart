@@ -106,9 +106,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid recipient address.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid recipient address.');
     }
@@ -145,6 +148,12 @@ class WalletService {
         value: amount,
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       final gasCostWei = gasPrice.getInWei * estimatedGas;
 
       if (balance.getInWei < valueWei + gasCostWei) {
@@ -205,9 +214,12 @@ class WalletService {
     if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
       throw const WalletException('Wallet is not initialized correctly.');
     }
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -264,9 +276,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -287,6 +302,12 @@ class WalletService {
         data: eth.hexToBytes(data),
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       return WalletTransactionFeePreview(
         gasLimit: estimatedGas,
         gasPriceWei: gasPrice.getInWei,
@@ -322,9 +343,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -362,6 +386,12 @@ class WalletService {
         data: eth.hexToBytes(data),
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       final balance = await client.getBalance(sender);
       final gasCostWei = gasPrice.getInWei * estimatedGas;
       if (balance.getInWei < valueWei + gasCostWei) {
