@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
+import '../core/network/network_config.dart';
+import '../core/wallet/payment_uri.dart';
 
 class ReceiveScreen extends StatelessWidget {
   final String address;
@@ -36,7 +38,38 @@ class ReceiveScreen extends StatelessWidget {
               'Share your EVM address to receive supported testnet assets.',
               style: TextStyle(color: Colors.black54, height: 1.4),
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: AppColors.mist,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.public_rounded, color: AppColors.forest),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Ethereum Sepolia',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Testnet • Chain ID ${SupportedNetworks.sepolia.chainId} • ETH',
+                          style: TextStyle(color: Colors.black54, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.verified_rounded, color: AppColors.forest),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
             Center(
               child: Container(
                 padding: const EdgeInsets.all(18),
@@ -51,8 +84,9 @@ class ReceiveScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: QrImageView(
-                  data: address,
+                child: PaymentUriParser.isValidAddress(address)
+                    ? QrImageView(
+                  data: PaymentUriParser.createSepoliaUri(address),
                   version: QrVersions.auto,
                   size: 230,
                   backgroundColor: Colors.white,
@@ -64,7 +98,17 @@ class ReceiveScreen extends StatelessWidget {
                     dataModuleShape: QrDataModuleShape.square,
                     color: AppColors.charcoal,
                   ),
-                ),
+                )
+                    : const SizedBox(
+                        width: 230,
+                        height: 230,
+                        child: Center(
+                          child: Text(
+                            'Wallet address is invalid',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 20),
@@ -80,7 +124,7 @@ class ReceiveScreen extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Scan or copy this address to receive Sepolia testnet assets.',
+                      'Scan or copy this Sepolia address. Confirm the network before sending.',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),

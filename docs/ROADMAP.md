@@ -24,10 +24,12 @@
 - transaction builder
 
 ## Phase 3 — Receive
-- address display
-- QR generation
-- network labeling
-- QR scanner and payment URI validation
+- [x] Address display with copy/selectable text
+- [x] QR generation using an Ethereum Sepolia payment URI
+- [x] Explicit network label and chain ID
+- [x] Camera-based QR scanner
+- [x] Strict address/payment URI validation (network and optional ETH amount)
+- [x] Unit tests for valid and malformed payment payloads
 
 ## Phase 4 — Send
 - recipient validation
