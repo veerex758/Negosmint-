@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'core/security/wallet_security_service.dart';
+import 'core/security/biometric_service.dart';
 import 'core/security/wallet_lock_state.dart';
 import 'core/wallet/wallet_service.dart';
 import 'screens/splash_screen.dart';
@@ -128,6 +129,20 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
       if (mounted) setState(() => _obscured = false);
       return;
     }
+
+    // Do not navigate to an unrecoverable lock screen if neither a PIN nor
+    // supported device authentication is configured on this device.
+    final hasPin = await _security.hasPin();
+    final biometricEnabled = await _security.biometricUnlockEnabled();
+    final canAuthenticate =
+        biometricEnabled && await BiometricService().canAuthenticate();
+    if (!mounted) return;
+    if (!hasPin && !canAuthenticate) {
+      setState(() => _obscured = false);
+      _scheduleAutoLock();
+      return;
+    }
+
     _locking = true;
     walletLockActive.value = true;
     setState(() => _obscured = true);
