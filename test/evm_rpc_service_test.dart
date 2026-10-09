@@ -52,6 +52,32 @@ void main() {
       expect(await service.getChainId(), EvmRpcService.chainId);
     });
 
+    test('rejects a response with a mismatched request ID', () async {
+      await startServer((request) async {
+        await utf8.decoder.bind(request).join();
+        await respond(
+          request,
+          body: jsonEncode({
+            'jsonrpc': '2.0',
+            'id': -1,
+            'result': '0xaa36a7',
+          }),
+        );
+      });
+
+      final service = EvmRpcService(endpoint: 'http://127.0.0.1:${server.port}');
+      await expectLater(
+        service.getChainId(),
+        throwsA(
+          isA<EvmRpcException>().having(
+            (error) => error.message,
+            'message',
+            'RPC response does not match the request.',
+          ),
+        ),
+      );
+    });
+
     test('surfaces JSON-RPC error messages', () async {
       await startServer((request) async {
         final raw = await utf8.decoder.bind(request).join();
