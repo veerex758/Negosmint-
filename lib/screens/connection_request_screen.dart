@@ -28,8 +28,11 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
       try {
         _callbackTransport.register(widget.request);
       } catch (_) {
-        // The request was already validated before reaching this screen.
-        // Keep callback registration failure non-fatal; approval remains local.
+        // Do not approve a connection when its response channel cannot be
+        // prepared. Otherwise the wallet could save a connection that the
+        // requesting app never learns was approved.
+        _error =
+            'A secure response callback could not be prepared. Restart the connection from the requesting app.';
       }
     }
   }
@@ -182,7 +185,10 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
           ],
           const SizedBox(height: 26),
           FilledButton(
-              onPressed: _busy ? null : _approve,
+              onPressed: _busy ||
+                      (widget.request.callback != null && _error != null)
+                  ? null
+                  : _approve,
               child: Text(_busy ? 'Connecting…' : 'Connect')),
           const SizedBox(height: 10),
           OutlinedButton(
