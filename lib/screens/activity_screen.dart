@@ -171,7 +171,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               time: _time(d?['timestamp']),
                               status: switch (status) {
                                 SepoliaTransactionStatus.pending => 'Pending',
-                                SepoliaTransactionStatus.confirmed => 'Confirmed',
+                                SepoliaTransactionStatus.confirmed =>
+                                  'Confirmed',
                                 SepoliaTransactionStatus.failed => 'Failed',
                               },
                               onTap: () =>

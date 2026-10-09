@@ -8,8 +8,7 @@ class EthAmountParser {
 
   static BigInt? parse(String input) {
     final value = input.trim();
-    if (!RegExp(r'^(?:0|[1-9][0-9]*)(?:\.[0-9]{0,18})?$')
-        .hasMatch(value)) {
+    if (!RegExp(r'^(?:0|[1-9][0-9]*)(?:\.[0-9]{0,18})?$').hasMatch(value)) {
       return null;
     }
     final parts = value.split('.');

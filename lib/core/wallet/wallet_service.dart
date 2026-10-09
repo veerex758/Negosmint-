@@ -155,7 +155,8 @@ class WalletService {
 
       if (estimatedGas <= BigInt.zero ||
           estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException('Invalid gas estimate returned by network.');
+        throw const WalletException(
+            'Invalid gas estimate returned by network.');
       }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
@@ -192,10 +193,12 @@ class WalletService {
       );
     }
     if (valueWei < BigInt.zero || valueWei > _maxUint256) {
-      throw const WalletException('Transaction value is outside the supported range.');
+      throw const WalletException(
+          'Transaction value is outside the supported range.');
     }
     if (data.length > 100000 ||
-        !RegExp(r'^0x[0-9a-fA-F]*$').hasMatch(data) || data.length.isOdd) {
+        !RegExp(r'^0x[0-9a-fA-F]*$').hasMatch(data) ||
+        data.length.isOdd) {
       throw const WalletException('Invalid transaction data.');
     }
     final mnemonic = await _keyStore.loadMnemonic();
@@ -248,7 +251,8 @@ class WalletService {
     String data = '0x',
   }) async {
     if (valueWei < BigInt.zero || valueWei > _maxUint256) {
-      throw const WalletException('Transaction value is outside the supported range.');
+      throw const WalletException(
+          'Transaction value is outside the supported range.');
     }
     if (data.length > 100000 ||
         !RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
@@ -305,7 +309,8 @@ class WalletService {
       );
     }
     if (valueWei < BigInt.zero || valueWei > _maxUint256) {
-      throw const WalletException('Transaction value is outside the supported range.');
+      throw const WalletException(
+          'Transaction value is outside the supported range.');
     }
     if (data.length > 100000 ||
         !RegExp(r'^0x(?:[0-9a-fA-F]{2})*$').hasMatch(data)) {
@@ -367,7 +372,8 @@ class WalletService {
 
       if (estimatedGas <= BigInt.zero ||
           estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException('Invalid gas estimate returned by network.');
+        throw const WalletException(
+            'Invalid gas estimate returned by network.');
       }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(

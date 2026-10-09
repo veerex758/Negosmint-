@@ -145,7 +145,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            const Text(
                               'Network request failed. Check your connection and retry.',
                               textAlign: TextAlign.center,
                             ),
