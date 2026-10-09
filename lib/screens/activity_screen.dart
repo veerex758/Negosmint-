@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/network/evm_rpc_service.dart';
 import '../core/assets/activity_indexer.dart';
 import '../core/assets/sepolia_activity_history_service.dart';
+import '../core/assets/transaction_parser.dart';
 import '../core/network/transaction_status.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
@@ -275,33 +276,41 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 d?['receipt'] as Map<String, dynamic>?;
                             final status =
                                 SepoliaTransactionStatusParser.parse(receipt);
-                            final transfers = _indexedTransfers
-                                .where((transfer) =>
-                                    transfer.transactionHash == hash)
+                            final parsedTransfers = tx == null || _address == null
+                                ? <ParsedAssetTransfer>[]
+                                : TransactionParser.parse(
+                                    transaction: tx,
+                                    receipt: receipt,
+                                    walletAddress: _address!,
+                                  );
+                            final tokenTransfers = parsedTransfers
+                                .where((transfer) => !transfer.isNative)
                                 .toList(growable: false);
                             final walletAddress = _address?.toLowerCase();
-                            final nativeFrom = tx?['from']
-                                ?.toString()
-                                .toLowerCase();
-                            final directions = transfers
-                                .map((transfer) => transfer.from == walletAddress
-                                    ? 'Send'
-                                    : transfer.to == walletAddress
-                                        ? 'Receive'
-                                        : 'Transfer')
+                            final nativeFrom =
+                                tx?['from']?.toString().toLowerCase();
+                            final directions = tokenTransfers
+                                .map((transfer) =>
+                                    transfer.direction == AssetTransferDirection.sent
+                                        ? 'Send'
+                                        : transfer.direction ==
+                                                AssetTransferDirection.received
+                                            ? 'Receive'
+                                            : 'Transfer')
                                 .toSet();
-                            final direction = transfers.isEmpty
+                            final direction = tokenTransfers.isEmpty
                                 ? (nativeFrom == walletAddress ? 'Send' : 'Receive')
                                 : directions.length == 1
                                     ? directions.single
                                     : 'Transfer';
-                            final singleTransfer =
-                                transfers.length == 1 ? transfers.single : null;
-                            final amount = transfers.isEmpty
+                            final singleTransfer = tokenTransfers.length == 1
+                                ? tokenTransfers.single
+                                : null;
+                            final amount = tokenTransfers.isEmpty
                                 ? _amount(tx?['value']?.toString())
-                                : transfers.length == 1
+                                : tokenTransfers.length == 1
                                     ? '${singleTransfer!.rawAmount} token units'
-                                    : '${transfers.length} token transfers';
+                                    : '${tokenTransfers.length} token transfers';
                             return _TransactionTile(
                               hash: hash,
                               direction: direction,
