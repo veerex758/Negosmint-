@@ -51,9 +51,9 @@ Implementation note: live-device and real Sepolia transaction scenarios remain p
 - [x] Sepolia explorer links for token contracts and transaction hashes
 - [x] Persistent, deduplicated ERC-20 Transfer log index with a per-wallet scan cursor
 - [x] Bounded initial inbound/outbound ERC-20 event discovery and incremental refresh
-- [ ] Complete activity history, including historical native ETH inbound discovery and unbounded backfill
+- [x] Paginated historical native transaction discovery and ERC-20 transfer history
 
-Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens are manually added by address and this phase does not enable ERC-20 transfers or mainnet assets. The local indexer scans ERC-20 Transfer logs over the most recent 5,000 blocks on first use, persists deduplicated events and a cursor, and incrementally scans later blocks. RPC limits can interrupt a scan safely; a failed chunk does not advance the cursor. This is not a complete historical archive and does not discover native ETH transfers received from other wallets; those still require block scanning or a dedicated indexer.
+Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens are manually added by address and this phase does not enable ERC-20 transfers or mainnet assets. The local RPC indexer scans the most recent 5,000 blocks on first use, persists deduplicated ERC-20 Transfer events and a cursor, and incrementally scans later blocks. A read-only, paginated Sepolia Blockscout address-history API supplements it so incoming native transactions and older transaction/token-transfer history can be discovered without scanning every block locally. Explorer history is best-effort and depends on the third-party indexer's availability; local sends and the RPC log index remain fallback sources. The wallet address is sent to the public explorer API, and no private keys or recovery phrases are sent. Failed RPC chunks do not advance the local cursor.
 
 ## Phase 6 — Security hardening
 - local PIN
