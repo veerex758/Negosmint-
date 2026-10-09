@@ -60,7 +60,8 @@ class _FakeBiometricService extends BiometricService {
 
 void main() {
   group('Phase 7 wallet lifecycle coverage', () {
-    test('creates and finalizes a wallet only after phrase verification', () async {
+    test('creates and finalizes a wallet only after phrase verification',
+        () async {
       final store = _FakeKeyStore();
       final service = WalletService(
         keyStore: store,
@@ -69,135 +70,7 @@ void main() {
 
       final snapshot = await service.createWallet();
       expect(snapshot.mnemonic, hasLength(12));
-      expect(snapshot.address, matches(RegExp(r'^0x[0-9a-fA-F]{40}
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(false),
-      );
-
-      await expectLater(
-        service.sendSepoliaEth(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.one,
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Authentication required to sign this transaction.',
-          ),
-        ),
-      );
-    });
-
-    test('rejects zero and negative native transfer amounts', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      for (final amount in [BigInt.zero, -BigInt.one]) {
-        await expectLater(
-          service.sendSepoliaEth(
-            to: '0x0000000000000000000000000000000000000001',
-            valueWei: amount,
-          ),
-          throwsA(
-            isA<WalletException>().having(
-              (error) => error.message,
-              'message',
-              'Amount is outside the supported ETH range.',
-            ),
-          ),
-        );
-      }
-    });
-
-    test('rejects malformed recipient before making a network request', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.sendSepoliaEth(to: 'not-an-address', valueWei: BigInt.one),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Invalid recipient address.',
-          ),
-        ),
-      );
-    });
-
-    test('rejects a non-Sepolia chain before attempting to send', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-        rpcFactory: _WrongChainRpc.new,
-      );
-
-      await expectLater(
-        service.sendSepoliaEth(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.one,
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Connected network is not Ethereum Sepolia.',
-          ),
-        ),
-      );
-    });
-
-    test('refuses to sign when no recovery phrase is stored', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.sendSepoliaTransaction(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.zero,
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Wallet is not initialized correctly.',
-          ),
-        ),
-      );
-    });
-
-    test('rejects malformed transaction data before network access', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.signSepoliaTransaction(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.zero,
-          data: '0x0g',
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Invalid transaction data.',
-          ),
-        ),
-      );
-    });
-  });
-}
-)));
+      expect(snapshot.address, matches(RegExp(r'^0x[0-9a-fA-F]{40}$')));
       expect(store.storedMnemonic, isNull);
 
       await service.finalizeWallet(snapshot);
@@ -205,7 +78,8 @@ void main() {
       expect(store.savedAddress, snapshot.address);
     });
 
-    test('restores the same address from a valid stored recovery phrase', () async {
+    test('restores the same address from a valid stored recovery phrase',
+        () async {
       final store = _FakeKeyStore(mnemonic: _validMnemonic);
       final service = WalletService(
         keyStore: store,
@@ -215,113 +89,7 @@ void main() {
       final restored = await service.restoreWallet();
 
       expect(restored, isNotNull);
-      expect(restored!.address, matches(RegExp(r'^0x[0-9a-fA-F]{40}
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(false),
-      );
-
-      await expectLater(
-        service.sendSepoliaEth(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.one,
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Authentication required to sign this transaction.',
-          ),
-        ),
-      );
-    });
-
-    test('rejects zero and negative native transfer amounts', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      for (final amount in [BigInt.zero, -BigInt.one]) {
-        await expectLater(
-          service.sendSepoliaEth(
-            to: '0x0000000000000000000000000000000000000001',
-            valueWei: amount,
-          ),
-          throwsA(
-            isA<WalletException>().having(
-              (error) => error.message,
-              'message',
-              'Amount is outside the supported ETH range.',
-            ),
-          ),
-        );
-      }
-    });
-
-    test('rejects malformed recipient before making a network request', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.sendSepoliaEth(to: 'not-an-address', valueWei: BigInt.one),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Invalid recipient address.',
-          ),
-        ),
-      );
-    });
-
-    test('refuses to sign when no recovery phrase is stored', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.sendSepoliaTransaction(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.zero,
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Wallet is not initialized correctly.',
-          ),
-        ),
-      );
-    });
-
-    test('rejects malformed transaction data before network access', () async {
-      final service = WalletService(
-        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
-        biometrics: _FakeBiometricService(true),
-      );
-
-      await expectLater(
-        service.signSepoliaTransaction(
-          to: '0x0000000000000000000000000000000000000001',
-          valueWei: BigInt.zero,
-          data: '0x0g',
-        ),
-        throwsA(
-          isA<WalletException>().having(
-            (error) => error.message,
-            'message',
-            'Invalid transaction data.',
-          ),
-        ),
-      );
-    });
-  });
-}
-)));
+      expect(restored!.address, matches(RegExp(r'^0x[0-9a-fA-F]{40}$')));
       expect(restored.address, store.savedAddress);
       expect(restored.mnemonic, isEmpty);
     });
@@ -392,7 +160,8 @@ void main() {
       }
     });
 
-    test('rejects malformed recipient before making a network request', () async {
+    test('rejects malformed recipient before making a network request',
+        () async {
       final service = WalletService(
         keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
         biometrics: _FakeBiometricService(true),
@@ -405,6 +174,28 @@ void main() {
             (error) => error.message,
             'message',
             'Invalid recipient address.',
+          ),
+        ),
+      );
+    });
+
+    test('rejects a non-Sepolia chain before attempting to send', () async {
+      final service = WalletService(
+        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
+        biometrics: _FakeBiometricService(true),
+        rpcFactory: _WrongChainRpc.new,
+      );
+
+      await expectLater(
+        service.sendSepoliaEth(
+          to: '0x0000000000000000000000000000000000000001',
+          valueWei: BigInt.one,
+        ),
+        throwsA(
+          isA<WalletException>().having(
+            (error) => error.message,
+            'message',
+            'Connected network is not Ethereum Sepolia.',
           ),
         ),
       );
