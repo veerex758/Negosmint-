@@ -49,9 +49,11 @@ Implementation note: live-device and real Sepolia transaction scenarios remain p
 - [x] Exact integer-based token decimal conversion (including tiny-balance display)
 - [x] Native transfer and receipt-backed ERC-20 Transfer event parser
 - [x] Sepolia explorer links for token contracts and transaction hashes
-- [ ] Complete activity history, including inbound transaction discovery and persistent token-transfer indexing
+- [x] Persistent, deduplicated ERC-20 Transfer log index with a per-wallet scan cursor
+- [x] Bounded initial inbound/outbound ERC-20 event discovery and incremental refresh
+- [ ] Complete activity history, including historical native ETH inbound discovery and unbounded backfill
 
-Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens are manually added by address and this phase does not enable ERC-20 transfers or mainnet assets. Activity currently starts from locally recorded transaction hashes; discovering all inbound wallet activity requires an indexer or event/log scanning strategy.
+Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens are manually added by address and this phase does not enable ERC-20 transfers or mainnet assets. The local indexer scans ERC-20 Transfer logs over the most recent 5,000 blocks on first use, persists deduplicated events and a cursor, and incrementally scans later blocks. RPC limits can interrupt a scan safely; a failed chunk does not advance the cursor. This is not a complete historical archive and does not discover native ETH transfers received from other wallets; those still require block scanning or a dedicated indexer.
 
 ## Phase 6 — Security hardening
 - local PIN
