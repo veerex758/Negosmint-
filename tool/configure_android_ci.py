@@ -116,6 +116,15 @@ def configure_manifest() -> None:
         raise SystemExit("AndroidManifest.xml not found")
 
     text = manifest.read_text()
+    permission = '    <uses-permission android:name="android.permission.USE_BIOMETRIC" />'
+    if "android.permission.USE_BIOMETRIC" not in text:
+        marker = "<manifest"
+        start = text.find(marker)
+        end = text.find(">", start)
+        if start < 0 or end < 0:
+            raise SystemExit("Android manifest root element not found")
+        text = text[: end + 1] + "\n" + permission + text[end + 1 :]
+
     filters = '''        <intent-filter>
               <action android:name="android.intent.action.VIEW" />
               <category android:name="android.intent.category.DEFAULT" />
@@ -135,13 +144,45 @@ def configure_manifest() -> None:
         if marker not in text:
             raise SystemExit("Android manifest activity intent-filter marker not found")
         text = text.replace(marker, filters + marker, 1)
-        manifest.write_text(text)
     elif 'android:scheme="wc"' not in text:
         raise SystemExit("negosmintwallet link exists but wc link is missing")
 
-    print(f"Configured wallet deep links in {manifest}")
+    manifest.write_text(text)
+    print(f"Configured wallet deep links and biometric permission in {manifest}")
+
+
+def configure_main_activity() -> None:
+    candidates = list(Path("android/app/src/main").glob("kotlin/**/MainActivity.kt"))
+    candidates += list(Path("android/app/src/main").glob("java/**/MainActivity.java"))
+    if not candidates:
+        raise SystemExit("Generated Android MainActivity source not found")
+
+    for activity in candidates:
+        text = activity.read_text()
+        if activity.suffix == ".kt":
+            text = text.replace(
+                "import io.flutter.embedding.android.FlutterActivity",
+                "import io.flutter.embedding.android.FlutterFragmentActivity",
+            )
+            text = text.replace(": FlutterActivity()", ": FlutterFragmentActivity()")
+            if "FlutterFragmentActivity" not in text:
+                raise SystemExit(f"Could not configure FragmentActivity in {activity}")
+        else:
+            text = text.replace(
+                "import io.flutter.embedding.android.FlutterActivity;",
+                "import io.flutter.embedding.android.FlutterFragmentActivity;",
+            )
+            text = text.replace(
+                "extends FlutterActivity",
+                "extends FlutterFragmentActivity",
+            )
+            if "FlutterFragmentActivity" not in text:
+                raise SystemExit(f"Could not configure FragmentActivity in {activity}")
+        activity.write_text(text)
+        print(f"Configured local_auth-compatible activity in {activity}")
 
 
 configure_project_repositories()
 configure_settings()
 configure_manifest()
+configure_main_activity()

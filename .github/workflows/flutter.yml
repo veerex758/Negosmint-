@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - phase-5-assets-activity
+      - phase-6-security-hardening
   pull_request:
     branches:
       - main
