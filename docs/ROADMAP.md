@@ -32,14 +32,16 @@
 - [x] Unit tests for valid and malformed payment payloads
 
 ## Phase 4 — Send
-- recipient validation
-- amount validation
-- transaction preview
-- fee display
-- fresh authentication
-- local signing
-- signed transaction broadcast
-- pending/confirmed/failed tracking
+- [x] Recipient validation
+- [x] Strict ETH amount validation and uint256 bounds
+- [x] Transaction preview
+- [x] Fee display and balance-plus-fee checks
+- [x] Fresh authentication before signing
+- [x] Local transaction signing
+- [x] Signed transaction broadcast
+- [x] Pending/confirmed/failed tracking from transaction receipts
+
+Implementation note: live-device and real Sepolia transaction scenarios remain part of Phase 7 testnet validation.
 
 ## Phase 5 — Assets and activity
 - ERC-20 registry
