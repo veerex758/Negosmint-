@@ -29,6 +29,24 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Export formatter output temporarily
+        run: |
+          dart format lib
+          mkdir -p /tmp/phase5-formatted
+          cp lib/core/assets/activity_indexer.dart /tmp/phase5-formatted/
+          cp lib/core/assets/erc20_asset_service.dart /tmp/phase5-formatted/
+          cp lib/core/assets/transaction_parser.dart /tmp/phase5-formatted/
+          cp lib/screens/assets_screen.dart /tmp/phase5-formatted/
+          cp lib/screens/transaction_detail_screen.dart /tmp/phase5-formatted/
+          tar -czf /tmp/phase5-formatted.tar.gz -C /tmp phase5-formatted
+
+      - name: Upload temporary formatter output
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-formatted-source
+          path: /tmp/phase5-formatted.tar.gz
+          if-no-files-found: error
+
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed lib
 
