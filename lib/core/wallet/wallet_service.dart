@@ -71,6 +71,20 @@ class WalletService {
     await _keyStore.saveAddress(snapshot.address);
   }
 
+  /// Throws before signing when the transfer value plus network fee exceeds
+  /// the account balance. Kept independent of RPC so the safety rule is testable.
+  static void validateSufficientBalance({
+    required BigInt balanceWei,
+    required BigInt valueWei,
+    required BigInt gasCostWei,
+  }) {
+    if (balanceWei < valueWei + gasCostWei) {
+      throw const WalletException(
+        'Insufficient Sepolia ETH balance for amount and network fee.',
+      );
+    }
+  }
+
   Future<bool> hasWallet() => _keyStore.hasWallet();
 
   Future<WalletSnapshot?> restoreWallet() async {
@@ -159,11 +173,11 @@ class WalletService {
       }
       final gasCostWei = gasPrice.getInWei * estimatedGas;
 
-      if (balance.getInWei < valueWei + gasCostWei) {
-        throw const WalletException(
-          'Insufficient Sepolia ETH balance for amount and network fee.',
-        );
-      }
+      validateSufficientBalance(
+        balanceWei: balance.getInWei,
+        valueWei: valueWei,
+        gasCostWei: gasCostWei,
+      );
 
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
@@ -227,7 +241,7 @@ class WalletService {
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
