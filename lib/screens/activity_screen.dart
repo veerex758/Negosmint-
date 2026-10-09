@@ -111,6 +111,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
         _address!,
         transactionCursor: _transactionCursor,
         tokenTransferCursor: _tokenTransferCursor,
+        includeTransactions: _transactionCursor != null,
+        includeTokenTransfers: _tokenTransferCursor != null,
       );
       if (!mounted) return;
       _historyHashes.addAll(page.transactionHashes);
