@@ -20,11 +20,10 @@ const _validMnemonic = <String>[
 ];
 
 class _FakeKeyStore extends SecureKeyStore {
-  _FakeKeyStore({List<String>? mnemonic, this.address})
+  _FakeKeyStore({List<String>? mnemonic})
       : storedMnemonic = mnemonic;
 
   List<String>? storedMnemonic;
-  final String? address;
   String? savedAddress;
 
   @override
@@ -36,7 +35,7 @@ class _FakeKeyStore extends SecureKeyStore {
   }
 
   @override
-  Future<String?> loadAddress() async => savedAddress ?? address;
+  Future<String?> loadAddress() async => savedAddress;
 
   @override
   Future<void> saveAddress(String value) async {
