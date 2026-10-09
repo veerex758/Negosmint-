@@ -99,6 +99,27 @@ void main() {
     );
   });
 
+  test('round-trips the request through an ownership deep link', () {
+    final request = WalletOwnershipRequest.parse(validEnvelope(), now: now);
+    final uri = Uri.parse(request.toDeepLink());
+    final restored = WalletOwnershipRequest.parseDeepLink(uri, now: now);
+
+    expect(uri.scheme, 'negosmintwallet');
+    expect(uri.host, 'ownership');
+    expect(restored.challengeId, request.challengeId);
+    expect(restored.message, request.message);
+    expect(restored.chainId, request.chainId);
+    expect(restored.expiresAt, request.expiresAt);
+  });
+
+  test('rejects ownership links with the wrong host', () {
+    final uri = Uri.parse('negosmintwallet://connect?request=eyJ0eXBlIjoi');
+    expect(
+      () => WalletOwnershipRequest.parseDeepLink(uri, now: now),
+      throwsFormatException,
+    );
+  });
+
   test('serializes a parsed request using the versioned envelope', () {
     final request = WalletOwnershipRequest.parse(validEnvelope(), now: now);
     expect(request.toEnvelope()['type'], WalletOwnershipRequest.protocol);
