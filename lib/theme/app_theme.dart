@@ -88,6 +88,9 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.ivory,
       fontFamily: 'sans-serif',
+      visualDensity: VisualDensity.standard,
+      dividerColor: AppColors.mist,
+      splashFactory: InkSparkle.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
@@ -108,9 +111,22 @@ class AppTheme {
         backgroundColor: Colors.white,
         indicatorColor: AppColors.mist,
         elevation: 0,
-        labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontWeight: FontWeight.w600),
+        height: 76,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) =>
+            TextStyle(
+              fontSize: 11,
+              letterSpacing: .1,
+              fontWeight: states.contains(WidgetState.selected)
+                  ? FontWeight.w800
+                  : FontWeight.w600,
+              color: states.contains(WidgetState.selected)
+                  ? AppColors.forest
+                  : AppColors.charcoal.withValues(alpha: .55),
+            )),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: Colors.white,
@@ -120,10 +136,34 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: Colors.white,
-        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: AppColors.forest.withValues(alpha: .06),
+        elevation: 1,
         margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFE8ECE5), width: .8),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w800,
+            letterSpacing: .1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.charcoal,
+        contentTextStyle: const TextStyle(color: AppColors.ivory),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
     );
