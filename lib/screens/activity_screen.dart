@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../core/network/evm_rpc_service.dart';
+import '../core/assets/activity_indexer.dart';
 import '../core/network/transaction_status.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
@@ -15,6 +16,8 @@ class ActivityScreen extends StatefulWidget {
 class _ActivityScreenState extends State<ActivityScreen> {
   final _wallet = WalletService();
   final _rpc = EvmRpcService();
+  final _indexer = ActivityIndexer();
+  List<IndexedTokenTransfer> _indexedTransfers = const [];
   Timer? _timer;
   List<String> _hashes = const [];
   final Map<String, Map<String, dynamic>> _details = {};
@@ -28,18 +31,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     super.initState();
     _load();
-    _timer = Timer.periodic(const Duration(seconds: 8), (_) => _loadDetails());
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => _load());
   }
 
   Future<void> _load() async {
     if (_refreshing) return;
     _refreshing = true;
     try {
-      final hashes = await _wallet.getActivity();
+      final localHashes = await _wallet.getActivity();
       final snapshot = await _wallet.restoreWallet();
+      var indexed = <IndexedTokenTransfer>[];
+      if (snapshot != null) {
+        try {
+          indexed = await _indexer.sync(snapshot.address);
+        } catch (_) {
+          // Keep locally recorded transactions visible when log indexing is
+          // unavailable. The indexer cursor only advances after a full chunk.
+          try {
+            indexed = await _indexer.getTransfers(snapshot.address);
+          } catch (_) {}
+        }
+      }
+      final hashes = <String>[
+        ...localHashes,
+        ...indexed.map((transfer) => transfer.transactionHash),
+      ].toSet().toList();
       if (!mounted) return;
       setState(() {
         _hashes = hashes;
+        _indexedTransfers = indexed;
         _address = snapshot?.address;
         _loading = false;
         _error = null;
@@ -112,6 +132,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _indexer.dispose();
     super.dispose();
   }
 
@@ -161,13 +182,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 d?['receipt'] as Map<String, dynamic>?;
                             final status =
                                 SepoliaTransactionStatusParser.parse(receipt);
-                            final mine =
-                                tx?['from']?.toString().toLowerCase() ==
+                            IndexedTokenTransfer? indexed;
+                            for (final transfer in _indexedTransfers) {
+                              if (transfer.transactionHash == hash) {
+                                indexed = transfer;
+                                break;
+                              }
+                            }
+                            final mine = indexed != null
+                                ? indexed.from == _address?.toLowerCase()
+                                : tx?['from']?.toString().toLowerCase() ==
                                     _address?.toLowerCase();
                             return _TransactionTile(
                               hash: hash,
                               direction: mine ? 'Send' : 'Receive',
-                              amount: _amount(tx?['value']?.toString()),
+                              amount: indexed == null
+                                  ? _amount(tx?['value']?.toString())
+                                  : '${indexed.rawAmount} token units',
                               time: _time(d?['timestamp']),
                               status: switch (status) {
                                 SepoliaTransactionStatus.pending => 'Pending',
