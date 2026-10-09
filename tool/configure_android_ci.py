@@ -139,6 +139,20 @@ def configure_manifest() -> None:
     elif 'android:scheme="wc"' not in text:
         raise SystemExit("negosmintwallet link exists but wc link is missing")
 
+    if 'android:host="ownership"' not in text:
+        ownership_filter = """        <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="negosmintwallet" android:host="ownership" />
+          </intent-filter>
+"""
+        marker = "        <intent-filter>"
+        if marker not in text:
+            raise SystemExit("Android manifest activity intent-filter marker not found")
+        text = text.replace(marker, ownership_filter + marker, 1)
+        manifest.write_text(text)
+
     print(f"Configured wallet deep links in {manifest}")
 
 
