@@ -10,7 +10,7 @@ class SecurityScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Security')),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
-          children: const [
+          children: [
             _Header(
               icon: Icons.shield_outlined,
               title: 'Wallet security',
