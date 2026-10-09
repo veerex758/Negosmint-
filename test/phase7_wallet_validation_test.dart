@@ -179,6 +179,34 @@ void main() {
       );
     });
 
+    test('accepts balance equal to amount plus fee', () {
+      expect(
+        () => WalletService.validateSufficientBalance(
+          balanceWei: BigInt.from(150),
+          valueWei: BigInt.from(100),
+          gasCostWei: BigInt.from(50),
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('rejects balance below amount plus fee', () {
+      expect(
+        () => WalletService.validateSufficientBalance(
+          balanceWei: BigInt.from(149),
+          valueWei: BigInt.from(100),
+          gasCostWei: BigInt.from(50),
+        ),
+        throwsA(
+          isA<WalletException>().having(
+            (error) => error.message,
+            'message',
+            'Insufficient Sepolia ETH balance for amount and network fee.',
+          ),
+        ),
+      );
+    });
+
     test('rejects a non-Sepolia chain before attempting to send', () async {
       final service = WalletService(
         keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
