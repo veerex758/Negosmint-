@@ -25,10 +25,15 @@ void main() {
         MaterialApp(home: ConnectionRequestScreen(request: request)),
       );
 
-      expect(
-        find.textContaining('A secure response callback could not be prepared'),
-        findsOneWidget,
+      final errorFinder = find.textContaining(
+        'A secure response callback could not be prepared',
       );
+      await tester.scrollUntilVisible(
+        errorFinder,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(errorFinder, findsOneWidget);
 
       final connectButton = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Connect'),
