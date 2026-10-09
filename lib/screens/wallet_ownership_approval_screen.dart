@@ -40,21 +40,31 @@ class _WalletOwnershipApprovalScreenState
 
   bool get _isValidChallenge {
     final lines = widget.message.split('\n');
+    final userIdLines = lines.where((line) => line.startsWith('User ID: '));
+    final nonceLines = lines.where((line) => line.startsWith('Nonce: '));
+    final expectedExpiry =
+        'Expires At: ${widget.expiresAt.toUtc().toIso8601String()}';
     return widget.challengeId.isNotEmpty &&
         widget.challengeId.length <= 64 &&
         widget.chainId == _sepoliaChainId &&
         widget.expiresAt.isAfter(DateTime.now().toUtc()) &&
-        lines.length >= 8 &&
+        widget.message.length <= 2000 &&
+        lines.length >= 9 &&
         lines.first == 'NegosMint Wallet Ownership Verification' &&
-        lines.any((line) => line == 'Challenge ID: ${widget.challengeId}') &&
-        lines.any((line) => line == 'Chain ID: $_sepoliaChainId') &&
-        lines.any((line) =>
-            line ==
-            'Purpose: Link this self-custody wallet to the signed-in NegosMint Task Platform account.') &&
-        lines.any((line) =>
-            line ==
-            'This signature proves address control only. It does not authorize a transaction.') &&
-        widget.message.length <= 2000;
+        userIdLines.length == 1 &&
+        userIdLines.single.substring('User ID: '.length).trim().isNotEmpty &&
+        nonceLines.length == 1 &&
+        nonceLines.single.substring('Nonce: '.length).trim().isNotEmpty &&
+        lines.contains('Challenge ID: ${widget.challengeId}') &&
+        lines.contains('Chain ID: $_sepoliaChainId') &&
+        lines.contains(expectedExpiry) &&
+        lines.contains(
+          'Purpose: Link this self-custody wallet to the signed-in NegosMint Task Platform account.',
+        ) &&
+        lines.contains(
+          'This signature proves address control only. It does not authorize a transaction.',
+        ) &&
+        lines.contains('If you did not initiate this request, reject it.');
   }
 
   Future<void> _approve() async {
