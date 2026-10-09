@@ -37,16 +37,19 @@ class WalletService {
   final MnemonicService _mnemonics;
   final BiometricService _biometrics;
   final FlutterSecureStorage _storage;
+  final EvmRpcService Function() _rpcFactory;
 
   WalletService({
     SecureKeyStore? keyStore,
     MnemonicService? mnemonics,
     BiometricService? biometrics,
     FlutterSecureStorage? storage,
+    EvmRpcService Function()? rpcFactory,
   })  : _keyStore = keyStore ?? const SecureKeyStore(),
         _mnemonics = mnemonics ?? MnemonicService(),
         _biometrics = biometrics ?? BiometricService(),
-        _storage = storage ?? const FlutterSecureStorage();
+        _storage = storage ?? const FlutterSecureStorage(),
+        _rpcFactory = rpcFactory ?? EvmRpcService.new;
 
   /// Generates the recovery phrase in memory only.
   /// Persistence happens only after the user completes backup verification.
@@ -116,7 +119,7 @@ class WalletService {
       throw const WalletException('Invalid recipient address.');
     }
 
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
