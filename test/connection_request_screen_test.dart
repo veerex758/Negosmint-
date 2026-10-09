@@ -24,6 +24,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(home: ConnectionRequestScreen(request: request)),
       );
+      await tester.pumpAndSettle();
 
       expect(
         find.textContaining('secure response callback could not be prepared'),
