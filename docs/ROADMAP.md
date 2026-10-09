@@ -71,7 +71,7 @@ Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens
 - [x] Reject an incorrect PIN
 - [x] Trigger the failed-attempt lockout
 - [x] PIN fallback and other tested security flows, including auto-lock, background privacy behavior, recovery phrase handling, PIN removal, and recovery-phrase restore
-- [ ] Biometric authentication — did not pass on the tested device; investigate device capability/configuration, platform permission/setup, and authentication error handling before marking this feature verified
+- [ ] Biometric authentication — did not pass on the tested device; the user reports the system prompt does not appear both when enabling device authentication in Settings and when unlocking the wallet. Android host setup is being corrected to use `FlutterFragmentActivity` and declare `USE_BIOMETRIC`; rebuild and physical-device retest are still required.
 
 Manual results were reported by the developer. The biometric failure is unresolved; do not treat Phase 6 as fully device-verified until it is diagnosed and retested. Automated CI/test results must also be green before merging.
 
