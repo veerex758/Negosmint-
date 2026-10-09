@@ -56,7 +56,7 @@ class Erc20AssetException implements Exception {
 class Erc20AssetService {
   static const _registryKey = 'wallet.erc20.registry.v1';
   static final _addressPattern = RegExp(r'^0x[0-9a-fA-F]{40}$');
-  static const _maxUint256 = (BigInt.one << 256) - BigInt.one;
+  static final BigInt _maxUint256 = (BigInt.one << 256) - BigInt.one;
 
   final FlutterSecureStorage _storage;
   final http.Client _client;
