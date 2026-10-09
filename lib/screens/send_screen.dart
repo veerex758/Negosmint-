@@ -102,9 +102,15 @@ class _SendScreenState extends State<SendScreen> {
               const Text(
                 'Review transaction',
                 style: TextStyle(
-                  fontSize: 23,
+                  fontSize: 24,
+                  letterSpacing: -.4,
                   fontWeight: FontWeight.w800,
                 ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Check every detail before you confirm.',
+                style: TextStyle(color: Colors.black54, height: 1.4),
               ),
               const SizedBox(height: 18),
               _Row('Asset', _asset),
@@ -117,7 +123,8 @@ class _SendScreenState extends State<SendScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.mist,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.forest.withValues(alpha: .10)),
                 ),
                 child: const Text(
                   'Sepolia testnet only. Your recovery phrase stays on this device. No mainnet transaction is possible from this flow.',
@@ -257,7 +264,7 @@ class _SendScreenState extends State<SendScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
+            padding: const EdgeInsets.fromLTRB(22, 16, 22, 32),
             children: [
               const Row(
                 children: [
@@ -266,7 +273,8 @@ class _SendScreenState extends State<SendScreen> {
                   Text(
                     'Send crypto',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 29,
+                      letterSpacing: -.6,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -282,7 +290,8 @@ class _SendScreenState extends State<SendScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.mist,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.forest.withValues(alpha: .10)),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
