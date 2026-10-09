@@ -123,7 +123,7 @@ def configure_manifest() -> None:
         end = text.find(">", start)
         if start < 0 or end < 0:
             raise SystemExit("Android manifest root element not found")
-        text = text[: end + 1] + "\\n" + permission + text[end + 1 :]
+        text = text[: end + 1] + "\n" + permission + text[end + 1 :]
 
     filters = '''        <intent-filter>
               <action android:name="android.intent.action.VIEW" />
@@ -144,10 +144,10 @@ def configure_manifest() -> None:
         if marker not in text:
             raise SystemExit("Android manifest activity intent-filter marker not found")
         text = text.replace(marker, filters + marker, 1)
-        manifest.write_text(text)
     elif 'android:scheme="wc"' not in text:
         raise SystemExit("negosmintwallet link exists but wc link is missing")
 
+    manifest.write_text(text)
     print(f"Configured wallet deep links and biometric permission in {manifest}")
 
 
