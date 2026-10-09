@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// Strict, versioned envelope for the Task App -> Wallet App ownership handoff.
 ///
 /// The envelope is untrusted input. The wallet must still show the exact
@@ -83,6 +85,41 @@ class WalletOwnershipRequest {
       chainId: chainId,
       expiresAt: expiresAt,
     );
+  }
+
+  String toDeepLink() {
+    final encoded = base64UrlEncode(utf8.encode(jsonEncode(toEnvelope())))
+        .replaceAll('=', '');
+    return Uri(
+      scheme: 'negosmintwallet',
+      host: 'ownership',
+      queryParameters: {'request': encoded},
+    ).toString();
+  }
+
+  static WalletOwnershipRequest parseDeepLink(
+    Uri uri, {
+    DateTime? now,
+  }) {
+    if (uri.toString().length > 8192 ||
+        uri.scheme != 'negosmintwallet' ||
+        uri.host != 'ownership') {
+      throw const FormatException('Invalid wallet ownership link.');
+    }
+    final encoded = uri.queryParameters['request'];
+    if (encoded == null || encoded.isEmpty) {
+      throw const FormatException('Wallet ownership request is missing.');
+    }
+    try {
+      final decoded = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(encoded))),
+      );
+      return WalletOwnershipRequest.parse(decoded, now: now);
+    } on FormatException {
+      rethrow;
+    } catch (_) {
+      throw const FormatException('Malformed wallet ownership request.');
+    }
   }
 
   Map<String, dynamic> toEnvelope() => {
