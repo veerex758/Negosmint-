@@ -101,6 +101,28 @@ void main() {
       );
     });
 
+    test('converts a network outage into a stable RPC exception', () async {
+      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final endpoint = 'http://127.0.0.1:${server.port}';
+      subscription = server.listen((request) async {
+        await request.response.close();
+      });
+      await subscription.cancel();
+      await server.close(force: true);
+
+      final service = EvmRpcService(endpoint: endpoint);
+      await expectLater(
+        service.getChainId(),
+        throwsA(
+          isA<EvmRpcException>().having(
+            (error) => error.message,
+            'message',
+            'Unable to reach the Sepolia network.',
+          ),
+        ),
+      );
+    });
+
     test('reports malformed JSON and missing result fields', () async {
       await startServer((request) async {
         await respond(request, body: 'not-json');
