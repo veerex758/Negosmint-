@@ -46,7 +46,7 @@ void main() {
       );
       expect(
         EthAmountParser.format(BigInt.from(1234567890123456789), maxFractionDigits: 6),
-        '1.123456',
+        '1.234567',
       );
     });
   });
