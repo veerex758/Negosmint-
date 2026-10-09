@@ -28,7 +28,12 @@ class ReceiveScreen extends StatelessWidget {
                 SizedBox(width: 10),
                 Text(
                   'Receive crypto',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontSize: 28,
+                    letterSpacing: -.8,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.charcoal,
+                  ),
                 ),
               ],
             ),
@@ -41,8 +46,15 @@ class ReceiveScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: AppColors.mist,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.mist, Color(0xFFF3F5F0)],
+                ),
                 borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: AppColors.sage.withValues(alpha: .24),
+                ),
               ),
               child: const Row(
                 children: [
@@ -75,6 +87,7 @@ class ReceiveScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: AppColors.mist, width: 1),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x18000000),
@@ -116,6 +129,9 @@ class ReceiveScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.mist,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.sage.withValues(alpha: .2),
+                ),
               ),
               child: const Row(
                 children: [
