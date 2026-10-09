@@ -126,10 +126,24 @@ class _AssetsScreenState extends State<AssetsScreen> {
             padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
             children: [
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.forest,
-                  borderRadius: BorderRadius.circular(22),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.forest, Color(0xFF31563F)],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.sage.withValues(alpha: .3),
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1F1E3A2B),
+                      blurRadius: 20,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +184,12 @@ class _AssetsScreenState extends State<AssetsScreen> {
               const SizedBox(height: 22),
               const Text(
                 'Add a token',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  fontSize: 20,
+                  letterSpacing: -.4,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal,
+                ),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -219,8 +238,12 @@ class _AssetsScreenState extends State<AssetsScreen> {
                   const Expanded(
                     child: Text(
                       'Your tokens',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 20,
+                        letterSpacing: -.4,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.charcoal,
+                      ),
                     ),
                   ),
                   Text(
