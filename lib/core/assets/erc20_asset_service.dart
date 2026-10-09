@@ -26,6 +26,9 @@ class Erc20Asset {
     if (decimals < 0 || decimals > 255) {
       throw ArgumentError.value(decimals, 'decimals');
     }
+    if (maxFraction < 1) {
+      throw ArgumentError.value(maxFraction, 'maxFraction');
+    }
     final negative = value.isNegative;
     final digits = value.abs().toString().padLeft(decimals + 1, '0');
     if (decimals == 0) return '${negative ? '-' : ''}$digits';
