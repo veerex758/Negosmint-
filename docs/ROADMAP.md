@@ -66,6 +66,15 @@ Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens
 - [x] Secret/logging audit: no application debugPrint calls found; connection tests assert secrets are excluded from serialized payloads
 - [x] Backup/recovery derivation tests for valid generated phrases, malformed phrases, and stable address/private-key derivation
 
+### Phase 6 physical-device validation (2026-10-09)
+- [x] Set and change the wallet PIN
+- [x] Reject an incorrect PIN
+- [x] Trigger the failed-attempt lockout
+- [x] PIN fallback and other tested security flows, including auto-lock, background privacy behavior, recovery phrase handling, PIN removal, and recovery-phrase restore
+- [ ] Biometric authentication — did not pass on the tested device; investigate device capability/configuration, platform permission/setup, and authentication error handling before marking this feature verified
+
+Manual results were reported by the developer. The biometric failure is unresolved; do not treat Phase 6 as fully device-verified until it is diagnosed and retested. Automated CI/test results must also be green before merging.
+
 ## Phase 7 — Testnet validation
 Test:
 - create
