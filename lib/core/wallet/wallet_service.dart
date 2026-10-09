@@ -95,7 +95,9 @@ class WalletService {
     if (trimmed.isEmpty || trimmed.length > 2000) {
       throw const WalletException('Wallet verification message is invalid.');
     }
-    if (!await _biometrics.authenticateForSigning()) {
+    if (!await _biometrics.authenticateForSigning(
+      localizedReason: 'Approve signing this message to verify wallet ownership. No transaction will be sent.',
+    )) {
       throw const WalletException(
         'Authentication required to verify wallet ownership.',
       );
