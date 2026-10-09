@@ -299,8 +299,9 @@ class WalletConnectBridge {
 
   String _safeProtocolMessage(WalletConnectionException error) {
     final message = error.message.toLowerCase();
-    if (message.contains('unsupported'))
+    if (message.contains('unsupported')) {
       return 'Unsupported method or network.';
+    }
     if (message.contains('malformed') || message.contains('invalid')) {
       return 'Invalid request parameters.';
     }
