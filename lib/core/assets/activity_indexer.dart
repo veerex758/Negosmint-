@@ -197,7 +197,7 @@ class ActivityIndexer {
     final savedCursor = int.tryParse(await _storage.read(key: cursorKey) ?? '');
     var nextBlock = savedCursor == null
         ? (latest - _initialLookbackBlocks).clamp(0, latest).toInt()
-        : (savedCursor + 1).clamp(0, latest).toInt();
+        : savedCursor + 1;
 
     final existing = await getTransfers(wallet);
     final byId = <String, IndexedTokenTransfer>{
@@ -218,20 +218,19 @@ class ActivityIndexer {
         if (transfer == null || !transfer.involves(wallet)) continue;
         byId['${transfer.transactionHash}:${transfer.logIndex}'] = transfer;
       }
+      final persisted = byId.values.toList()
+        ..sort((a, b) {
+          final block = b.blockNumber.compareTo(a.blockNumber);
+          return block != 0 ? block : b.logIndex.compareTo(a.logIndex);
+        });
+      if (persisted.length > _maxPersistedTransfers) {
+        persisted.removeRange(_maxPersistedTransfers, persisted.length);
+      }
       await _storage.write(
         key: _key(wallet, 'transfers'),
-        value: jsonEncode(byId.values
-            .toList()
-            ..sort((a, b) {
-              final block = b.blockNumber.compareTo(a.blockNumber);
-              return block != 0 ? block : b.logIndex.compareTo(a.logIndex);
-            })
-            ..removeRange(
-              _maxPersistedTransfers,
-              byId.length > _maxPersistedTransfers
-                  ? byId.length
-                  : _maxPersistedTransfers,
-            ).map((transfer) => transfer.toJson()).toList()),
+        value: jsonEncode(
+          persisted.map((transfer) => transfer.toJson()).toList(),
+        ),
       );
       await _storage.write(key: cursorKey, value: endBlock.toString());
       nextBlock = endBlock + 1;
