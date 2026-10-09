@@ -475,9 +475,9 @@ class _TransactionTile extends StatelessWidget {
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
   @override
-  Widget build(BuildContext context) => const Center(
+  Widget build(BuildContext context) => Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(children: [
             Container(
               width: 92,
