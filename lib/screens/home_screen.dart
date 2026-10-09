@@ -391,9 +391,12 @@ class _ActionState extends State<_Action> {
         scale: _pressed ? .97 : 1,
         duration: const Duration(milliseconds: 90),
         child: GestureDetector(
-          onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
-          onTapCancel: widget.enabled ? () => setState(() => _pressed = false) : null,
-          onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
+          onTapDown:
+              widget.enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapCancel:
+              widget.enabled ? () => setState(() => _pressed = false) : null,
+          onTapUp:
+              widget.enabled ? (_) => setState(() => _pressed = false) : null,
           child: FilledButton.icon(
             onPressed: widget.enabled ? widget.onTap : null,
             icon: Icon(widget.icon, size: 18),
