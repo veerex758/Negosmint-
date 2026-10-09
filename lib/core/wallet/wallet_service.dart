@@ -162,11 +162,6 @@ class WalletService {
         );
       }
 
-      if (estimatedGas <= BigInt.zero ||
-          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException(
-            'Invalid gas estimate returned by network.');
-      }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
         credentials,
@@ -406,11 +401,6 @@ class WalletService {
         );
       }
 
-      if (estimatedGas <= BigInt.zero ||
-          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException(
-            'Invalid gas estimate returned by network.');
-      }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
         credentials,
