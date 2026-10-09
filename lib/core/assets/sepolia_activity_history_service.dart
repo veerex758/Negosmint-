@@ -35,15 +35,25 @@ class SepoliaActivityHistoryService {
     String address, {
     Map<String, dynamic>? transactionCursor,
     Map<String, dynamic>? tokenTransferCursor,
+    bool includeTransactions = true,
+    bool includeTokenTransfers = true,
   }) async {
     final wallet = address.trim().toLowerCase();
     if (!_addressPattern.hasMatch(wallet)) {
       throw const FormatException('Invalid wallet address for activity history.');
     }
 
+    final emptyPage = <String, dynamic>{
+      'items': <dynamic>[],
+      'next_page_params': null,
+    };
     final responses = await Future.wait([
-      _getPage('/api/v2/addresses/$wallet/transactions', transactionCursor),
-      _getPage('/api/v2/addresses/$wallet/token-transfers', tokenTransferCursor),
+      includeTransactions
+          ? _getPage('/api/v2/addresses/$wallet/transactions', transactionCursor)
+          : Future.value(emptyPage),
+      includeTokenTransfers
+          ? _getPage('/api/v2/addresses/$wallet/token-transfers', tokenTransferCursor)
+          : Future.value(emptyPage),
     ]);
 
     final hashes = <String>{};
