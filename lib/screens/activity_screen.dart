@@ -82,6 +82,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
     try {
       for (final hash in List<String>.from(_hashes)) {
         if (!mounted) return;
+        // Confirmed transactions are immutable for this screen's purposes.
+        // Avoid re-fetching their transaction, receipt, and block timestamp on
+        // every 60-second activity refresh; pending transactions are retried.
+        if (_details[hash]?['receipt'] != null) continue;
         try {
           final tx = await _rpc.getTransactionByHash(hash);
           if (tx == null) continue;
