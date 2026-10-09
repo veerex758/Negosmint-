@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../core/network/evm_rpc_service.dart';
+import '../core/network/transaction_status.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
 import 'transaction_detail_screen.dart';
@@ -158,8 +159,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             final tx = d?['tx'] as Map<String, dynamic>?;
                             final receipt =
                                 d?['receipt'] as Map<String, dynamic>?;
-                            final confirmed = receipt?['status'] == '0x1';
-                            final failed = receipt != null && !confirmed;
+                            final status =
+                                SepoliaTransactionStatusParser.parse(receipt);
                             final mine =
                                 tx?['from']?.toString().toLowerCase() ==
                                     _address?.toLowerCase();
@@ -168,11 +169,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               direction: mine ? 'Send' : 'Receive',
                               amount: _amount(tx?['value']?.toString()),
                               time: _time(d?['timestamp']),
-                              status: receipt == null
-                                  ? 'Pending'
-                                  : failed
-                                      ? 'Failed'
-                                      : 'Confirmed',
+                              status: switch (status) {
+                                SepoliaTransactionStatus.pending => 'Pending',
+                                SepoliaTransactionStatus.confirmed => 'Confirmed',
+                                SepoliaTransactionStatus.failed => 'Failed',
+                              },
                               onTap: () =>
                                   Navigator.of(context).push(PageRouteBuilder(
                                 transitionDuration:
