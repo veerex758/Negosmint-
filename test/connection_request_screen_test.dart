@@ -30,8 +30,9 @@ void main() {
         findsOneWidget,
       );
 
-      final connectButton =
-          tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Connect'));
+      final connectButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Connect'),
+      );
       expect(connectButton.onPressed, isNull);
     },
   );
