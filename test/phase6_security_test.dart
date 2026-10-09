@@ -40,7 +40,7 @@ void main() {
 
       final firstAddress = mnemonics.deriveEvmAddress(phrase);
       final restoredAddress = mnemonics.deriveEvmAddress(
-        phrase.join(' ').trim().split(RegExp(r'\\s+')),
+        phrase.join(' ').trim().split(RegExp(r'\s+')),
       );
 
       expect(firstAddress, matches(RegExp(r'^0x[0-9a-fA-F]{40}$')));
