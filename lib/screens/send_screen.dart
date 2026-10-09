@@ -63,8 +63,7 @@ class _SendScreenState extends State<SendScreen> {
         to: _recipient.text.trim(),
         valueWei: amountWei,
       );
-      if (gas <= BigInt.zero ||
-          gas > BigInt.from(0x7fffffffffffffff)) {
+      if (gas <= BigInt.zero || gas > BigInt.from(0x7fffffffffffffff)) {
         throw const WalletException(
           'Invalid gas estimate returned by network.',
         );

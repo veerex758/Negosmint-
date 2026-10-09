@@ -185,10 +185,10 @@ class _ConnectionRequestScreenState extends State<ConnectionRequestScreen> {
           ],
           const SizedBox(height: 26),
           FilledButton(
-              onPressed: _busy ||
-                      (widget.request.callback != null && _error != null)
-                  ? null
-                  : _approve,
+              onPressed:
+                  _busy || (widget.request.callback != null && _error != null)
+                      ? null
+                      : _approve,
               child: Text(_busy ? 'Connecting…' : 'Connect')),
           const SizedBox(height: 10),
           OutlinedButton(
