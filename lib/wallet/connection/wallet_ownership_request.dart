@@ -59,12 +59,21 @@ class WalletOwnershipRequest {
     }
 
     final lines = message.split('\n');
-    if (lines.length < 8 ||
+    final userIdLine = lines.where((line) => line.startsWith('User ID: '));
+    final nonceLine = lines.where((line) => line.startsWith('Nonce: '));
+    final expiryLine = 'Expires At: ${expiresAt.toIso8601String()}';
+    if (lines.length < 9 ||
         lines.first != 'NegosMint Wallet Ownership Verification' ||
+        userIdLine.length != 1 ||
+        userIdLine.single.substring('User ID: '.length).trim().isEmpty ||
+        nonceLine.length != 1 ||
+        nonceLine.single.substring('Nonce: '.length).trim().isEmpty ||
         !lines.contains('Challenge ID: $challengeId') ||
         !lines.contains('Chain ID: $sepoliaChainId') ||
+        !lines.contains(expiryLine) ||
         !lines.contains(purpose) ||
-        !lines.contains(noTransaction)) {
+        !lines.contains(noTransaction) ||
+        !lines.contains('If you did not initiate this request, reject it.')) {
       throw const FormatException('Invalid wallet ownership message.');
     }
 
