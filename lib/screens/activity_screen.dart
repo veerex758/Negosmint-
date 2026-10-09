@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../core/network/evm_rpc_service.dart';
+import '../core/assets/activity_indexer.dart';
+import '../core/assets/sepolia_activity_history_service.dart';
+import '../core/assets/transaction_parser.dart';
 import '../core/network/transaction_status.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
@@ -15,6 +18,15 @@ class ActivityScreen extends StatefulWidget {
 class _ActivityScreenState extends State<ActivityScreen> {
   final _wallet = WalletService();
   final _rpc = EvmRpcService();
+  final _indexer = ActivityIndexer();
+  final _historyService = SepoliaActivityHistoryService();
+  Map<String, dynamic>? _transactionCursor;
+  Map<String, dynamic>? _tokenTransferCursor;
+  final Set<String> _historyHashes = {};
+  bool _hasMoreHistory = false;
+  bool _loadingOlder = false;
+  bool _historyInitialized = false;
+  List<IndexedTokenTransfer> _indexedTransfers = const [];
   Timer? _timer;
   List<String> _hashes = const [];
   final Map<String, Map<String, dynamic>> _details = {};
@@ -28,18 +40,54 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     super.initState();
     _load();
-    _timer = Timer.periodic(const Duration(seconds: 8), (_) => _loadDetails());
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => _load());
   }
 
   Future<void> _load() async {
     if (_refreshing) return;
     _refreshing = true;
     try {
-      final hashes = await _wallet.getActivity();
+      final localHashes = await _wallet.getActivity();
       final snapshot = await _wallet.restoreWallet();
+      var indexed = <IndexedTokenTransfer>[];
+      var latestHistoryHashes = <String>[];
+      if (snapshot != null) {
+        try {
+          indexed = await _indexer.sync(snapshot.address);
+        } catch (_) {
+          // Keep locally recorded transactions visible when log indexing is
+          // unavailable. The indexer cursor only advances after a full chunk.
+          try {
+            indexed = await _indexer.getTransfers(snapshot.address);
+          } catch (_) {}
+        }
+        // RPC alone cannot enumerate incoming native transactions. Use the
+        // read-only Sepolia explorer API for address history and older pages.
+        try {
+          final page = await _historyService.fetchPage(snapshot.address);
+          latestHistoryHashes = page.transactionHashes;
+          _historyHashes.addAll(latestHistoryHashes);
+          if (!_historyInitialized) {
+            _transactionCursor = page.transactionCursor;
+            _tokenTransferCursor = page.tokenTransferCursor;
+            _hasMoreHistory = page.hasMore;
+            _historyInitialized = true;
+          }
+        } catch (_) {
+          // Explorer outages must not hide locally recorded or RPC-indexed
+          // activity.
+        }
+      }
+      final hashes = <String>{
+        ...localHashes,
+        ...latestHistoryHashes,
+        ..._historyHashes,
+        ...indexed.map((transfer) => transfer.transactionHash),
+      }.toList();
       if (!mounted) return;
       setState(() {
         _hashes = hashes;
+        _indexedTransfers = indexed;
         _address = snapshot?.address;
         _loading = false;
         _error = null;
@@ -56,42 +104,90 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
+  Future<void> _loadOlder() async {
+    if (_loadingOlder || !_hasMoreHistory || _address == null) return;
+    setState(() => _loadingOlder = true);
+    try {
+      final page = await _historyService.fetchPage(
+        _address!,
+        transactionCursor: _transactionCursor,
+        tokenTransferCursor: _tokenTransferCursor,
+        includeTransactions: _transactionCursor != null,
+        includeTokenTransfers: _tokenTransferCursor != null,
+      );
+      if (!mounted) return;
+      _historyHashes.addAll(page.transactionHashes);
+      _transactionCursor = page.transactionCursor;
+      _tokenTransferCursor = page.tokenTransferCursor;
+      _hasMoreHistory = page.hasMore;
+      final hashes = <String>{
+        ..._hashes,
+        ...page.transactionHashes,
+      }.toList();
+      setState(() {
+        _hashes = hashes;
+        _loadingOlder = false;
+      });
+      await _loadDetails();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loadingOlder = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load older activity. Please try again.'),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _loadDetails() async {
     if (_loadingDetails || _hashes.isEmpty) return;
     _loadingDetails = true;
     try {
-      for (final hash in List<String>.from(_hashes)) {
+      final hashes = List<String>.from(_hashes);
+      // A small concurrent batch avoids serially waiting on three RPC calls
+      // for every item while keeping pressure on the public RPC endpoint low.
+      for (var start = 0; start < hashes.length; start += 5) {
         if (!mounted) return;
-        try {
-          final tx = await _rpc.getTransactionByHash(hash);
-          final receipt = await _rpc.getTransactionReceipt(hash);
-          if (tx == null && receipt == null) {
-            if (mounted) {
-              setState(() => _details[hash] = {
-                    'tx': null,
-                    'receipt': null,
-                    'timestamp': null,
-                  });
-            }
-            continue;
-          }
-          int? timestamp;
-          final block = receipt?['blockNumber'];
-          if (block is String && block != '0x') {
-            timestamp = await _rpc.getBlockTimestamp(block);
-          }
-          if (mounted) {
-            setState(() => _details[hash] = {
-                  'tx': tx,
-                  'receipt': receipt,
-                  'timestamp': timestamp,
-                });
-          }
-        } catch (_) {}
+        final batch = hashes.skip(start).take(5);
+        await Future.wait(batch.map(_loadTransactionDetail));
       }
     } finally {
       _loadingDetails = false;
     }
+  }
+
+  Future<void> _loadTransactionDetail(String hash) async {
+    // Confirmed transactions are immutable for this screen's purposes.
+    // Pending transactions are retried on later refreshes.
+    if (_details[hash]?['receipt'] != null) return;
+    try {
+      final tx = await _rpc.getTransactionByHash(hash);
+      final receipt = await _rpc.getTransactionReceipt(hash);
+      if (tx == null && receipt == null) {
+        if (mounted) {
+          setState(() => _details[hash] = {
+                'tx': null,
+                'receipt': null,
+                'timestamp': null,
+              });
+        }
+        return;
+      }
+      int? timestamp;
+      final block = receipt?['blockNumber'];
+      if (block is String && block != '0x') {
+        timestamp = await _rpc.getBlockTimestamp(block);
+      }
+      if (mounted) {
+        setState(() => _details[hash] = {
+              'tx': tx,
+              'receipt': receipt,
+              'timestamp': timestamp,
+            });
+      }
+    } catch (_) {}
   }
 
   String _amount(String? value) {
@@ -121,6 +217,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _indexer.dispose();
+    _historyService.dispose();
     super.dispose();
   }
 
@@ -159,10 +257,34 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         ])
                       : ListView.separated(
                           padding: const EdgeInsets.all(18),
-                          itemCount: _hashes.length,
+                          itemCount: _hashes.length + (_hasMoreHistory ? 1 : 0),
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 10),
                           itemBuilder: (_, i) {
+                            if (i >= _hashes.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                child: Center(
+                                  child: OutlinedButton.icon(
+                                    onPressed: _loadingOlder ? null : _loadOlder,
+                                    icon: _loadingOlder
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.expand_more_rounded),
+                                    label: Text(
+                                      _loadingOlder
+                                          ? 'Loading older activity…'
+                                          : 'Load older activity',
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                             final hash = _hashes[i];
                             final d = _details[hash];
                             final tx = d?['tx'] as Map<String, dynamic>?;
@@ -170,17 +292,54 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 d?['receipt'] as Map<String, dynamic>?;
                             final status =
                                 SepoliaTransactionStatusParser.parse(receipt);
-                            // This local activity list is populated by
-                            // wallet-originated broadcasts. Preserve the Send
-                            // label while a public RPC has not indexed the tx.
-                            final mine = tx == null ||
-                                tx['from']?.toString().toLowerCase() ==
-                                    _address?.toLowerCase();
+                            final parsedTransfers = tx == null || _address == null
+                                ? <ParsedAssetTransfer>[]
+                                : TransactionParser.parse(
+                                    transaction: tx,
+                                    receipt: receipt,
+                                    walletAddress: _address!,
+                                  );
+                            final tokenTransfers = parsedTransfers
+                                .where((transfer) =>
+                                    !transfer.isNative &&
+                                    transfer.direction !=
+                                        AssetTransferDirection.unknown)
+                                .toList(growable: false);
+                            final walletAddress = _address?.toLowerCase();
+                            final nativeFrom =
+                                tx?['from']?.toString().toLowerCase();
+                            final directions = tokenTransfers
+                                .map((transfer) =>
+                                    transfer.direction == AssetTransferDirection.sent
+                                        ? 'Send'
+                                        : transfer.direction ==
+                                                AssetTransferDirection.received
+                                            ? 'Receive'
+                                            : 'Transfer')
+                                .toSet();
+                            // Locally recorded hashes are wallet-originated;
+                            // retain Send while the public RPC has not indexed them.
+                            final direction = tokenTransfers.isEmpty
+                                ? (tx == null || nativeFrom == walletAddress
+                                    ? 'Send'
+                                    : 'Receive')
+                                : directions.length == 1
+                                    ? directions.single
+                                    : 'Transfer';
+                            final singleTransfer = tokenTransfers.length == 1
+                                ? tokenTransfers.single
+                                : null;
+                            final amount = tokenTransfers.isEmpty
+                                ? _amount(tx?['value']?.toString())
+                                : tokenTransfers.length == 1
+                                    ? '${singleTransfer!.rawAmount} token units'
+                                    : '${tokenTransfers.length} token transfers';
                             return _TransactionTile(
                               hash: hash,
-                              direction: mine ? 'Send' : 'Receive',
-                              amount: _amount(tx?['value']?.toString()),
+                              direction: direction,
+                              amount: amount,
                               time: _time(d?['timestamp']),
+                              tokenAddress: singleTransfer?.tokenAddress,
                               status: switch (status) {
                                 SepoliaTransactionStatus.pending => 'Pending',
                                 SepoliaTransactionStatus.confirmed =>
@@ -219,6 +378,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
 class _TransactionTile extends StatelessWidget {
   final String hash, direction, amount, time, status;
+  final String? tokenAddress;
   final VoidCallback onTap;
   const _TransactionTile(
       {required this.hash,
@@ -226,7 +386,8 @@ class _TransactionTile extends StatelessWidget {
       required this.amount,
       required this.time,
       required this.status,
-      required this.onTap});
+      required this.onTap,
+      this.tokenAddress});
   @override
   Widget build(BuildContext context) {
     final failed = status == 'Failed';
@@ -248,8 +409,21 @@ class _TransactionTile extends StatelessWidget {
         title: Text('$direction  •  $amount',
             style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Text('$status  •  $time')),
+          padding: const EdgeInsets.only(top: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$status  •  $time'),
+              if (tokenAddress != null)
+                Text(
+                  'Token: $tokenAddress',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11),
+                ),
+            ],
+          ),
+        ),
         trailing: const Icon(Icons.chevron_right_rounded, size: 20),
         onTap: onTap,
       ),
