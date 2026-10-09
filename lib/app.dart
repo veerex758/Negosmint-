@@ -106,6 +106,12 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
     final elapsed = backgroundedAt == null
         ? Duration.zero
         : DateTime.now().difference(backgroundedAt);
+    // A lock screen may itself trigger a lifecycle transition while the OS
+    // authentication prompt is visible. Never stack a second lock route.
+    if (walletLockActive.value) {
+      if (mounted) setState(() => _obscured = false);
+      return;
+    }
     if (backgroundedAt != null && elapsed >= Duration(minutes: minutes)) {
       await _lockWallet();
     } else {
