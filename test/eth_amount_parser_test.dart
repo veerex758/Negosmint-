@@ -51,8 +51,8 @@ void main() {
       );
     });
   });
+  transactionStatusTests();
 }
-
 
 void transactionStatusTests() {
   group('SepoliaTransactionStatusParser', () {
