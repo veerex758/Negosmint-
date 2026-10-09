@@ -256,7 +256,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           _EmptyActivity()
                         ])
                       : ListView.separated(
-                          padding: const EdgeInsets.all(18),
+                          padding: const EdgeInsets.fromLTRB(18, 16, 18, 28),
                           itemCount: _hashes.length + (_hasMoreHistory ? 1 : 0),
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 10),
@@ -394,10 +394,18 @@ class _TransactionTile extends StatelessWidget {
     final send = direction == 'Send';
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: AppColors.forest.withValues(alpha: .10)),
+      ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
-          backgroundColor: AppColors.mist,
+          radius: 23,
+          backgroundColor: failed
+              ? Colors.red.withValues(alpha: .08)
+              : AppColors.sage.withValues(alpha: .24),
           child: Icon(
               failed
                   ? Icons.error_outline
@@ -407,13 +415,46 @@ class _TransactionTile extends StatelessWidget {
               color: failed ? Colors.redAccent : AppColors.forest),
         ),
         title: Text('$direction  •  $amount',
-            style: const TextStyle(fontWeight: FontWeight.w800)),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w800, height: 1.25)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$status  •  $time'),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: failed
+                          ? Colors.red.withValues(alpha: .08)
+                          : status == 'Confirmed'
+                              ? AppColors.sage.withValues(alpha: .22)
+                              : AppColors.mist,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: failed ? Colors.red.shade700 : AppColors.forest,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      time,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
               if (tokenAddress != null)
                 Text(
                   'Token: $tokenAddress',
@@ -435,14 +476,27 @@ class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
   @override
   Widget build(BuildContext context) => const Center(
-        child: Column(children: [
-          Icon(Icons.receipt_long_rounded, size: 64, color: AppColors.forest),
-          SizedBox(height: 16),
-          Text('No activity yet',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          SizedBox(height: 6),
-          Text('Your Sepolia transactions will appear here.',
-              style: TextStyle(color: Colors.black54)),
-        ]),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 28),
+          child: Column(children: [
+            Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                color: AppColors.mist,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppColors.forest.withValues(alpha: .12)),
+              ),
+              child: Icon(Icons.receipt_long_rounded, size: 44, color: AppColors.forest),
+            ),
+            SizedBox(height: 20),
+            Text('Your story starts here',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+            SizedBox(height: 8),
+            Text('When you send or receive assets on Sepolia, your activity will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54, height: 1.5)),
+          ]),
+        ),
       );
 }
