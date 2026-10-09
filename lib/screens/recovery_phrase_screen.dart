@@ -8,13 +8,36 @@ class RecoveryPhraseScreen extends StatefulWidget {
   State<RecoveryPhraseScreen> createState() => _RecoveryPhraseScreenState();
 }
 
-class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
+class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen>
+    with WidgetsBindingObserver {
   bool _revealed = false;
   String? _phrase;
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      // Drop the plaintext phrase from widget state before the app snapshot is
+      // captured. The global privacy overlay obscures the rest of the app.
+      if (mounted) {
+        setState(() {
+          _phrase = null;
+          _revealed = false;
+        });
+      }
+    }
+  }
+
   Future<void> _reveal() async {
-    if (_revealed) return;
+    if (_revealed || _loading) return;
     setState(() => _loading = true);
     try {
       final phrase = await WalletService().revealRecoveryPhrase();
@@ -26,6 +49,13 @@ class _RecoveryPhraseScreenState extends State<RecoveryPhraseScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _phrase = null;
+    super.dispose();
   }
 
   @override
