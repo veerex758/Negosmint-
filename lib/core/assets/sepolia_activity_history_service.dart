@@ -86,6 +86,9 @@ class SepoliaActivityHistoryService {
     cursor?.forEach((key, value) {
       if (value != null) query[key] = value.toString();
     });
+    if (path.endsWith('/token-transfers')) {
+      query['type'] = 'ERC-20';
+    }
     final uri = Uri.https(_host, path, query.isEmpty ? null : query);
     final response = await _client
         .get(uri, headers: const {'accept': 'application/json'})
