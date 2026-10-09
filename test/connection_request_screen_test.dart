@@ -26,7 +26,7 @@ void main() {
       );
 
       expect(
-        find.textContaining('secure response callback could not be prepared'),
+        find.textContaining('A secure response callback could not be prepared'),
         findsOneWidget,
       );
 
