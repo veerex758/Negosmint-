@@ -156,10 +156,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   Future<void> _removePin() async {
     if (!await _verifyExistingPin()) return;
-    if (!_biometricEnabled) {
+    if (!_biometricEnabled || !_biometricAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Enable device authentication before removing the PIN.'),
+          content: Text(
+            'Keep your PIN unless device authentication is enabled and supported on this device.',
+          ),
         ),
       );
       return;
