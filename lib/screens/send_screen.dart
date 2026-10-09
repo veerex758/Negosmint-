@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/network/evm_rpc_service.dart';
 import '../core/wallet/wallet_service.dart';
+import '../core/wallet/eth_amount_parser.dart';
 import '../theme/app_theme.dart';
 import '../core/wallet/payment_uri.dart';
 import 'qr_scanner_screen.dart';
@@ -51,7 +52,7 @@ class _SendScreenState extends State<SendScreen> {
       return;
     }
 
-    final amountWei = _ethToWei(_amount.text.trim());
+    final amountWei = EthAmountParser.parse(_amount.text);
     if (amountWei == null || amountWei <= BigInt.zero) return;
 
     try {
@@ -135,7 +136,11 @@ class _SendScreenState extends State<SendScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not prepare transaction: $error')),
+        const SnackBar(
+          content: Text(
+            'Could not prepare transaction. Check your connection and Sepolia testnet, then retry.',
+          ),
+        ),
       );
     }
   }
@@ -174,7 +179,11 @@ class _SendScreenState extends State<SendScreen> {
       Navigator.of(context).pop();
       if (mounted) setState(() => _sending = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Transaction failed: $error')),
+        const SnackBar(
+          content: Text(
+            'Transaction could not be completed. Check Activity before retrying.',
+          ),
+        ),
       );
     }
   }
@@ -223,31 +232,8 @@ class _SendScreenState extends State<SendScreen> {
     return fraction.isEmpty ? whole.toString() : '$whole.$fraction';
   }
 
-  BigInt? _ethToWei(String value) {
-    final parts = value.split('.');
-    if (parts.length > 2 || parts.first.isEmpty) return null;
-    final whole = BigInt.tryParse(parts.first);
-    if (whole == null || whole < BigInt.zero) return null;
-    final decimals = parts.length == 2 ? parts[1] : '';
-    if (decimals.length > 18 ||
-        (decimals.isNotEmpty && int.tryParse(decimals) == null)) {
-      return null;
-    }
-    final fraction = decimals.padRight(18, '0');
-    return whole * BigInt.from(1000000000000000000) + BigInt.parse(fraction);
-  }
-
-  String _formatWei(BigInt wei) {
-    final unit = BigInt.from(1000000000000000000);
-    final whole = wei ~/ unit;
-    final fraction = (wei % unit)
-        .toString()
-        .padLeft(18, '0')
-        .replaceFirst(RegExp(r'0+$'), '');
-    return fraction.isEmpty
-        ? whole.toString()
-        : '$whole.${fraction.substring(0, fraction.length > 6 ? 6 : fraction.length)}';
-  }
+  String _formatWei(BigInt wei) =>
+      EthAmountParser.format(wei, maxFractionDigits: 6);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -361,7 +347,7 @@ class _SendScreenState extends State<SendScreen> {
                 ),
                 validator: (value) {
                   final raw = value?.trim() ?? '';
-                  final wei = _ethToWei(raw);
+                  final wei = EthAmountParser.parse(raw);
                   if (wei == null || wei <= BigInt.zero) {
                     return 'Enter a valid amount greater than 0';
                   }
