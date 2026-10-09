@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../core/network/evm_rpc_service.dart';
 import '../core/assets/activity_indexer.dart';
+import '../core/assets/sepolia_activity_history_service.dart';
 import '../core/network/transaction_status.dart';
 import '../core/wallet/wallet_service.dart';
 import '../theme/app_theme.dart';
@@ -17,6 +18,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
   final _wallet = WalletService();
   final _rpc = EvmRpcService();
   final _indexer = ActivityIndexer();
+  final _historyService = SepoliaActivityHistoryService();
+  Map<String, dynamic>? _transactionCursor;
+  Map<String, dynamic>? _tokenTransferCursor;
+  final Set<String> _historyHashes = {};
+  bool _hasMoreHistory = false;
+  bool _loadingOlder = false;
+  bool _historyInitialized = false;
   List<IndexedTokenTransfer> _indexedTransfers = const [];
   Timer? _timer;
   List<String> _hashes = const [];
@@ -41,6 +49,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final localHashes = await _wallet.getActivity();
       final snapshot = await _wallet.restoreWallet();
       var indexed = <IndexedTokenTransfer>[];
+      var latestHistoryHashes = <String>[];
       if (snapshot != null) {
         try {
           indexed = await _indexer.sync(snapshot.address);
@@ -51,9 +60,27 @@ class _ActivityScreenState extends State<ActivityScreen> {
             indexed = await _indexer.getTransfers(snapshot.address);
           } catch (_) {}
         }
+        // RPC alone cannot enumerate incoming native transactions. Use the
+        // read-only Sepolia explorer API for address history and older pages.
+        try {
+          final page = await _historyService.fetchPage(snapshot.address);
+          latestHistoryHashes = page.transactionHashes;
+          _historyHashes.addAll(latestHistoryHashes);
+          if (!_historyInitialized) {
+            _transactionCursor = page.transactionCursor;
+            _tokenTransferCursor = page.tokenTransferCursor;
+            _hasMoreHistory = page.hasMore;
+            _historyInitialized = true;
+          }
+        } catch (_) {
+          // Explorer outages must not hide locally recorded or RPC-indexed
+          // activity.
+        }
       }
       final hashes = <String>{
         ...localHashes,
+        ...latestHistoryHashes,
+        ..._historyHashes,
         ...indexed.map((transfer) => transfer.transactionHash),
       }.toList();
       if (!mounted) return;
@@ -73,6 +100,41 @@ class _ActivityScreenState extends State<ActivityScreen> {
       });
     } finally {
       _refreshing = false;
+    }
+  }
+
+  Future<void> _loadOlder() async {
+    if (_loadingOlder || !_hasMoreHistory || _address == null) return;
+    setState(() => _loadingOlder = true);
+    try {
+      final page = await _historyService.fetchPage(
+        _address!,
+        transactionCursor: _transactionCursor,
+        tokenTransferCursor: _tokenTransferCursor,
+      );
+      if (!mounted) return;
+      _historyHashes.addAll(page.transactionHashes);
+      _transactionCursor = page.transactionCursor;
+      _tokenTransferCursor = page.tokenTransferCursor;
+      _hasMoreHistory = page.hasMore;
+      final hashes = <String>{
+        ..._hashes,
+        ...page.transactionHashes,
+      }.toList();
+      setState(() {
+        _hashes = hashes;
+        _loadingOlder = false;
+      });
+      await _loadDetails();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loadingOlder = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load older activity. Please try again.'),
+          ),
+        );
+      }
     }
   }
 
@@ -137,6 +199,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void dispose() {
     _timer?.cancel();
     _indexer.dispose();
+    _historyService.dispose();
     super.dispose();
   }
 
@@ -175,10 +238,34 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         ])
                       : ListView.separated(
                           padding: const EdgeInsets.all(18),
-                          itemCount: _hashes.length,
+                          itemCount: _hashes.length + (_hasMoreHistory ? 1 : 0),
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 10),
                           itemBuilder: (_, i) {
+                            if (i >= _hashes.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                child: Center(
+                                  child: OutlinedButton.icon(
+                                    onPressed: _loadingOlder ? null : _loadOlder,
+                                    icon: _loadingOlder
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.expand_more_rounded),
+                                    label: Text(
+                                      _loadingOlder
+                                          ? 'Loading older activity…'
+                                          : 'Load older activity',
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                             final hash = _hashes[i];
                             final d = _details[hash];
                             final tx = d?['tx'] as Map<String, dynamic>?;
