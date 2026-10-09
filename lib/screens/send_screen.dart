@@ -183,10 +183,17 @@ class _SendScreenState extends State<SendScreen> {
           ),
         ),
       );
+    } on WalletException catch (error) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
     } catch (_) {
       if (!mounted) return;
       Navigator.of(context).pop();
-      if (mounted) setState(() => _sending = false);
+      setState(() => _sending = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
