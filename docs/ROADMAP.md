@@ -61,6 +61,8 @@ Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens
 - [x] Configurable inactivity/background auto-lock (1, 5, 15, 30, or 60 minutes)
 - [x] App-wide privacy overlay on backgrounding and clearing revealed recovery phrase from screen state
 - [x] Failed PIN attempt counter with increasing temporary lockout after five failures
+- [x] Prevent auto-lock navigation when no usable PIN or supported device-authentication method is configured
+- [x] Unit tests for six-digit PIN validation policy and supported auto-lock durations
 - [x] Secret/logging audit: no application debugPrint calls found; connection tests assert secrets are excluded from serialized payloads
 - [x] Backup/recovery derivation tests for valid generated phrases, malformed phrases, and stable address/private-key derivation
 
@@ -84,4 +86,4 @@ Test:
 Security review and mainnet readiness assessment. Mainnet is enabled only after the wallet passes the security and recovery test process.
 
 
-Phase 6 implementation note: the privacy overlay is Flutter-level best-effort protection against app-switcher snapshots; it does not yet provide a native Android FLAG_SECURE / iOS capture-blocking guarantee. PIN and preference records are stored using flutter_secure_storage. Device authentication uses the operating system prompt. Recovery tests verify BIP-39 phrase validity and deterministic derivation, but a full device-to-device restore drill, physical-device biometric/lockout checks, and security review remain release-validation tasks.
+Phase 6 implementation note: the privacy overlay is Flutter-level best-effort protection against app-switcher snapshots; it does not yet provide a native Android FLAG_SECURE / iOS capture-blocking guarantee. PIN and preference records are stored using flutter_secure_storage. Device authentication uses the operating system prompt. Recovery tests verify BIP-39 phrase validity and deterministic derivation, but a full device-to-device restore drill, physical-device biometric/lockout checks, CI on the final Phase 6 commit, and security review remain release-validation tasks.
