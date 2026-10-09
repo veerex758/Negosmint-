@@ -133,7 +133,7 @@ class _SendScreenState extends State<SendScreen> {
           ),
         ),
       );
-    } catch (error) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -174,7 +174,7 @@ class _SendScreenState extends State<SendScreen> {
           ),
         ),
       );
-    } catch (error) {
+    } catch (_) {
       if (!mounted) return;
       Navigator.of(context).pop();
       if (mounted) setState(() => _sending = false);
