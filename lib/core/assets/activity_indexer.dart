@@ -207,7 +207,7 @@ class ActivityIndexer {
     final addressTopic = '0x${wallet.substring(2).padLeft(64, '0')}';
 
     while (nextBlock <= latest) {
-      final endBlock = (nextBlock + _chunkSize - 1).clamp(nextBlock, latest);
+      final endBlock = (nextBlock + _chunkSize - 1).clamp(nextBlock, latest).toInt();
       // Query both indexed address positions. Each chunk is committed only
       // after both requests succeed, so transient RPC failures can be retried.
       final sent = await _getLogs(nextBlock, endBlock, [addressTopic, null]);
