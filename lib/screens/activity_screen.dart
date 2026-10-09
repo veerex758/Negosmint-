@@ -182,25 +182,39 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 d?['receipt'] as Map<String, dynamic>?;
                             final status =
                                 SepoliaTransactionStatusParser.parse(receipt);
-                            IndexedTokenTransfer? indexed;
-                            for (final transfer in _indexedTransfers) {
-                              if (transfer.transactionHash == hash) {
-                                indexed = transfer;
-                                break;
-                              }
-                            }
-                            final mine = indexed != null
-                                ? indexed.from == _address?.toLowerCase()
-                                : tx?['from']?.toString().toLowerCase() ==
-                                    _address?.toLowerCase();
+                            final transfers = _indexedTransfers
+                                .where((transfer) =>
+                                    transfer.transactionHash == hash)
+                                .toList(growable: false);
+                            final walletAddress = _address?.toLowerCase();
+                            final nativeFrom = tx?['from']
+                                ?.toString()
+                                .toLowerCase();
+                            final directions = transfers
+                                .map((transfer) => transfer.from == walletAddress
+                                    ? 'Send'
+                                    : transfer.to == walletAddress
+                                        ? 'Receive'
+                                        : 'Transfer')
+                                .toSet();
+                            final direction = transfers.isEmpty
+                                ? (nativeFrom == walletAddress ? 'Send' : 'Receive')
+                                : directions.length == 1
+                                    ? directions.single
+                                    : 'Transfer';
+                            final singleTransfer =
+                                transfers.length == 1 ? transfers.single : null;
+                            final amount = transfers.isEmpty
+                                ? _amount(tx?['value']?.toString())
+                                : transfers.length == 1
+                                    ? '${singleTransfer!.rawAmount} token units'
+                                    : '${transfers.length} token transfers';
                             return _TransactionTile(
                               hash: hash,
-                              direction: mine ? 'Send' : 'Receive',
-                              amount: indexed == null
-                                  ? _amount(tx?['value']?.toString())
-                                  : '${indexed.rawAmount} token units',
+                              direction: direction,
+                              amount: amount,
                               time: _time(d?['timestamp']),
-                              tokenAddress: indexed?.tokenAddress,
+                              tokenAddress: singleTransfer?.tokenAddress,
                               status: switch (status) {
                                 SepoliaTransactionStatus.pending => 'Pending',
                                 SepoliaTransactionStatus.confirmed =>
