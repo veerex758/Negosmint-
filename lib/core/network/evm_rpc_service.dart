@@ -12,6 +12,18 @@ class EvmRpcException implements Exception {
 class EvmRpcService {
   static const rpcUrl = 'https://ethereum-sepolia-rpc.publicnode.com';
   static const chainId = 11155111;
+
+  final String _endpoint;
+  final HttpClient Function() _httpClientFactory;
+
+  /// [endpoint] and [httpClientFactory] allow deterministic local RPC tests.
+  /// Production callers use the public Sepolia endpoint by default.
+  EvmRpcService({
+    String? endpoint,
+    HttpClient Function()? httpClientFactory,
+  })  : _endpoint = endpoint ?? rpcUrl,
+        _httpClientFactory = httpClientFactory ?? (() => HttpClient());
+
   Future<String> getNativeBalanceWei(String address) async {
     final r = await _call('eth_getBalance', [address, 'latest']);
     if (r is! String || !r.startsWith('0x')) {
@@ -22,19 +34,24 @@ class EvmRpcService {
 
   Future<BigInt> getNativeBalanceInWei(String a) async =>
       BigInt.parse((await getNativeBalanceWei(a)).substring(2), radix: 16);
+
   Future<int> getTransactionCount(String a) async => _parseHexInt(
-      await _call('eth_getTransactionCount', [a, 'pending']),
-      'Invalid nonce returned by RPC.');
-  Future<BigInt> estimateNativeTransferGas(
-      {required String from,
-      required String to,
-      required BigInt valueWei}) async {
+        await _call('eth_getTransactionCount', [a, 'pending']),
+        'Invalid nonce returned by RPC.',
+      );
+
+  Future<BigInt> estimateNativeTransferGas({
+    required String from,
+    required String to,
+    required BigInt valueWei,
+  }) async {
     final r = await _call('eth_estimateGas', [
       {'from': from, 'to': to, 'value': '0x${valueWei.toRadixString(16)}'},
-      'latest'
+      'latest',
     ]);
     return BigInt.from(
-        _parseHexInt(r, 'Invalid gas estimate returned by RPC.'));
+      _parseHexInt(r, 'Invalid gas estimate returned by RPC.'),
+    );
   }
 
   Future<Map<String, dynamic>?> getTransactionReceipt(String h) async {
@@ -89,15 +106,15 @@ class EvmRpcService {
   }
 
   Future<dynamic> _call(String method, List<dynamic> params) async {
-    final c = HttpClient();
+    final c = _httpClientFactory();
     try {
-      final q = await c.postUrl(Uri.parse(rpcUrl));
+      final q = await c.postUrl(Uri.parse(_endpoint));
       q.headers.contentType = ContentType.json;
       q.write(jsonEncode({
         'jsonrpc': '2.0',
         'id': DateTime.now().microsecondsSinceEpoch,
         'method': method,
-        'params': params
+        'params': params,
       }));
       final res = await q.close().timeout(const Duration(seconds: 12));
       final body = await res.transform(utf8.decoder).join();
