@@ -255,13 +255,6 @@ class Erc20AssetService {
 
   void dispose() => _client.close();
 }
-).hasMatch(shown)) {
-      final threshold = '<0.${List<String>.filled(maxFraction - 1, '0').join()}1';
-      return negative ? '-$threshold' : threshold;
-    }
-    return '${negative ? '-' : ''}$whole${shown.isEmpty ? '' : '.$shown'}';
-  }
-}
 
 class Erc20AssetException implements Exception {
   final String message;
