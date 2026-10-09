@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:negosmint_wallet/core/assets/erc20_asset_service.dart';
 import 'package:negosmint_wallet/core/assets/activity_indexer.dart';
 import 'package:negosmint_wallet/core/assets/transaction_parser.dart';
+import 'package:negosmint_wallet/core/assets/sepolia_activity_history_service.dart';
 
 void main() {
   group('ERC-20 unit formatting', () {
@@ -176,6 +181,67 @@ void main() {
       expect(restored?.transactionHash, hash);
       expect(restored?.rawAmount, BigInt.from(1234));
       expect(restored?.blockNumber, 32);
+    });
+  });
+
+
+  group('Sepolia activity history pagination', () {
+    const wallet = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const firstHash =
+        '0x1111111111111111111111111111111111111111111111111111111111111111';
+    const secondHash =
+        '0x2222222222222222222222222222222222222222222222222222222222222222';
+
+    test('merges transaction and token-transfer hashes and preserves cursors',
+        () async {
+      final client = MockClient((request) async {
+        if (request.url.path.endsWith('/transactions')) {
+          return http.Response(
+            jsonEncode({
+              'items': [
+                {'hash': firstHash},
+                {'hash': 'not-a-hash'},
+              ],
+              'next_page_params': {'block_number': 100, 'index': 4},
+            }),
+            200,
+          );
+        }
+        return http.Response(
+          jsonEncode({
+            'items': [
+              {'transaction_hash': firstHash},
+              {'transaction_hash': secondHash},
+            ],
+            'next_page_params': null,
+          }),
+          200,
+        );
+      });
+      final service = SepoliaActivityHistoryService(client: client);
+      try {
+        final page = await service.fetchPage(wallet);
+        expect(page.transactionHashes, unorderedEquals([firstHash, secondHash]));
+        expect(page.transactionCursor, {'block_number': 100, 'index': 4});
+        expect(page.tokenTransferCursor, isNull);
+        expect(page.hasMore, isTrue);
+      } finally {
+        service.dispose();
+      }
+    });
+
+    test('rejects invalid wallet addresses before making requests', () async {
+      final service = SepoliaActivityHistoryService(
+        client: MockClient((_) async => http.Response('{}', 200)),
+      );
+      try {
+        await expectLater(
+          service.fetchPage('bad-address'),
+          throwsFormatException,
+        );
+      } finally {
+        service.dispose();
+      }
     });
   });
 
