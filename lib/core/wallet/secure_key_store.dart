@@ -28,7 +28,7 @@ class SecureKeyStore {
   Future<List<String>?> loadMnemonic() async {
     final value = await _storage.read(key: _mnemonicKey);
     if (value == null || value.trim().isEmpty) return null;
-    return value.trim().split(RegExp(r'\\s+'));
+    return value.trim().split(RegExp(r'\s+'));
   }
 
   Future<void> saveAddress(String address) =>
