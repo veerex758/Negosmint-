@@ -212,7 +212,7 @@ class WalletService {
       }
       final transaction = eth.Transaction(
         to: recipient,
-        value: eth.EtherAmount.inWei(valueWei),
+        value: wallet.EtherAmount.inWei(valueWei),
         data: eth.hexToBytes(data),
       );
       final signed = await client.signTransaction(
@@ -261,12 +261,12 @@ class WalletService {
 
     final client = eth.Web3Client(EvmRpcService.rpcUrl, http.Client());
     try {
-      final sender = eth.EthereumAddress.fromHex(address);
+      final sender = wallet.EthereumAddress.fromHex(address);
       final gasPrice = await client.getGasPrice();
       final estimatedGas = await client.estimateGas(
         sender: sender,
         to: recipient,
-        value: eth.EtherAmount.inWei(valueWei),
+        value: wallet.EtherAmount.inWei(valueWei),
         data: eth.hexToBytes(data),
         gasPrice: gasPrice,
       );
@@ -328,7 +328,7 @@ class WalletService {
       }
 
       final gasPrice = await client.getGasPrice();
-      final amount = eth.EtherAmount.inWei(valueWei);
+      final amount = wallet.EtherAmount.inWei(valueWei);
       final estimatedGas = await client.estimateGas(
         sender: sender,
         to: recipient,
