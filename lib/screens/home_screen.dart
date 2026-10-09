@@ -231,12 +231,19 @@ class _HomeTabState extends State<_HomeTab> {
                                 label: 'Send',
                                 icon: Icons.arrow_upward_rounded,
                                 onTap: widget.onSend)),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                             child: _Action(
                                 label: 'Receive',
                                 icon: Icons.arrow_downward_rounded,
-                                onTap: widget.onReceive))
+                                onTap: widget.onReceive)),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                            child: _Action(
+                                label: 'Swap',
+                                icon: Icons.swap_horiz_rounded,
+                                onTap: _disabledAction,
+                                enabled: false)),
                       ]),
                     ],
                   ),
@@ -357,15 +364,19 @@ class _AddressCard extends StatelessWidget {
           ])));
 }
 
+void _disabledAction() {}
+
 class _Action extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
+  final bool enabled;
 
   const _Action({
     required this.label,
     required this.icon,
     required this.onTap,
+    this.enabled = true,
   });
 
   @override
@@ -380,16 +391,18 @@ class _ActionState extends State<_Action> {
         scale: _pressed ? .97 : 1,
         duration: const Duration(milliseconds: 90),
         child: GestureDetector(
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapCancel: () => setState(() => _pressed = false),
-          onTapUp: (_) => setState(() => _pressed = false),
+          onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapCancel: widget.enabled ? () => setState(() => _pressed = false) : null,
+          onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
           child: FilledButton.icon(
-            onPressed: widget.onTap,
+            onPressed: widget.enabled ? widget.onTap : null,
             icon: Icon(widget.icon, size: 18),
             label: Text(widget.label),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.forest,
+              disabledBackgroundColor: Colors.white.withValues(alpha: .55),
+              disabledForegroundColor: AppColors.forest.withValues(alpha: .45),
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
