@@ -61,7 +61,9 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
     _inactivityTimer?.cancel();
     try {
       final address = await WalletService().getPublicAddress();
-      if (!mounted || address == null || address.isEmpty || _locking || walletLockActive.value) return;
+      if (!mounted || address == null || address.isEmpty || _locking || walletLockActive.value) {
+        return;
+      }
       final minutes = await _security.autoLockMinutes();
       _inactivityTimer = Timer(Duration(minutes: minutes), _lockWallet);
     } catch (_) {
