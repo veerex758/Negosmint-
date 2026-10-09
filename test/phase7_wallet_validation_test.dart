@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:negosmint_wallet/core/network/evm_rpc_service.dart';
 import 'package:negosmint_wallet/core/security/biometric_service.dart';
 import 'package:negosmint_wallet/core/wallet/secure_key_store.dart';
 import 'package:negosmint_wallet/core/wallet/wallet_service.dart';
@@ -41,6 +42,11 @@ class _FakeKeyStore extends SecureKeyStore {
   Future<void> saveAddress(String value) async {
     savedAddress = value;
   }
+}
+
+class _WrongChainRpc extends EvmRpcService {
+  @override
+  Future<int> getChainId() async => 1;
 }
 
 class _FakeBiometricService extends BiometricService {
@@ -120,6 +126,28 @@ void main() {
             (error) => error.message,
             'message',
             'Invalid recipient address.',
+          ),
+        ),
+      );
+    });
+
+    test('rejects a non-Sepolia chain before attempting to send', () async {
+      final service = WalletService(
+        keyStore: _FakeKeyStore(mnemonic: _validMnemonic),
+        biometrics: _FakeBiometricService(true),
+        rpcFactory: _WrongChainRpc.new,
+      );
+
+      await expectLater(
+        service.sendSepoliaEth(
+          to: '0x0000000000000000000000000000000000000001',
+          valueWei: BigInt.one,
+        ),
+        throwsA(
+          isA<WalletException>().having(
+            (error) => error.message,
+            'message',
+            'Connected network is not Ethereum Sepolia.',
           ),
         ),
       );
