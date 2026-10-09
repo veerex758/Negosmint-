@@ -56,13 +56,13 @@ Implementation note: the native ETH send path validates recipients and amounts, 
 Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens are manually added by address and this phase does not enable ERC-20 transfers or mainnet assets. The local RPC indexer scans the most recent 5,000 blocks on first use, persists deduplicated ERC-20 Transfer events and a cursor, and incrementally scans later blocks. A read-only, paginated Sepolia Blockscout address-history API supplements it so incoming native transactions and older transaction/token-transfer history can be discovered without scanning every block locally. Explorer history is best-effort and depends on the third-party indexer's availability; local sends and the RPC log index remain fallback sources. The wallet address is sent to the public explorer API, and no private keys or recovery phrases are sent. Failed RPC chunks do not advance the local cursor.
 
 ## Phase 6 — Security hardening
-- local PIN
-- biometric/device authentication
-- auto-lock
-- sensitive-screen protection
-- failed-attempt handling
-- secret/logging audit
-- backup/restore testing
+- [x] Local 6-digit PIN verifier stored as salted, iterated HMAC-SHA-256 output in platform secure storage; PIN itself is never stored
+- [x] Biometric/device authentication preference with PIN fallback and safeguards against disabling all unlock methods
+- [x] Configurable inactivity/background auto-lock (1, 5, 15, 30, or 60 minutes)
+- [x] App-wide privacy overlay on backgrounding and clearing revealed recovery phrase from screen state
+- [x] Failed PIN attempt counter with increasing temporary lockout after five failures
+- [x] Secret/logging audit: no application debugPrint calls found; connection tests assert secrets are excluded from serialized payloads
+- [x] Backup/recovery derivation tests for valid generated phrases, malformed phrases, and stable address/private-key derivation
 
 ## Phase 7 — Testnet validation
 Test:
@@ -82,3 +82,6 @@ Test:
 
 ## Phase 8 — Production readiness
 Security review and mainnet readiness assessment. Mainnet is enabled only after the wallet passes the security and recovery test process.
+
+
+Phase 6 implementation note: the privacy overlay is Flutter-level best-effort protection against app-switcher snapshots; it does not yet provide a native Android FLAG_SECURE / iOS capture-blocking guarantee. PIN and preference records are stored using flutter_secure_storage. Device authentication uses the operating system prompt. Recovery tests verify BIP-39 phrase validity and deterministic derivation, but a full device-to-device restore drill, physical-device biometric/lockout checks, and security review remain release-validation tasks.
