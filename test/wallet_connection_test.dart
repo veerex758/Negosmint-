@@ -241,7 +241,7 @@ void main() {
 
 
   test('transaction fee preview calculates the exact fee', () {
-    const preview = WalletTransactionFeePreview(
+    final preview = WalletTransactionFeePreview(
       gasLimit: BigInt.from(21000),
       gasPriceWei: BigInt.from(1000000000),
     );
