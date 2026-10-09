@@ -15,14 +15,17 @@ class EvmRpcService {
 
   final String _endpoint;
   final HttpClient Function() _httpClientFactory;
+  final Duration _requestTimeout;
 
   /// [endpoint] and [httpClientFactory] allow deterministic local RPC tests.
   /// Production callers use the public Sepolia endpoint by default.
   EvmRpcService({
     String? endpoint,
     HttpClient Function()? httpClientFactory,
+    Duration requestTimeout = const Duration(seconds: 12),
   })  : _endpoint = endpoint ?? rpcUrl,
-        _httpClientFactory = httpClientFactory ?? (() => HttpClient());
+        _httpClientFactory = httpClientFactory ?? (() => HttpClient()),
+        _requestTimeout = requestTimeout;
 
   Future<String> getNativeBalanceWei(String address) async {
     final r = await _call('eth_getBalance', [address, 'latest']);
@@ -116,8 +119,11 @@ class EvmRpcService {
         'method': method,
         'params': params,
       }));
-      final res = await q.close().timeout(const Duration(seconds: 12));
-      final body = await res.transform(utf8.decoder).join();
+      final res = await q.close().timeout(_requestTimeout);
+      final body = await res
+          .transform(utf8.decoder)
+          .join()
+          .timeout(_requestTimeout);
       if (res.statusCode != HttpStatus.ok) {
         throw EvmRpcException('RPC returned HTTP ${res.statusCode}.');
       }
