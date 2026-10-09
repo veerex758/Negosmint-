@@ -67,17 +67,7 @@ class WalletDeepLinkReceiver {
 
   WalletOwnershipRequest? _parseOwnershipRequest(Uri uri) {
     try {
-      if (uri.toString().length > 8192 ||
-          uri.scheme != WalletConnectionCodec.scheme ||
-          uri.host != 'ownership') {
-        return null;
-      }
-      final encoded = uri.queryParameters['request'];
-      if (encoded == null || encoded.isEmpty) return null;
-      final decoded = jsonDecode(
-        utf8.decode(base64Url.decode(base64Url.normalize(encoded))),
-      );
-      return WalletOwnershipRequest.parse(decoded);
+      return WalletOwnershipRequest.parseDeepLink(uri);
     } catch (_) {
       // Deep links are untrusted input; invalid or expired requests are ignored.
       return null;
