@@ -48,8 +48,8 @@ class TransactionParser {
 
     final result = <ParsedAssetTransfer>[];
     final failed = receipt != null &&
-        receipt['status'] is String &&
-        _hexInt(receipt['status']) == 0;
+        receipt?['status'] is String &&
+        _hexInt(receipt?['status']) == 0;
     final value = _hexBigInt(transaction['value']);
     final input = transaction['input'];
     final nativeTransfer = to.isNotEmpty &&
@@ -93,7 +93,7 @@ class TransactionParser {
           to: tokenTo,
           rawAmount: _hexBigInt(data),
           direction: _direction(tokenFrom, tokenTo, wallet),
-          blockNumber: _hexInt(receipt['blockNumber']),
+          blockNumber: _hexInt(receipt?['blockNumber']),
           failed: failed,
         ));
       }
