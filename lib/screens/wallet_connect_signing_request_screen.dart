@@ -56,6 +56,14 @@ class _WalletConnectSigningRequestScreenState
       _error = null;
     });
     try {
+      // Fail closed: never send a transaction when the fee preview failed.
+      try {
+        await _feePreview;
+      } catch (_) {
+        throw const WalletException(
+          'Network fee could not be estimated. Transaction was not sent.',
+        );
+      }
       final from = widget.request.from;
       final walletAddress = await widget.walletService.getPublicAddress();
       if (from != null &&
@@ -214,10 +222,14 @@ class _WalletConnectSigningRequestScreenState
           OutlinedButton(
               onPressed: _busy ? null : _reject, child: const Text('Reject')),
           const SizedBox(height: 10),
-          FilledButton.icon(
-              onPressed: _busy ? null : _approve,
+          FutureBuilder<WalletTransactionFeePreview>(
+            future: _feePreview,
+            builder: (context, snapshot) => FilledButton.icon(
+              onPressed: _busy || !snapshot.hasData ? null : _approve,
               icon: const Icon(Icons.lock_outline_rounded),
-              label: Text(_busy ? 'Authorizing…' : 'Confirm & Send')),
+              label: Text(_busy ? 'Authorizing…' : 'Confirm & Send'),
+            ),
+          ),
         ],
       ),
     );
