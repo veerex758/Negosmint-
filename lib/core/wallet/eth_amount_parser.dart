@@ -1,6 +1,6 @@
 /// Strict decimal ETH parsing for native Sepolia transactions.
 ///
-/// Rejects signs, exponent notation, whitespace, over-precision, zero/negative
+/// Rejects signs, exponent notation, over-precision, zero/negative
 /// amounts, and values that exceed the EVM uint256 range.
 class EthAmountParser {
   static final BigInt maxUint256 = (BigInt.one << 256) - BigInt.one;
