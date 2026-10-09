@@ -41,7 +41,13 @@ class Erc20Asset {
         : fraction;
     if (whole == '0' &&
         fraction.length > maxFraction &&
-        RegExp(r'^0+  }
+        RegExp(r'^0+$').hasMatch(shown)) {
+      final zeros = List<String>.filled(maxFraction - 1, '0').join();
+      final threshold = '<0.$zeros1';
+      return negative ? '-$threshold' : threshold;
+    }
+    return '${negative ? '-' : ''}$whole${shown.isEmpty ? '' : '.$shown'}';
+  }
 }
 
 class Erc20AssetException implements Exception {
