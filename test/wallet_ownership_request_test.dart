@@ -92,7 +92,7 @@ void main() {
 
   test('rejects a request without an account binding line', () {
     final envelope = validEnvelope()
-      ..['message'] = message.replaceFirst('User ID: user-123\\n', '');
+      ..['message'] = message.replaceFirst('User ID: user-123\n', '');
     expect(
       () => WalletOwnershipRequest.parse(envelope, now: now),
       throwsFormatException,
