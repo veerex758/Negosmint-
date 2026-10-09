@@ -70,7 +70,7 @@ The connection module is isolated from key management:
 - Connection request IDs are consumed to prevent replay.
 - Signing permissions are separate from read-only connection permissions.
 - Signing requests are validated against the active session and chain before any future signing engine is invoked.
-- Deep links and QR payloads use a transport-neutral codec. OS deep-link delivery and QR scanning remain transport adapters.
+- Deep links and QR payloads use transport-neutral validation. The camera QR scanner is a presentation adapter; parsed payment requests contain only a public recipient address, Sepolia chain ID, and optional exact wei amount.
 - Future interoperability should follow established wallet/provider standards rather than a proprietary signing protocol. EIP-1193 defines the provider request model and EIP-2255 defines permission concepts.
 
 
@@ -94,3 +94,12 @@ The connection module is isolated from key management:
 - WalletConnect/Reown protocol state is separate from the wallet's self-custody key store.
 - The Reown project ID is configuration metadata, not a wallet secret, and must not be treated as private key material.
 - The current dependency is `reown_walletkit 1.5.1`. Its publisher states that WalletKit is built on the WalletConnect Network and provides pairing, session, and request handling APIs. 
+
+
+### Receive and payment QR
+
+- The Receive screen shows the public wallet address, copy action, a network label, and a QR encoding `ethereum:<address>@11155111`.
+- The scanner accepts either a plain EVM address or a restricted native-ETH EIP-681 payment URI.
+- The payment parser accepts only Ethereum Sepolia (chain ID `11155111`); it rejects unsupported chains, token-transfer paths, unknown or duplicate parameters, malformed addresses, and ETH values with invalid precision.
+- An optional requested amount is parsed exactly into wei and prefilled into the Send form. The user must still review the recipient and amount and complete the existing authentication/confirmation flow.
+- QR payloads are validated locally; wallet secrets and camera frames are not sent to application servers.
