@@ -180,7 +180,13 @@ class WalletService {
         chainId: EvmRpcService.chainId,
       );
       final hash = await client.sendRawTransaction(signedTransaction);
-      await _saveActivity(hash);
+      try {
+        await _saveActivity(hash);
+      } catch (_) {
+        throw WalletException(
+          'Transaction was broadcast ($hash), but local activity could not be saved. Check the transaction on Sepolia before retrying.',
+        );
+      }
       return hash;
     } on WalletException {
       rethrow;
@@ -419,7 +425,13 @@ class WalletService {
         chainId: EvmRpcService.chainId,
       );
       final hash = await client.sendRawTransaction(signedTransaction);
-      await _saveActivity(hash);
+      try {
+        await _saveActivity(hash);
+      } catch (_) {
+        throw WalletException(
+          'Transaction was broadcast ($hash), but local activity could not be saved. Check the transaction on Sepolia before retrying.',
+        );
+      }
       return hash;
     } on WalletException {
       rethrow;
@@ -433,10 +445,18 @@ class WalletService {
   Future<List<String>> getActivity() async {
     final raw = await _storage.read(key: _activityKey);
     if (raw == null || raw.isEmpty) return const [];
-    return raw.split('|').where((value) => value.isNotEmpty).toList();
+    return raw
+        .split('|')
+        .where((value) => RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(value))
+        .toList();
   }
 
   Future<void> _saveActivity(String hash) async {
+    if (!RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(hash)) {
+      throw const WalletException(
+        'Network returned an invalid transaction hash.',
+      );
+    }
     final current = await getActivity();
     final updated = <String>[
       hash,
