@@ -79,10 +79,10 @@ Manual results were reported by the developer. The biometric failure is unresolv
 
 ### Automated coverage
 - [ ] CI passes with the new Sepolia RPC success/error/outage tests.
-- [ ] Add automated coverage for wallet creation/import and restore persistence.
-- [ ] Add send-flow validation for recipient, amount, balance-plus-fee, network, and authentication gates.
+- [x] Add deterministic wallet transaction-gate tests for authentication, zero/negative native amounts, malformed recipients, missing wallet material, and malformed transaction data.
+- [ ] Add persistence-backed wallet creation/import and restore tests, plus network-mocked balance-plus-fee and wrong-chain send tests.
 
-The Sepolia RPC service now accepts an injectable endpoint so tests can use a local JSON-RPC server without contacting a public network. The new tests cover chain-ID parsing, upstream JSON-RPC errors, HTTP 503 responses, malformed JSON, missing result fields, and a refused connection. These tests are not considered passed until CI reports success.
+The Sepolia RPC service now accepts an injectable endpoint so tests can use a local JSON-RPC server without contacting a public network. RPC tests cover chain-ID parsing, upstream JSON-RPC errors, HTTP 503 responses, malformed JSON, missing result fields, a refused connection, and a stalled response timeout. Separate wallet validation tests cover authentication and pre-network input gates. These tests are not considered passed until CI reports success.
 
 ### Physical-device / Sepolia testnet checklist
 - [ ] Create wallet and complete recovery-phrase backup verification.
