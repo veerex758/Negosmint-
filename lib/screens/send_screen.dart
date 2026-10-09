@@ -58,7 +58,6 @@ class _SendScreenState extends State<SendScreen> {
     try {
       final rpc = EvmRpcService();
       final balance = await rpc.getNativeBalanceInWei(widget.address);
-      final nonce = await rpc.getTransactionCount(widget.address);
       final gas = await rpc.estimateNativeTransferGas(
         from: widget.address,
         to: _recipient.text.trim(),
@@ -106,7 +105,6 @@ class _SendScreenState extends State<SendScreen> {
               _Row('Asset', _asset),
               _Row('Amount', '${_amount.text.trim()} ETH'),
               _Row('To', _recipient.text.trim()),
-              _Row('Nonce', nonce.toString()),
               _Row('Gas limit', gas.toString()),
               _Row('Est. fee', '${_formatWei(feeWei)} ETH'),
               const SizedBox(height: 18),
