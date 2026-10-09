@@ -124,223 +124,229 @@ class _HomeTabState extends State<_HomeTab> {
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
-            sliver: SliverToBoxAdapter(
-                child: Row(children: [
-              Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                      color: AppColors.forest,
-                      borderRadius: BorderRadius.circular(16)),
-                  child: const Center(
-                      child: Text('NM',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900)))),
-              const SizedBox(width: 14),
-              const Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Text('NEGOSWALLET',
-                        style: TextStyle(
-                            color: AppColors.forest,
-                            fontSize: 11,
-                            letterSpacing: 1.4,
-                            fontWeight: FontWeight.w800)),
-                    SizedBox(height: 3),
-                    Text('Your portfolio',
-                        style: TextStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.charcoal))
-                  ])),
-              IconButton(
-                  onPressed: () => _showTestnetNotice(context),
-                  icon: const Icon(Icons.notifications_none_rounded)),
-            ]))),
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
-            sliver: SliverToBoxAdapter(
-                child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.forest, Color(0xFF31563F)]),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0x241E3A2B),
-                        blurRadius: 24,
-                        offset: Offset(0, 12))
-                  ]),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -90,
-                    right: -60,
+            SliverPadding(
+                padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
+                sliver: SliverToBoxAdapter(
+                    child: Row(children: [
+                  Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                          color: AppColors.forest,
+                          borderRadius: BorderRadius.circular(16)),
+                      child: const Center(
+                          child: Text('NM',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900)))),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text('NEGOSWALLET',
+                            style: TextStyle(
+                                color: AppColors.forest,
+                                fontSize: 11,
+                                letterSpacing: 1.4,
+                                fontWeight: FontWeight.w800)),
+                        SizedBox(height: 3),
+                        Text('Your portfolio',
+                            style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.charcoal))
+                      ])),
+                  IconButton(
+                      onPressed: () => _showTestnetNotice(context),
+                      icon: const Icon(Icons.notifications_none_rounded)),
+                ]))),
+            SliverPadding(
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
+                sliver: SliverToBoxAdapter(
                     child: Container(
-                      width: 210,
-                      height: 210,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [Color(0x337FAF8B), Color(0x001E3A2B)],
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.forest, Color(0xFF31563F)]),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Color(0x241E3A2B),
+                            blurRadius: 24,
+                            offset: Offset(0, 12))
+                      ]),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -90,
+                        right: -60,
+                        child: Container(
+                          width: 210,
+                          height: 210,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [Color(0x337FAF8B), Color(0x001E3A2B)],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.shield_outlined, size: 15, color: AppColors.mint),
-                          const SizedBox(width: 6),
-                          const Text('SEPOLIA TESTNET',
-                              style: TextStyle(
-                                color: AppColors.mint,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.15,
-                              )),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: const Color(0x26B8D9B2),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: const Color(0x557FAF8B)),
-                            ),
-                            child: const Text('TEST TOKENS',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: .5,
-                                )),
+                          Row(
+                            children: [
+                              const Icon(Icons.shield_outlined,
+                                  size: 15, color: AppColors.mint),
+                              const SizedBox(width: 6),
+                              const Text('SEPOLIA TESTNET',
+                                  style: TextStyle(
+                                    color: AppColors.mint,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.15,
+                                  )),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0x26B8D9B2),
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                      color: const Color(0x557FAF8B)),
+                                ),
+                                child: const Text('TEST TOKENS',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: .5,
+                                    )),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 18),
+                          Row(children: [
+                            const Text('Total balance',
+                                style: TextStyle(
+                                    color: Color(0xBFFFFFFF), fontSize: 13)),
+                            const Spacer(),
+                            IconButton(
+                                onPressed: () => setState(
+                                    () => _hideBalance = !_hideBalance),
+                                color: Colors.white,
+                                icon: Icon(_hideBalance
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined))
+                          ]),
+                          const SizedBox(height: 4),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 280),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: (child, animation) =>
+                                FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale:
+                                    Tween<double>(begin: .96, end: 1).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutBack,
+                                  ),
+                                ),
+                                child: child,
+                              ),
+                            ),
+                            child: _hideBalance
+                                ? const Text(
+                                    '••••••',
+                                    key: ValueKey('hidden'),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2,
+                                    ),
+                                  )
+                                : _LiveEthBalance(
+                                    key: const ValueKey('visible'),
+                                    address: widget.address,
+                                  ),
+                          ),
+                          const SizedBox(height: 22),
+                          Row(children: [
+                            Expanded(
+                                child: _Action(
+                                    label: 'Send',
+                                    icon: Icons.arrow_upward_rounded,
+                                    onTap: widget.onSend)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: _Action(
+                                    label: 'Receive',
+                                    icon: Icons.arrow_downward_rounded,
+                                    onTap: widget.onReceive)),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                                child: _Action(
+                                    label: 'Swap',
+                                    icon: Icons.swap_horiz_rounded,
+                                    onTap: _disabledAction,
+                                    enabled: false)),
+                          ]),
                         ],
                       ),
-                      const SizedBox(height: 18),
-                      Row(children: [
-                        const Text('Total balance',
-                            style: TextStyle(
-                                color: Color(0xBFFFFFFF), fontSize: 13)),
-                        const Spacer(),
-                        IconButton(
-                            onPressed: () =>
-                                setState(() => _hideBalance = !_hideBalance),
-                            color: Colors.white,
-                            icon: Icon(_hideBalance
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined))
-                      ]),
-                      const SizedBox(height: 4),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 280),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) => FadeTransition(
-                          opacity: animation,
-                          child: ScaleTransition(
-                            scale: Tween<double>(begin: .96, end: 1).animate(
-                              CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutBack,
-                              ),
-                            ),
-                            child: child,
-                          ),
-                        ),
-                        child: _hideBalance
-                            ? const Text(
-                                '••••••',
-                                key: ValueKey('hidden'),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2,
-                                ),
-                              )
-                            : _LiveEthBalance(
-                                key: const ValueKey('visible'),
-                                address: widget.address,
-                              ),
-                      ),
-                      const SizedBox(height: 22),
-                      Row(children: [
-                        Expanded(
-                            child: _Action(
-                                label: 'Send',
-                                icon: Icons.arrow_upward_rounded,
-                                onTap: widget.onSend)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                            child: _Action(
-                                label: 'Receive',
-                                icon: Icons.arrow_downward_rounded,
-                                onTap: widget.onReceive)),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                            child: _Action(
-                                label: 'Swap',
-                                icon: Icons.swap_horiz_rounded,
-                                onTap: _disabledAction,
-                                enabled: false)),
-                      ]),
                     ],
                   ),
-                ],
-              ),
-            ))),
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(22, 26, 22, 8),
-            sliver: SliverToBoxAdapter(
-                child: Row(children: [
-              const Expanded(
-                  child: Text('Assets',
-                      style: TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.w800))),
-              TextButton(
-                  onPressed: () => _showAssets(context),
-                  child: const Text('Manage'))
-            ]))),
-        SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            sliver: SliverList.list(children: [
-              const _AssetTile(
-                  icon: Icons.currency_bitcoin_rounded,
-                  name: 'Bitcoin',
-                  symbol: 'BTC',
-                  balance: '—',
-                  value: 'Not available',
-                  networkLabel: 'PLANNED',
-                  iconBackgroundColor: Color(0xFFFFE8C8),
-                  iconColor: Color(0xFF9B5B12)),
-              const SizedBox(height: 10),
-              _LiveEthAsset(address: widget.address),
-              const SizedBox(height: 10),
-              const _AssetTile(
-                  icon: Icons.token_outlined,
-                  name: 'USD Coin',
-                  symbol: 'USDC',
-                  balance: '—',
-                  value: 'Not available',
-                  networkLabel: 'PLANNED',
-                  iconBackgroundColor: Color(0xFFDDEBFF),
-                  iconColor: Color(0xFF285BA8)),
-            ])),
-        if (widget.address != null)
-          SliverPadding(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
-              sliver: SliverToBoxAdapter(child: _AddressCard(widget.address!))),
-      ]));
+                ))),
+            SliverPadding(
+                padding: const EdgeInsets.fromLTRB(22, 26, 22, 8),
+                sliver: SliverToBoxAdapter(
+                    child: Row(children: [
+                  const Expanded(
+                      child: Text('Assets',
+                          style: TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.w800))),
+                  TextButton(
+                      onPressed: () => _showAssets(context),
+                      child: const Text('Manage'))
+                ]))),
+            SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                sliver: SliverList.list(children: [
+                  const _AssetTile(
+                      icon: Icons.currency_bitcoin_rounded,
+                      name: 'Bitcoin',
+                      symbol: 'BTC',
+                      balance: '—',
+                      value: 'Not available',
+                      networkLabel: 'PLANNED',
+                      iconBackgroundColor: Color(0xFFFFE8C8),
+                      iconColor: Color(0xFF9B5B12)),
+                  const SizedBox(height: 10),
+                  _LiveEthAsset(address: widget.address),
+                  const SizedBox(height: 10),
+                  const _AssetTile(
+                      icon: Icons.token_outlined,
+                      name: 'USD Coin',
+                      symbol: 'USDC',
+                      balance: '—',
+                      value: 'Not available',
+                      networkLabel: 'PLANNED',
+                      iconBackgroundColor: Color(0xFFDDEBFF),
+                      iconColor: Color(0xFF285BA8)),
+                ])),
+            if (widget.address != null)
+              SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
+                  sliver:
+                      SliverToBoxAdapter(child: _AddressCard(widget.address!))),
+          ]));
   void _showTestnetNotice(BuildContext context) => showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -590,7 +596,7 @@ class _LiveEthAsset extends StatelessWidget {
               balance: _formatEth(snapshot.data!),
               value: 'Testnet balance',
               networkLabel: 'SEPOLIA',
-              iconBackgroundColor: Color(0xFFE0E8E2),
+              iconBackgroundColor: const Color(0xFFE0E8E2),
               iconColor: AppColors.forest);
         });
   }
@@ -644,7 +650,8 @@ class _AssetTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   Text(name,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 14)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -656,7 +663,8 @@ class _AssetTile extends StatelessWidget {
                           )),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
                           color: networkLabel == 'SEPOLIA'
                               ? const Color(0xFFE3EFE5)
@@ -665,7 +673,9 @@ class _AssetTile extends StatelessWidget {
                         ),
                         child: Text(networkLabel,
                             style: TextStyle(
-                              color: networkLabel == 'SEPOLIA' ? AppColors.forest : Colors.black45,
+                              color: networkLabel == 'SEPOLIA'
+                                  ? AppColors.forest
+                                  : Colors.black45,
                               fontSize: 8,
                               letterSpacing: .35,
                               fontWeight: FontWeight.w800,
