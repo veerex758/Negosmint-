@@ -14,6 +14,7 @@ void main() {
     'Chain ID: 11155111',
     'Expires At: 2026-10-09T12:02:00.000Z',
     'This signature proves address control only. It does not authorize a transaction.',
+    'If you did not initiate this request, reject it.',
   ].join('\n');
 
   Map<String, dynamic> validEnvelope() => {
