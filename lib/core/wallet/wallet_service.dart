@@ -37,16 +37,19 @@ class WalletService {
   final MnemonicService _mnemonics;
   final BiometricService _biometrics;
   final FlutterSecureStorage _storage;
+  final EvmRpcService Function() _rpcFactory;
 
   WalletService({
     SecureKeyStore? keyStore,
     MnemonicService? mnemonics,
     BiometricService? biometrics,
     FlutterSecureStorage? storage,
+    EvmRpcService Function()? rpcFactory,
   })  : _keyStore = keyStore ?? const SecureKeyStore(),
         _mnemonics = mnemonics ?? MnemonicService(),
         _biometrics = biometrics ?? BiometricService(),
-        _storage = storage ?? const FlutterSecureStorage();
+        _storage = storage ?? const FlutterSecureStorage(),
+        _rpcFactory = rpcFactory ?? EvmRpcService.new;
 
   /// Generates the recovery phrase in memory only.
   /// Persistence happens only after the user completes backup verification.
@@ -66,6 +69,20 @@ class WalletService {
     }
     await _keyStore.saveMnemonic(snapshot.mnemonic);
     await _keyStore.saveAddress(snapshot.address);
+  }
+
+  /// Throws before signing when the transfer value plus network fee exceeds
+  /// the account balance. Kept independent of RPC so the safety rule is testable.
+  static void validateSufficientBalance({
+    required BigInt balanceWei,
+    required BigInt valueWei,
+    required BigInt gasCostWei,
+  }) {
+    if (balanceWei < valueWei + gasCostWei) {
+      throw const WalletException(
+        'Insufficient Sepolia ETH balance for amount and network fee.',
+      );
+    }
   }
 
   Future<bool> hasWallet() => _keyStore.hasWallet();
@@ -116,7 +133,7 @@ class WalletService {
       throw const WalletException('Invalid recipient address.');
     }
 
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
@@ -156,11 +173,11 @@ class WalletService {
       }
       final gasCostWei = gasPrice.getInWei * estimatedGas;
 
-      if (balance.getInWei < valueWei + gasCostWei) {
-        throw const WalletException(
-          'Insufficient Sepolia ETH balance for amount and network fee.',
-        );
-      }
+      validateSufficientBalance(
+        balanceWei: balance.getInWei,
+        valueWei: valueWei,
+        gasCostWei: gasCostWei,
+      );
 
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
@@ -224,7 +241,7 @@ class WalletService {
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
@@ -287,7 +304,7 @@ class WalletService {
       throw const WalletException('Invalid transaction recipient.');
     }
 
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
@@ -354,7 +371,7 @@ class WalletService {
       throw const WalletException('Invalid transaction recipient.');
     }
 
-    final rpc = EvmRpcService();
+    final rpc = _rpcFactory();
     if (await rpc.getChainId() != EvmRpcService.chainId) {
       throw const WalletException('Connected network is not Ethereum Sepolia.');
     }
@@ -395,11 +412,11 @@ class WalletService {
       }
       final balance = await client.getBalance(sender);
       final gasCostWei = gasPrice.getInWei * estimatedGas;
-      if (balance.getInWei < valueWei + gasCostWei) {
-        throw const WalletException(
-          'Insufficient Sepolia ETH balance for amount and network fee.',
-        );
-      }
+      WalletService.validateSufficientBalance(
+        balanceWei: balance.getInWei,
+        valueWei: valueWei,
+        gasCostWei: gasCostWei,
+      );
 
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(

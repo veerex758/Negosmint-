@@ -76,20 +76,36 @@ Implementation note: ERC-20 metadata is untrusted contract-provided data. Tokens
 Manual results were reported by the developer. The biometric failure is unresolved; do not treat Phase 6 as fully device-verified until it is diagnosed and retested. Automated CI/test results must also be green before merging.
 
 ## Phase 7 — Testnet validation
-Test:
-- create
-- import
-- backup/restore
-- restart
-- lock/unlock
-- receive
-- send
-- insufficient balance
-- insufficient gas
-- wrong network
-- invalid address
-- RPC outage
-- rejected/failed transaction
+
+### Automated coverage
+- [ ] CI passes with the new Sepolia RPC success/error/outage tests.
+- [x] Add deterministic wallet transaction-gate tests for authentication, zero/negative native amounts, malformed recipients, missing wallet material, and malformed transaction data.
+- [x] Add wallet creation/finalization, invalid recovery phrase rejection, and stored-phrase address-restore tests using an isolated fake key store.
+- [x] Add balance-plus-fee boundary tests (exactly enough balance succeeds; one unit short fails) using an isolated validation helper; wrong-chain rejection is covered through an injected RPC service. Physical-device persistence/import checks remain required.
+
+The Sepolia RPC service now accepts an injectable endpoint so tests can use a local JSON-RPC server without contacting a public network. WalletService also accepts an injectable RPC service for deterministic chain-validation tests. RPC tests cover chain-ID parsing, JSON-RPC version/request-ID matching, upstream errors, HTTP 503 responses, malformed JSON, missing result fields, a refused connection, and a stalled response timeout. Separate wallet validation tests cover authentication and pre-network input gates. These tests are not considered passed until CI reports success.
+
+### Physical-device / Sepolia testnet checklist
+- [ ] Create wallet and complete recovery-phrase backup verification.
+- [ ] Import an existing recovery phrase and verify the derived address.
+- [ ] Restore from backup and confirm the same address and funds.
+- [ ] Force-close/restart the app and confirm the wallet persists.
+- [ ] Lock and unlock the wallet with the configured supported method.
+- [ ] Receive Sepolia ETH and confirm the balance refreshes.
+- [ ] Send a small Sepolia ETH transfer to a second test wallet; verify the hash and receipt status in the explorer.
+- [ ] Verify insufficient balance is rejected before signing.
+- [ ] Verify amount-plus-gas insufficiency is rejected before signing.
+- [ ] Verify a wrong chain ID is rejected.
+- [ ] Verify an invalid recipient address is rejected.
+- [ ] Verify RPC outage/timeout displays a recoverable error and does not crash the app.
+- [ ] Verify a rejected or reverted transaction is shown as failed and can be distinguished from pending.
+- [ ] Confirm the activity screen reflects pending, confirmed, and failed receipt states.
+
+### Validation rules
+- Do not mark manual checks complete based only on unit tests or an APK build.
+- Record the tested device, date, network, transaction hash (public only), and result for live Sepolia transactions.
+- Sending currently requires operating-system authentication. The previously reported missing biometric prompt may block live send validation until that issue is resolved; do not bypass authentication to force a test.
+- Use Sepolia test funds only. Never enter or share a recovery phrase or private key in an issue, log, or chat.
 
 ## Phase 8 — Production readiness
 Security review and mainnet readiness assessment. Mainnet is enabled only after the wallet passes the security and recovery test process.

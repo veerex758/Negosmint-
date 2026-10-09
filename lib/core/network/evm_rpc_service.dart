@@ -12,6 +12,21 @@ class EvmRpcException implements Exception {
 class EvmRpcService {
   static const rpcUrl = 'https://ethereum-sepolia-rpc.publicnode.com';
   static const chainId = 11155111;
+
+  final String _endpoint;
+  final HttpClient Function() _httpClientFactory;
+  final Duration _requestTimeout;
+
+  /// [endpoint] and [httpClientFactory] allow deterministic local RPC tests.
+  /// Production callers use the public Sepolia endpoint by default.
+  EvmRpcService({
+    String? endpoint,
+    HttpClient Function()? httpClientFactory,
+    Duration requestTimeout = const Duration(seconds: 12),
+  })  : _endpoint = endpoint ?? rpcUrl,
+        _httpClientFactory = httpClientFactory ?? (() => HttpClient()),
+        _requestTimeout = requestTimeout;
+
   Future<String> getNativeBalanceWei(String address) async {
     final r = await _call('eth_getBalance', [address, 'latest']);
     if (r is! String || !r.startsWith('0x')) {
@@ -22,19 +37,24 @@ class EvmRpcService {
 
   Future<BigInt> getNativeBalanceInWei(String a) async =>
       BigInt.parse((await getNativeBalanceWei(a)).substring(2), radix: 16);
+
   Future<int> getTransactionCount(String a) async => _parseHexInt(
-      await _call('eth_getTransactionCount', [a, 'pending']),
-      'Invalid nonce returned by RPC.');
-  Future<BigInt> estimateNativeTransferGas(
-      {required String from,
-      required String to,
-      required BigInt valueWei}) async {
+        await _call('eth_getTransactionCount', [a, 'pending']),
+        'Invalid nonce returned by RPC.',
+      );
+
+  Future<BigInt> estimateNativeTransferGas({
+    required String from,
+    required String to,
+    required BigInt valueWei,
+  }) async {
     final r = await _call('eth_estimateGas', [
       {'from': from, 'to': to, 'value': '0x${valueWei.toRadixString(16)}'},
-      'latest'
+      'latest',
     ]);
     return BigInt.from(
-        _parseHexInt(r, 'Invalid gas estimate returned by RPC.'));
+      _parseHexInt(r, 'Invalid gas estimate returned by RPC.'),
+    );
   }
 
   Future<Map<String, dynamic>?> getTransactionReceipt(String h) async {
@@ -89,24 +109,31 @@ class EvmRpcService {
   }
 
   Future<dynamic> _call(String method, List<dynamic> params) async {
-    final c = HttpClient();
+    final c = _httpClientFactory();
     try {
-      final q = await c.postUrl(Uri.parse(rpcUrl));
+      final q = await c.postUrl(Uri.parse(_endpoint));
       q.headers.contentType = ContentType.json;
+      final requestId = DateTime.now().microsecondsSinceEpoch;
       q.write(jsonEncode({
         'jsonrpc': '2.0',
-        'id': DateTime.now().microsecondsSinceEpoch,
+        'id': requestId,
         'method': method,
-        'params': params
+        'params': params,
       }));
-      final res = await q.close().timeout(const Duration(seconds: 12));
-      final body = await res.transform(utf8.decoder).join();
+      final res = await q.close().timeout(_requestTimeout);
+      final body = await res
+          .transform(utf8.decoder)
+          .join()
+          .timeout(_requestTimeout);
       if (res.statusCode != HttpStatus.ok) {
         throw EvmRpcException('RPC returned HTTP ${res.statusCode}.');
       }
       final d = jsonDecode(body);
       if (d is! Map<String, dynamic>) {
         throw const EvmRpcException('Malformed RPC response.');
+      }
+      if (d['jsonrpc'] != '2.0' || d['id'] != requestId) {
+        throw const EvmRpcException('RPC response does not match the request.');
       }
       if (d['error'] != null) {
         final e = d['error'];

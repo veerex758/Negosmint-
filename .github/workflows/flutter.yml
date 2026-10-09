@@ -6,9 +6,11 @@ on:
       - main
       - phase-5-assets-activity
       - phase-6-security-hardening
+      - phase-7-testnet-validation
   pull_request:
     branches:
       - main
+      - phase-6-security-hardening
   workflow_dispatch: {}
 
 permissions:
