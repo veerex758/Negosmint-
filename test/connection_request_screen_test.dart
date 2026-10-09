@@ -25,6 +25,14 @@ void main() {
         MaterialApp(home: ConnectionRequestScreen(request: request)),
       );
       await tester.pumpAndSettle();
+      // The error and Connect button are near the bottom of the ListView and
+      // may not be built until the test scrolls them into view.
+      await tester.scrollUntilVisible(
+        find.widgetWithText(FilledButton, 'Connect'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       expect(
         find.textContaining('secure response callback could not be prepared'),
