@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
-import '../core/network/network_config.dart';
 import '../core/wallet/payment_uri.dart';
 
 class ReceiveScreen extends StatelessWidget {
