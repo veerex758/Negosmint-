@@ -63,6 +63,12 @@ class _SendScreenState extends State<SendScreen> {
         to: _recipient.text.trim(),
         valueWei: amountWei,
       );
+      if (gas <= BigInt.zero ||
+          gas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       if (await rpc.getChainId() != EvmRpcService.chainId) {
         throw const WalletException(
           'Wrong network detected. Sepolia is required.',
@@ -131,6 +137,11 @@ class _SendScreenState extends State<SendScreen> {
           ),
         ),
       );
+    } on WalletException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,7 +179,7 @@ class _SendScreenState extends State<SendScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Sent on Sepolia: ${hash.length > 10 ? hash.substring(0, 10) : hash}...',
+            'Broadcast on Sepolia (pending confirmation): ${hash.length > 10 ? hash.substring(0, 10) : hash}...',
           ),
         ),
       );
