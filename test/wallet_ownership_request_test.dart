@@ -79,6 +79,25 @@ void main() {
     );
   });
 
+
+  test('rejects an envelope expiry that differs from the signed message', () {
+    final envelope = validEnvelope()
+      ..['expiresAt'] = now.add(const Duration(minutes: 4)).toIso8601String();
+    expect(
+      () => WalletOwnershipRequest.parse(envelope, now: now),
+      throwsFormatException,
+    );
+  });
+
+  test('rejects a request without an account binding line', () {
+    final envelope = validEnvelope()
+      ..['message'] = message.replaceFirst('User ID: user-123\\n', '');
+    expect(
+      () => WalletOwnershipRequest.parse(envelope, now: now),
+      throwsFormatException,
+    );
+  });
+
   test('serializes a parsed request using the versioned envelope', () {
     final request = WalletOwnershipRequest.parse(validEnvelope(), now: now);
     expect(request.toEnvelope()['type'], WalletOwnershipRequest.protocol);
