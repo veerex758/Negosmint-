@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'core/security/wallet_security_service.dart';
+import 'core/security/wallet_lock_state.dart';
 import 'core/wallet/wallet_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/wallet_lock_screen.dart';
@@ -51,6 +52,7 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    walletLockActive.addListener(_onLockStateChanged);
     _scheduleAutoLock();
   }
 
@@ -58,12 +60,20 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
     _inactivityTimer?.cancel();
     try {
       final address = await WalletService().getPublicAddress();
-      if (!mounted || address == null || address.isEmpty || _locking) return;
+      if (!mounted || address == null || address.isEmpty || _locking || walletLockActive.value) return;
       final minutes = await _security.autoLockMinutes();
       _inactivityTimer = Timer(Duration(minutes: minutes), _lockWallet);
     } catch (_) {
       // A storage failure must not expose a secret; the background overlay
       // still activates independently of the inactivity timer.
+    }
+  }
+
+  void _onLockStateChanged() {
+    if (walletLockActive.value) {
+      _inactivityTimer?.cancel();
+    } else {
+      _scheduleAutoLock();
     }
   }
 
@@ -113,6 +123,7 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
       return;
     }
     _locking = true;
+    walletLockActive.value = true;
     setState(() => _obscured = true);
     walletNavigatorKey.currentState?.pushAndRemoveUntil<void>(
       MaterialPageRoute<void>(
@@ -129,6 +140,7 @@ class _SensitiveScreenGuardState extends State<_SensitiveScreenGuard>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    walletLockActive.removeListener(_onLockStateChanged);
     _inactivityTimer?.cancel();
     super.dispose();
   }
