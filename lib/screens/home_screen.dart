@@ -107,9 +107,23 @@ class _HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<_HomeTab> {
   bool _hideBalance = false;
+
+  Future<void> _refreshPortfolio() async {
+    if (!mounted) return;
+    setState(() {});
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+  }
+
   @override
-  Widget build(BuildContext context) =>
-      CustomScrollView(physics: const BouncingScrollPhysics(), slivers: [
+  Widget build(BuildContext context) => RefreshIndicator(
+      onRefresh: _refreshPortfolio,
+      color: AppColors.forest,
+      backgroundColor: Colors.white,
+      child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
             sliver: SliverToBoxAdapter(
@@ -130,11 +144,16 @@ class _HomeTabState extends State<_HomeTab> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text('Good day',
-                        style: TextStyle(color: Colors.black54, fontSize: 13)),
-                    Text('Your Wallet',
+                    Text('NEGOSWALLET',
                         style: TextStyle(
-                            fontSize: 22,
+                            color: AppColors.forest,
+                            fontSize: 11,
+                            letterSpacing: 1.4,
+                            fontWeight: FontWeight.w800)),
+                    SizedBox(height: 3),
+                    Text('Your portfolio',
+                        style: TextStyle(
+                            fontSize: 21,
                             fontWeight: FontWeight.w800,
                             color: AppColors.charcoal))
                   ])),
@@ -178,6 +197,36 @@ class _HomeTabState extends State<_HomeTab> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.shield_outlined, size: 15, color: AppColors.mint),
+                          const SizedBox(width: 6),
+                          const Text('SEPOLIA TESTNET',
+                              style: TextStyle(
+                                color: AppColors.mint,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.15,
+                              )),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0x26B8D9B2),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(color: const Color(0x557FAF8B)),
+                            ),
+                            child: const Text('TEST TOKENS',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: .5,
+                                )),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
                       Row(children: [
                         const Text('Total balance',
                             style: TextStyle(
@@ -270,7 +319,10 @@ class _HomeTabState extends State<_HomeTab> {
                   name: 'Bitcoin',
                   symbol: 'BTC',
                   balance: '—',
-                  value: 'Coming later'),
+                  value: 'Not available',
+                  networkLabel: 'PLANNED',
+                  iconBackgroundColor: Color(0xFFFFE8C8),
+                  iconColor: Color(0xFF9B5B12)),
               const SizedBox(height: 10),
               _LiveEthAsset(address: widget.address),
               const SizedBox(height: 10),
@@ -279,13 +331,16 @@ class _HomeTabState extends State<_HomeTab> {
                   name: 'USD Coin',
                   symbol: 'USDC',
                   balance: '—',
-                  value: 'Coming later'),
+                  value: 'Not available',
+                  networkLabel: 'PLANNED',
+                  iconBackgroundColor: Color(0xFFDDEBFF),
+                  iconColor: Color(0xFF285BA8)),
             ])),
         if (widget.address != null)
           SliverPadding(
               padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
               sliver: SliverToBoxAdapter(child: _AddressCard(widget.address!))),
-      ]);
+      ]));
   void _showTestnetNotice(BuildContext context) => showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -496,8 +551,11 @@ class _LiveEthAsset extends StatelessWidget {
           icon: Icons.diamond_outlined,
           name: 'Ethereum',
           symbol: 'ETH',
-          balance: '0.000000',
-          value: r'$0.00');
+          balance: '0.000000 ETH',
+          value: 'Balance unavailable',
+          networkLabel: 'SEPOLIA',
+          iconBackgroundColor: Color(0xFFE0E8E2),
+          iconColor: AppColors.forest);
     }
     return FutureBuilder<BigInt>(
         future: EvmRpcService().getNativeBalanceInWei(address!),
@@ -508,7 +566,10 @@ class _LiveEthAsset extends StatelessWidget {
                 name: 'Ethereum',
                 symbol: 'Sepolia ETH',
                 balance: 'Loading...',
-                value: 'Testnet',
+                value: 'Fetching balance',
+                networkLabel: 'SEPOLIA',
+                iconBackgroundColor: Color(0xFFE0E8E2),
+                iconColor: AppColors.forest,
                 loading: true);
           }
           if (snapshot.hasError) {
@@ -517,14 +578,20 @@ class _LiveEthAsset extends StatelessWidget {
                 name: 'Ethereum',
                 symbol: 'Sepolia ETH',
                 balance: 'Unavailable',
-                value: 'Testnet');
+                value: 'RPC connection issue',
+                networkLabel: 'SEPOLIA',
+                iconBackgroundColor: Color(0xFFE0E8E2),
+                iconColor: AppColors.forest);
           }
           return _AssetTile(
               icon: Icons.diamond_outlined,
               name: 'Ethereum',
               symbol: 'Sepolia ETH',
               balance: _formatEth(snapshot.data!),
-              value: 'Testnet');
+              value: 'Testnet balance',
+              networkLabel: 'SEPOLIA',
+              iconBackgroundColor: Color(0xFFE0E8E2),
+              iconColor: AppColors.forest);
         });
   }
 }
@@ -543,6 +610,9 @@ String _formatEth(BigInt wei) {
 class _AssetTile extends StatelessWidget {
   final IconData icon;
   final String name, symbol, balance, value;
+  final String networkLabel;
+  final Color iconBackgroundColor;
+  final Color iconColor;
   final bool loading;
 
   const _AssetTile({
@@ -551,6 +621,9 @@ class _AssetTile extends StatelessWidget {
     required this.symbol,
     required this.balance,
     required this.value,
+    this.networkLabel = 'PLANNED',
+    this.iconBackgroundColor = AppColors.mist,
+    this.iconColor = AppColors.forest,
     this.loading = false,
   });
   @override
@@ -562,19 +635,44 @@ class _AssetTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                    color: AppColors.mist,
-                    borderRadius: BorderRadius.circular(14)),
-                child: Icon(icon, color: AppColors.forest)),
+                    color: iconBackgroundColor,
+                    borderRadius: BorderRadius.circular(15)),
+                child: Icon(icon, color: iconColor, size: 23)),
             const SizedBox(width: 13),
             Expanded(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   Text(name,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(symbol,
-                      style:
-                          const TextStyle(color: Colors.black45, fontSize: 12))
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(symbol,
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          )),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: networkLabel == 'SEPOLIA'
+                              ? const Color(0xFFE3EFE5)
+                              : const Color(0xFFF0F0ED),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(networkLabel,
+                            style: TextStyle(
+                              color: networkLabel == 'SEPOLIA' ? AppColors.forest : Colors.black45,
+                              fontSize: 8,
+                              letterSpacing: .35,
+                              fontWeight: FontWeight.w800,
+                            )),
+                      ),
+                    ],
+                  ),
                 ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               if (loading)
@@ -591,7 +689,7 @@ class _AssetTile extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
               Text(value,
-                  style: const TextStyle(color: Colors.black45, fontSize: 12))
+                  style: const TextStyle(color: Colors.black45, fontSize: 11))
             ]),
           ])));
 }
