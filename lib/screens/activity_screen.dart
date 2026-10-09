@@ -52,10 +52,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
           } catch (_) {}
         }
       }
-      final hashes = <String>[
+      final hashes = <String>{
         ...localHashes,
         ...indexed.map((transfer) => transfer.transactionHash),
-      ].toSet().toList();
+      }.toList();
       if (!mounted) return;
       setState(() {
         _hashes = hashes;
