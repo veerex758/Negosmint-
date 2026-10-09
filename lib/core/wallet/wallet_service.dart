@@ -106,9 +106,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid recipient address.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid recipient address.');
     }
@@ -145,6 +148,12 @@ class WalletService {
         value: amount,
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       final gasCostWei = gasPrice.getInWei * estimatedGas;
 
       if (balance.getInWei < valueWei + gasCostWei) {
@@ -153,11 +162,6 @@ class WalletService {
         );
       }
 
-      if (estimatedGas <= BigInt.zero ||
-          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException(
-            'Invalid gas estimate returned by network.');
-      }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
         credentials,
@@ -171,7 +175,13 @@ class WalletService {
         chainId: EvmRpcService.chainId,
       );
       final hash = await client.sendRawTransaction(signedTransaction);
-      await _saveActivity(hash);
+      try {
+        await _saveActivity(hash);
+      } catch (_) {
+        throw WalletException(
+          'Transaction was broadcast ($hash), but local activity could not be saved. Check the transaction on Sepolia before retrying.',
+        );
+      }
       return hash;
     } on WalletException {
       rethrow;
@@ -205,9 +215,12 @@ class WalletService {
     if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
       throw const WalletException('Wallet is not initialized correctly.');
     }
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -264,9 +277,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -287,6 +303,12 @@ class WalletService {
         data: eth.hexToBytes(data),
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       return WalletTransactionFeePreview(
         gasLimit: estimatedGas,
         gasPriceWei: gasPrice.getInWei,
@@ -322,9 +344,12 @@ class WalletService {
       throw const WalletException('Wallet is not initialized correctly.');
     }
 
+    if (!RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(to.trim())) {
+      throw const WalletException('Invalid transaction recipient.');
+    }
     late final wallet.EthereumAddress recipient;
     try {
-      recipient = wallet.EthereumAddress.fromHex(to);
+      recipient = wallet.EthereumAddress.fromHex(to.trim());
     } on FormatException {
       throw const WalletException('Invalid transaction recipient.');
     }
@@ -362,6 +387,12 @@ class WalletService {
         data: eth.hexToBytes(data),
         gasPrice: gasPrice,
       );
+      if (estimatedGas <= BigInt.zero ||
+          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
+        throw const WalletException(
+          'Invalid gas estimate returned by network.',
+        );
+      }
       final balance = await client.getBalance(sender);
       final gasCostWei = gasPrice.getInWei * estimatedGas;
       if (balance.getInWei < valueWei + gasCostWei) {
@@ -370,11 +401,6 @@ class WalletService {
         );
       }
 
-      if (estimatedGas <= BigInt.zero ||
-          estimatedGas > BigInt.from(0x7fffffffffffffff)) {
-        throw const WalletException(
-            'Invalid gas estimate returned by network.');
-      }
       final nonce = await rpc.getTransactionCount(sender.eip55With0x);
       final signedTransaction = await client.signTransaction(
         credentials,
@@ -389,7 +415,13 @@ class WalletService {
         chainId: EvmRpcService.chainId,
       );
       final hash = await client.sendRawTransaction(signedTransaction);
-      await _saveActivity(hash);
+      try {
+        await _saveActivity(hash);
+      } catch (_) {
+        throw WalletException(
+          'Transaction was broadcast ($hash), but local activity could not be saved. Check the transaction on Sepolia before retrying.',
+        );
+      }
       return hash;
     } on WalletException {
       rethrow;
@@ -403,10 +435,18 @@ class WalletService {
   Future<List<String>> getActivity() async {
     final raw = await _storage.read(key: _activityKey);
     if (raw == null || raw.isEmpty) return const [];
-    return raw.split('|').where((value) => value.isNotEmpty).toList();
+    return raw
+        .split('|')
+        .where((value) => RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(value))
+        .toList();
   }
 
   Future<void> _saveActivity(String hash) async {
+    if (!RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(hash)) {
+      throw const WalletException(
+        'Network returned an invalid transaction hash.',
+      );
+    }
     final current = await getActivity();
     final updated = <String>[
       hash,
