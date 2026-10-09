@@ -123,6 +123,38 @@ void main() {
       );
     });
 
+    test('times out when the RPC response body stalls', () async {
+      await startServer((request) async {
+        await utf8.decoder.bind(request).join();
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        try {
+          await respond(
+            request,
+            body: jsonEncode({'jsonrpc': '2.0', 'id': 1, 'result': '0xaa36a7'}),
+          );
+        } on HttpException {
+          // The client has already timed out and closed the connection.
+        } on SocketException {
+          // The client has already timed out and closed the connection.
+        }
+      });
+
+      final service = EvmRpcService(
+        endpoint: 'http://127.0.0.1:${server.port}',
+        requestTimeout: const Duration(milliseconds: 20),
+      );
+      await expectLater(
+        service.getChainId(),
+        throwsA(
+          isA<EvmRpcException>().having(
+            (error) => error.message,
+            'message',
+            'Sepolia network request timed out.',
+          ),
+        ),
+      );
+    });
+
     test('reports malformed JSON and missing result fields', () async {
       await startServer((request) async {
         await respond(request, body: 'not-json');
