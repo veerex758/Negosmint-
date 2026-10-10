@@ -28,6 +28,8 @@ void main() {
       // The important safety guarantee is that an unsupported callback
       // cannot be approved. Keep this assertion independent of where the
       // explanatory error text appears in the scrollable layout.
+      await tester.scrollUntilVisible(find.text('Connect'), 300);
+      await tester.pumpAndSettle();
       final connectButton = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Connect'),
       );
