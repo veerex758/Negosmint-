@@ -233,7 +233,7 @@ class _WalletOwnershipApprovalScreenState
                   : const Text('Approve and verify'),
             ),
             TextButton(
-              onPressed: _busy ? null : () => Navigator.of(context).pop(),
+              onPressed: _busy ? null : _reject,
               child: const Text('Reject request'),
             ),
           ],
