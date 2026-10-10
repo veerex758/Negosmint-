@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/wallet/wallet_service.dart';
 
@@ -33,6 +34,9 @@ class _WalletOwnershipApprovalScreenState
     extends State<WalletOwnershipApprovalScreen> {
   static const _sepoliaChainId = 11155111;
   late final WalletService _wallet = widget.walletService ?? WalletService();
+
+  static const _ownershipChannel =
+      MethodChannel('com.negosmint.wallet/ownership_result');
 
   bool _confirmed = false;
   bool _busy = false;
@@ -89,13 +93,15 @@ class _WalletOwnershipApprovalScreenState
           !RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(address)) {
         throw const WalletException('Wallet address is unavailable.');
       }
-      if (!mounted) return;
-      Navigator.of(context).pop(<String, dynamic>{
-        'challengeId': widget.challengeId,
-        'walletAddress': address,
-        'chainId': widget.chainId,
-        'signature': signature,
-      });
+      await _ownershipChannel.invokeMethod<bool>(
+        'completeOwnershipHandoff',
+        <String, dynamic>{
+          'challengeId': widget.challengeId,
+          'walletAddress': address,
+          'chainId': widget.chainId,
+          'signature': signature,
+        },
+      );
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -108,11 +114,41 @@ class _WalletOwnershipApprovalScreenState
     }
   }
 
+  Future<void> _reject() async {
+    if (_busy) return;
+    try {
+      await _ownershipChannel.invokeMethod<bool>('rejectOwnershipHandoff');
+    } on PlatformException {
+      if (mounted) {
+        setState(() {
+          _error = 'Could not safely return to the Task App. Close this screen and try again.';
+        });
+      }
+    } on MissingPluginException {
+      if (mounted) {
+        setState(() {
+          _error = 'Secure app handoff is unavailable in this build.';
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final expired = !widget.expiresAt.isAfter(DateTime.now().toUtc());
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _reject();
+      },
+      child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          tooltip: 'Reject request',
+          onPressed: _reject,
+          icon: const Icon(Icons.close),
+        ),
         title: const Text('Verify wallet ownership'),
       ),
       body: SafeArea(
@@ -203,6 +239,7 @@ class _WalletOwnershipApprovalScreenState
           ],
         ),
       ),
+    ),
     );
   }
 }
