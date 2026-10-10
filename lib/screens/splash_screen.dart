@@ -8,6 +8,8 @@ import 'wallet_lock_screen.dart';
 import 'onboarding_screen.dart';
 import '../wallet/connection/wallet_deep_link_receiver.dart';
 import '../wallet/connection/wallet_connection_request.dart';
+import '../wallet/connection/wallet_ownership_request.dart';
+import 'wallet_ownership_approval_screen.dart';
 import 'connection_request_screen.dart';
 import '../wallet/connection/wallet_connect_bridge.dart';
 import 'wallet_connect_proposal_screen.dart';
@@ -26,6 +28,8 @@ class _SplashScreenState extends State<SplashScreen>
   Timer? _navigationTimer;
   late final WalletDeepLinkReceiver _deepLinkReceiver;
   WalletConnectionRequest? _incomingRequest;
+  WalletOwnershipRequest? _incomingOwnershipRequest;
+  StreamSubscription<WalletOwnershipRequest>? _ownershipSubscription;
   WalletConnectBridge? _walletConnectBridge;
   StreamSubscription<WalletConnectProposal>? _proposalSubscription;
   StreamSubscription<Uri>? _walletConnectUriSubscription;
@@ -37,6 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _deepLinkReceiver = WalletDeepLinkReceiver();
     _deepLinkReceiver.requests.listen(_handleIncomingRequest);
+    _ownershipSubscription = _deepLinkReceiver.ownershipRequests.listen(_handleIncomingOwnershipRequest);
     _walletConnectUriSubscription =
         _deepLinkReceiver.walletConnectUris.listen(_handleWalletConnectUri);
     _deepLinkReceiver.start();
@@ -128,6 +133,26 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  void _handleIncomingOwnershipRequest(WalletOwnershipRequest request) {
+    if (!mounted || _incomingRequest != null || _incomingOwnershipRequest != null) {
+      return;
+    }
+    _incomingOwnershipRequest = request;
+    _navigationTimer?.cancel();
+    Navigator.of(context).push(
+      MaterialPageRoute<Map<String, dynamic>>(
+        builder: (_) => WalletOwnershipApprovalScreen(
+          challengeId: request.challengeId,
+          message: request.message,
+          chainId: request.chainId,
+          expiresAt: request.expiresAt,
+        ),
+      ),
+    ).whenComplete(() {
+      _incomingOwnershipRequest = null;
+    });
+  }
+
   void _handleIncomingRequest(WalletConnectionRequest request) {
     if (!mounted || _incomingRequest != null) return;
     _incomingRequest = request;
@@ -140,7 +165,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _openNext() async {
-    if (_incomingRequest != null) return;
+    if (_incomingRequest != null || _incomingOwnershipRequest != null) return;
     if (!mounted) return;
 
     final service = WalletService();
@@ -182,6 +207,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _ownershipSubscription?.cancel();
     _walletConnectUriSubscription?.cancel();
     _walletConnectRequestSubscription?.cancel();
     _proposalSubscription?.cancel();

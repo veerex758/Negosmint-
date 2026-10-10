@@ -139,9 +139,98 @@ def configure_manifest() -> None:
     elif 'android:scheme="wc"' not in text:
         raise SystemExit("negosmintwallet link exists but wc link is missing")
 
+    if 'android:host="ownership"' not in text:
+        ownership_filter = """        <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="negosmintwallet" android:host="ownership" />
+          </intent-filter>
+"""
+        marker = "        <intent-filter>"
+        if marker not in text:
+            raise SystemExit("Android manifest activity intent-filter marker not found")
+        text = text.replace(marker, ownership_filter + marker, 1)
+        manifest.write_text(text)
+
     print(f"Configured wallet deep links in {manifest}")
+
+
+
+def configure_native_ownership_result() -> None:
+    import re
+
+    candidates = list(Path("android/app/src/main/kotlin").rglob("MainActivity.kt"))
+    if len(candidates) != 1:
+        raise SystemExit(
+            f"Expected one generated MainActivity.kt, found {len(candidates)}"
+        )
+    activity = candidates[0]
+    current = activity.read_text()
+    match = re.search(r"^package ([A-Za-z0-9_.]+)", current, re.MULTILINE)
+    if match is None:
+        raise SystemExit("Could not determine generated Android package name")
+    package_name = match.group(1)
+    native_source = """package __PACKAGE__
+
+import android.app.Activity
+import android.content.Intent
+import org.json.JSONObject
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+class MainActivity : FlutterActivity() {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.negosmint.wallet/ownership_result"
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "completeOwnershipHandoff" -> {
+                    val args = call.arguments as? Map<*, *>
+                    val challengeId = args?.get("challengeId") as? String
+                    val address = args?.get("walletAddress") as? String
+                    val chainId = args?.get("chainId") as? Number
+                    val signature = args?.get("signature") as? String
+                    if (challengeId.isNullOrBlank() || challengeId.length > 64 ||
+                        address == null || !Regex("^0x[0-9a-fA-F]{40}$").matches(address) ||
+                        chainId?.toInt() != 11155111 ||
+                        signature == null || !Regex("^0x[0-9a-fA-F]{130}$").matches(signature)) {
+                        result.error("INVALID_OWNERSHIP_RESULT", "Invalid wallet ownership result.", null)
+                        return@setMethodCallHandler
+                    }
+                    val payload = JSONObject()
+                        .put("challengeId", challengeId)
+                        .put("walletAddress", address)
+                        .put("chainId", 11155111)
+                        .put("signature", signature)
+                        .toString()
+                    setResult(
+                        Activity.RESULT_OK,
+                        Intent().putExtra("negosmint_wallet_ownership_result", payload)
+                    )
+                    result.success(true)
+                    finish()
+                }
+                "rejectOwnershipHandoff" -> {
+                    setResult(Activity.RESULT_CANCELED)
+                    result.success(true)
+                    finish()
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+}
+""".replace("__PACKAGE__", package_name)
+    if current != native_source:
+        activity.write_text(native_source)
+    print(f"Configured native wallet ownership result bridge in {activity}")
 
 
 configure_project_repositories()
 configure_settings()
 configure_manifest()
+configure_native_ownership_result()

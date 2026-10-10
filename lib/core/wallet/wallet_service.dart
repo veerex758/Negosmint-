@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:wallet/wallet.dart' as wallet;
@@ -80,6 +83,55 @@ class WalletService {
   }
 
   Future<String?> getPublicAddress() => _keyStore.loadAddress();
+
+  /// Signs a plain-text ownership challenge locally after device authentication.
+  ///
+  /// This is for proving control of the public address only. It does not sign
+  /// transactions or authorize spending. The challenge must be shown to the
+  /// user before this method is called. Secret material never leaves this
+  /// service, and neither the message nor signature is logged.
+  Future<String> signWalletOwnershipMessage(String message) async {
+    final trimmed = message.trim();
+    if (trimmed.isEmpty || trimmed.length > 2000) {
+      throw const WalletException('Wallet verification message is invalid.');
+    }
+    if (!await _biometrics.authenticateForSigning(
+      localizedReason: 'Approve signing this message to verify wallet ownership. No transaction will be sent.',
+    )) {
+      throw const WalletException(
+        'Authentication required to verify wallet ownership.',
+      );
+    }
+
+    final mnemonic = await _keyStore.loadMnemonic();
+    if (mnemonic == null || !_mnemonics.validate(mnemonic)) {
+      throw const WalletException('Wallet is not initialized correctly.');
+    }
+
+    final privateKeyHex = _mnemonics.derivePrivateKeyHex(mnemonic);
+    try {
+      final credentials = eth.EthPrivateKey.fromHex(privateKeyHex);
+      final storedAddress = await getPublicAddress();
+      if (storedAddress == null ||
+          storedAddress.toLowerCase() !=
+              credentials.address.eip55With0x.toLowerCase()) {
+        throw const WalletException(
+          'Stored wallet address does not match the signing key.',
+        );
+      }
+
+      final signature = credentials.signPersonalMessageToUint8List(
+        Uint8List.fromList(utf8.encode(message)),
+      );
+      final encoded = signature
+          .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+          .join();
+      return '0x$encoded';
+    } catch (error) {
+      if (error is WalletException) rethrow;
+      throw const WalletException('Could not sign wallet verification message.');
+    }
+  }
 
   Future<String?> revealRecoveryPhrase() async {
     if (!await _biometrics.authenticateForSigning()) return null;

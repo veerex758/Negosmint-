@@ -14,10 +14,12 @@ class BiometricService {
     }
   }
 
-  Future<bool> authenticateForSigning() async {
+  Future<bool> authenticateForSigning({
+    String localizedReason = 'Authenticate to authorize this wallet transaction.',
+  }) async {
     try {
       return await _auth.authenticate(
-        localizedReason: 'Authenticate to authorize this wallet transaction.',
+        localizedReason: localizedReason,
         options: const AuthenticationOptions(
           biometricOnly: false,
           stickyAuth: true,
